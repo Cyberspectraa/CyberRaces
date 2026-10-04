@@ -18,7 +18,12 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() ->
-            IcarusAPIClient.addRenderPredicate(entity -> !FairyWingCompat.hasEquippedRacialWings(entity))
+            // CyberRaces renders all Icarus wings on players so they inherit
+            // the animated FA+Player torso transform. Keep Icarus's normal
+            // renderer for any non-player living entities.
+            IcarusAPIClient.addRenderPredicate(
+                entity -> !(entity instanceof AbstractClientPlayer)
+            )
         );
     }
 
@@ -49,7 +54,7 @@ public final class ClientModEvents {
                     event.getEntityModels().bakeLayer(RaceCosmeticModels.HARD_FEATURES)
                 ));
 
-                renderer.addLayer(new FairyElytraLayer<>(renderer, event.getEntityModels()));
+                renderer.addLayer(new IcarusPlayerWingLayer<>(renderer, event.getEntityModels()));
             } catch (Exception exception) {
                 CyberRaces.LOGGER.warn("Could not attach CyberRaces player layers to skin {}", skin, exception);
             }
