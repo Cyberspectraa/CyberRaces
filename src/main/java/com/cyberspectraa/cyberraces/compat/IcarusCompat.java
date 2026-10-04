@@ -3,11 +3,8 @@ package com.cyberspectraa.cyberraces.compat;
 import net.minecraftforge.fml.ModList;
 
 /**
- * Icarus is optional. The first CyberRaces alpha records which races should
- * receive Icarus-backed natural flight without pretending vanilla creative
- * flight is the finished implementation.
- *
- * The actual wearable/visual wing grant is the next integration milestone.
+ * Icarus provides the actual fall-flying mechanics for races with natural
+ * flight. Fairy uses a permanent Zanza's Wings stack in the Curios back slot.
  */
 public final class IcarusCompat {
     private static final String MOD_ID = "icarus";
