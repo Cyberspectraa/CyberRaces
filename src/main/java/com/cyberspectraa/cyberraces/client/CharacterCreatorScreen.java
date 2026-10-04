@@ -31,58 +31,62 @@ public final class CharacterCreatorScreen extends Screen {
 
     @Override
     protected void init() {
-        Layout layout = layout();
+        Layout l = layout();
+        int buttonHeight = l.small ? 18 : 20;
+        int pad = l.small ? 6 : 12;
+        int arrowWidth = l.small ? 18 : 24;
 
-        int selectorY = layout.top + layout.selectorY;
-        int arrowWidth = layout.compact ? 20 : 24;
-        int padding = layout.compact ? 8 : 14;
-        int buttonHeight = layout.compact ? 18 : 20;
+        int selectorY = l.top + (l.small ? 38 : 54);
 
         this.addRenderableWidget(
             Button.builder(Component.literal("<"), button -> changeRace(-1))
-                .bounds(layout.left + padding, selectorY, arrowWidth, buttonHeight)
+                .bounds(l.left + pad, selectorY, arrowWidth, buttonHeight)
                 .build()
         );
 
-        int raceButtonX = layout.left + padding + arrowWidth + 4;
-        int raceButtonWidth = Math.max(
-            54,
-            layout.leftWidth - (padding * 2) - (arrowWidth * 2) - 8
+        int raceX = l.left + pad + arrowWidth + 3;
+        int raceWidth = Math.max(
+            44,
+            l.leftWidth - (pad * 2) - (arrowWidth * 2) - 6
         );
 
         this.raceButton = this.addRenderableWidget(
             Button.builder(Component.literal(currentRace().displayName()), button -> changeRace(1))
-                .bounds(raceButtonX, selectorY, raceButtonWidth, buttonHeight)
+                .bounds(raceX, selectorY, raceWidth, buttonHeight)
                 .build()
         );
 
         this.addRenderableWidget(
             Button.builder(Component.literal(">"), button -> changeRace(1))
-                .bounds(raceButtonX + raceButtonWidth + 4, selectorY, arrowWidth, buttonHeight)
+                .bounds(raceX + raceWidth + 3, selectorY, arrowWidth, buttonHeight)
                 .build()
         );
 
-        int featurePadding = layout.compact ? 8 : 14;
         this.featureButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
                 featureStyle = (featureStyle + 1) % CharacterAppearance.FEATURE_STYLE_COUNT;
                 refreshLabels();
             })
                 .bounds(
-                    layout.right + featurePadding,
-                    layout.top + layout.featureButtonY,
-                    Math.max(72, layout.rightWidth - featurePadding * 2),
+                    l.right + pad,
+                    l.top + (l.small ? 42 : 78),
+                    Math.max(60, l.rightWidth - pad * 2),
                     buttonHeight
                 )
                 .build()
         );
 
-        int confirmWidth = Math.min(160, Math.max(118, layout.width - 40));
+        int confirmWidth = l.small
+            ? Math.min(126, l.middleWidth - 12)
+            : Math.min(160, l.middleWidth - 20);
+
+        confirmWidth = Math.max(92, confirmWidth);
+
         this.addRenderableWidget(
-            Button.builder(Component.literal("Confirm Character"), button -> submit())
+            Button.builder(Component.literal("Confirm"), button -> submit())
                 .bounds(
-                    layout.centerX - confirmWidth / 2,
-                    layout.top + layout.height - layout.confirmBottomOffset,
+                    l.centerX - confirmWidth / 2,
+                    l.bottom - (l.small ? 22 : 30),
                     confirmWidth,
                     buttonHeight
                 )
@@ -96,102 +100,199 @@ public final class CharacterCreatorScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         tileBackground(graphics);
 
-        Layout layout = layout();
-        int bottom = layout.top + layout.height;
+        Layout l = layout();
 
-        graphics.fill(layout.left, layout.top, layout.left + layout.leftWidth, bottom, 0xC0101010);
-        graphics.fill(layout.middle, layout.top, layout.middle + layout.middleWidth, bottom, 0xC0101010);
-        graphics.fill(layout.right, layout.top, layout.right + layout.rightWidth, bottom, 0xC0101010);
+        graphics.fill(l.left, l.top, l.left + l.leftWidth, l.bottom, 0xC0101010);
+        graphics.fill(l.middle, l.top, l.middle + l.middleWidth, l.bottom, 0xC0101010);
+        graphics.fill(l.right, l.top, l.right + l.rightWidth, l.bottom, 0xC0101010);
 
         graphics.drawCenteredString(
             this.font,
             this.title,
-            layout.centerX,
-            layout.top + (layout.compact ? 7 : 12),
+            l.centerX,
+            l.top + (l.small ? 6 : 10),
             0xFFFFFF
         );
 
-        if (!layout.compact) {
+        if (!l.small) {
             graphics.drawCenteredString(
                 this.font,
-                "Your Minecraft skin stays intact - CyberRaces adds the racial features.",
-                layout.centerX,
-                layout.top + 27,
+                "Your normal Minecraft skin stays intact.",
+                l.centerX,
+                l.top + 24,
                 0xB8B8B8
             );
         }
 
-        int sectionY = layout.top + layout.sectionTitleY;
-        int sidePadding = layout.compact ? 8 : 14;
+        int titleY = l.top + (l.small ? 24 : 42);
+        int sidePad = l.small ? 6 : 12;
 
-        graphics.drawString(this.font, "Race", layout.left + sidePadding, sectionY, 0xE6D39A, false);
-        renderRaceInfo(graphics, layout);
-
-        graphics.drawCenteredString(
+        graphics.drawString(this.font, "Race", l.left + sidePad, titleY, 0xE6D39A, false);
+        graphics.drawCenteredString(this.font, "Preview", l.middle + l.middleWidth / 2, titleY, 0xE6D39A);
+        graphics.drawString(
             this.font,
-            "Preview",
-            layout.middle + layout.middleWidth / 2,
-            sectionY,
-            0xE6D39A
+            l.small ? "Features" : "Race Features",
+            l.right + sidePad,
+            titleY,
+            0xE6D39A,
+            false
         );
 
-        int previewTop = layout.top + layout.previewTop;
-        int previewBottom = bottom - layout.previewBottom;
-        if (previewBottom > previewTop + 20) {
+        int previewTop = l.top + (l.small ? 38 : 58);
+        int previewBottom = l.bottom - (l.small ? 28 : 42);
+
+        if (previewBottom > previewTop + 10) {
             graphics.fill(
-                layout.middle + (layout.compact ? 6 : 16),
+                l.middle + (l.small ? 4 : 12),
                 previewTop,
-                layout.middle + layout.middleWidth - (layout.compact ? 6 : 16),
+                l.middle + l.middleWidth - (l.small ? 4 : 12),
                 previewBottom,
                 0x70202020
             );
         }
 
-        renderPlayerPreview(graphics, layout, mouseX, mouseY);
+        renderRaceInfo(graphics, l);
+        renderFeatureInfo(graphics, l);
+        renderPlayerPreview(graphics, l, mouseX, mouseY);
 
-        graphics.drawString(
-            this.font,
-            layout.compact ? "Features" : "Race Features",
-            layout.right + sidePadding,
-            sectionY,
-            0xE6D39A,
-            false
-        );
+        super.render(graphics, mouseX, mouseY, partialTick);
+    }
 
-        int featureTextY = layout.top + layout.featureTextY;
+    private void renderRaceInfo(GuiGraphics graphics, Layout l) {
+        Race race = currentRace();
+
+        int x = l.left + (l.small ? 6 : 12);
+        int valueX = l.left + l.leftWidth - (l.small ? 38 : 48);
+        int y = l.top + (l.small ? 64 : 88);
+        int spacing = l.small ? 11 : 15;
+
+        drawStat(graphics, l.small ? "HP" : "Health", String.valueOf((int) race.maxHealth()), x, valueX, y);
+        drawStat(graphics, "Size", String.format("%.2fx", race.scale()), x, valueX, y + spacing);
+        drawStat(graphics, "Speed", String.format("%.0f%%", race.movementMultiplier() * 100.0D), x, valueX, y + spacing * 2);
+        drawStat(graphics, "Mana", String.format("%.0f%%", race.maxManaMultiplier() * 100.0D), x, valueX, y + spacing * 3);
+
+        if (!l.small) {
+            drawStat(
+                graphics,
+                "Regen",
+                String.format("%.0f%%", race.manaRegenMultiplier() * 100.0D),
+                x,
+                valueX,
+                y + spacing * 4
+            );
+        }
+
+        int summaryY = y + spacing * (l.small ? 4 : 5) + (l.small ? 7 : 14);
+        int maxWidth = Math.max(48, l.leftWidth - (l.small ? 12 : 24));
+        int maxLines = l.small ? 3 : 5;
+
+        int line = 0;
+        for (String sentence : raceSummary(race)) {
+            List<FormattedCharSequence> wrapped = this.font.split(Component.literal(sentence), maxWidth);
+            for (FormattedCharSequence seq : wrapped) {
+                if (line >= maxLines) {
+                    return;
+                }
+                graphics.drawString(this.font, seq, x, summaryY + line * 10, 0xD0D0D0, false);
+                line++;
+            }
+        }
+    }
+
+    private void renderFeatureInfo(GuiGraphics graphics, Layout l) {
+        int x = l.right + (l.small ? 6 : 12);
+        int maxWidth = Math.max(48, l.rightWidth - (l.small ? 12 : 24));
+        int y = l.top + (l.small ? 68 : 110);
+
         drawWrapped(
             graphics,
             featureDescription(),
-            layout.right + sidePadding,
-            featureTextY,
-            Math.max(60, layout.rightWidth - sidePadding * 2),
+            x,
+            y,
+            maxWidth,
             0xD0D0D0,
-            layout.compact ? 3 : 4
+            l.small ? 5 : 6
         );
 
-        if (!layout.compact) {
+        if (!l.small) {
             drawWrapped(
                 graphics,
                 "Face, eyes, hair and clothing come from your normal skin.",
-                layout.right + sidePadding,
-                layout.top + 142,
-                Math.max(60, layout.rightWidth - sidePadding * 2),
+                x,
+                l.top + 154,
+                maxWidth,
                 0x9E9E9E,
-                3
+                4
             );
         }
+    }
 
-        if (!layout.compact) {
-            graphics.drawCenteredString(
-                this.font,
-                "Confirming releases you into the world and allows CyberServer to play your arrival.",
-                layout.centerX,
-                bottom - 13,
-                0xAFAFAF
-            );
+    private void renderPlayerPreview(GuiGraphics graphics, Layout l, int mouseX, int mouseY) {
+        if (this.minecraft == null || this.minecraft.player == null) {
+            return;
         }
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        ClientCharacterState.setPreview(currentRace(), featureStyle);
+
+        boolean wasInvisible = this.minecraft.player.isInvisible();
+        this.minecraft.player.setInvisible(false);
+
+        int previewX = l.middle + l.middleWidth / 2;
+        int previewY = l.bottom - (l.small ? 34 : 52);
+
+        int availableHeight = Math.max(60, l.height - (l.small ? 68 : 105));
+        int widthLimited = (int) (l.middleWidth * (l.small ? 0.30D : 0.33D));
+        int heightLimited = (int) (availableHeight * (l.small ? 0.34D : 0.42D));
+
+        int baseScale = Math.max(28, Math.min(widthLimited, heightLimited));
+        int previewScale = Mth.clamp(
+            (int) (baseScale * Math.sqrt(Math.max(0.5D, currentRace().scale()))),
+            l.small ? 28 : 42,
+            l.small ? 58 : 86
+        );
+
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
+                graphics,
+                previewX,
+                previewY,
+                previewScale,
+                (float) (previewX - mouseX),
+                (float) (l.top + l.height / 2 - mouseY),
+                this.minecraft.player
+            );
+        } finally {
+            this.minecraft.player.setInvisible(wasInvisible);
+        }
+    }
+
+    private void drawStat(
+        GuiGraphics graphics,
+        String label,
+        String value,
+        int x,
+        int valueX,
+        int y
+    ) {
+        graphics.drawString(this.font, label, x, y, 0x9E9E9E, false);
+        graphics.drawString(this.font, value, valueX, y, 0xFFFFFF, false);
+    }
+
+    private void drawWrapped(
+        GuiGraphics graphics,
+        String text,
+        int x,
+        int y,
+        int maxWidth,
+        int color,
+        int maxLines
+    ) {
+        List<FormattedCharSequence> lines = this.font.split(Component.literal(text), maxWidth);
+        int count = Math.min(lines.size(), maxLines);
+
+        for (int i = 0; i < count; i++) {
+            graphics.drawString(this.font, lines.get(i), x, y + i * 10, color, false);
+        }
     }
 
     @Override
@@ -214,117 +315,8 @@ public final class CharacterCreatorScreen extends Screen {
         return false;
     }
 
-    private void renderRaceInfo(GuiGraphics graphics, Layout layout) {
-        Race race = currentRace();
-        int x = layout.left + (layout.compact ? 8 : 14);
-        int y = layout.top + layout.statsY;
-        int valueX = layout.left + layout.leftWidth - (layout.compact ? 42 : 52);
-        int line = layout.compact ? 12 : 16;
-
-        drawStat(graphics, layout.compact ? "HP" : "Health", String.valueOf((int) race.maxHealth()), x, valueX, y);
-        drawStat(graphics, "Size", String.format("%.2fx", race.scale()), x, valueX, y + line);
-        drawStat(graphics, "Speed", String.format("%.0f%%", race.movementMultiplier() * 100.0D), x, valueX, y + line * 2);
-        drawStat(graphics, "Mana", String.format("%.0f%%", race.maxManaMultiplier() * 100.0D), x, valueX, y + line * 3);
-
-        if (!layout.compact || layout.height >= 300) {
-            drawStat(
-                graphics,
-                layout.compact ? "Regen" : "Mana regen",
-                String.format("%.0f%%", race.manaRegenMultiplier() * 100.0D),
-                x,
-                valueX,
-                y + line * 4
-            );
-        }
-
-        int noteY = y + line * 5 + (layout.compact ? 6 : 14);
-        int maxLines = layout.compact ? 2 : 4;
-        int lineCount = 0;
-
-        for (String summary : raceSummary(race)) {
-            if (lineCount >= maxLines) {
-                break;
-            }
-
-            List<FormattedCharSequence> wrapped = this.font.split(
-                Component.literal(summary),
-                Math.max(54, layout.leftWidth - (layout.compact ? 16 : 28))
-            );
-
-            for (FormattedCharSequence text : wrapped) {
-                if (lineCount >= maxLines) {
-                    break;
-                }
-                graphics.drawString(this.font, text, x, noteY + lineCount * 10, 0xD0D0D0, false);
-                lineCount++;
-            }
-        }
-    }
-
-    private void drawStat(GuiGraphics graphics, String label, String value, int x, int valueX, int y) {
-        graphics.drawString(this.font, label, x, y, 0x9E9E9E, false);
-        graphics.drawString(this.font, value, valueX, y, 0xFFFFFF, false);
-    }
-
-    private void renderPlayerPreview(GuiGraphics graphics, Layout layout, int mouseX, int mouseY) {
-        if (this.minecraft == null || this.minecraft.player == null) {
-            return;
-        }
-
-        ClientCharacterState.setPreview(currentRace(), featureStyle);
-
-        boolean wasInvisible = this.minecraft.player.isInvisible();
-        this.minecraft.player.setInvisible(false);
-
-        int previewX = layout.middle + layout.middleWidth / 2;
-        int previewY = layout.top + layout.height - layout.playerBottomOffset;
-
-        int availableHeight = Math.max(80, layout.height - layout.previewTop - layout.previewBottom - 4);
-        int sizeFromHeight = (int) (availableHeight * (layout.compact ? 0.42D : 0.48D));
-        int sizeFromWidth = (int) (layout.middleWidth * (layout.compact ? 0.28D : 0.34D));
-
-        int basePreviewScale = Math.max(34, Math.min(sizeFromHeight, sizeFromWidth));
-        int previewScale = Mth.clamp(
-            (int) (basePreviewScale * Math.sqrt(Math.max(0.5D, currentRace().scale()))),
-            layout.compact ? 32 : 48,
-            layout.compact ? 68 : 90
-        );
-
-        try {
-            InventoryScreen.renderEntityInInventoryFollowsMouse(
-                graphics,
-                previewX,
-                previewY,
-                previewScale,
-                (float) (previewX - mouseX),
-                (float) (layout.top + layout.height / 2 - mouseY),
-                this.minecraft.player
-            );
-        } finally {
-            this.minecraft.player.setInvisible(wasInvisible);
-        }
-    }
-
-    private void drawWrapped(
-        GuiGraphics graphics,
-        String text,
-        int x,
-        int y,
-        int maxWidth,
-        int color,
-        int maxLines
-    ) {
-        List<FormattedCharSequence> lines = this.font.split(Component.literal(text), maxWidth);
-        int count = Math.min(lines.size(), maxLines);
-
-        for (int i = 0; i < count; i++) {
-            graphics.drawString(this.font, lines.get(i), x, y + i * 11, color, false);
-        }
-    }
-
     private void changeRace(int direction) {
-        Race[] races = Race.values();
-        raceIndex = Math.floorMod(raceIndex + direction, races.length);
+        raceIndex = Math.floorMod(raceIndex + direction, Race.values().length);
         featureStyle = 0;
         refreshLabels();
     }
@@ -356,37 +348,37 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
             case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
             case FAIRY -> new String[] {"Ears: Classic", "Ears: Sharp", "Ears: Soft"};
-            case HUMAN -> new String[] {"No racial feature", "No racial feature", "No racial feature"};
-            case DWARF -> new String[] {"Stout silhouette", "Stout silhouette", "Stout silhouette"};
+            case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
+            case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
         };
         return labels[featureStyle];
     }
 
     private String featureDescription() {
         return switch (currentRace()) {
-            case HUMAN -> "Your normal skin and proportions define your appearance.";
-            case ELF -> "Pointed ears follow the animated head.";
-            case DWARF -> "Your shorter, sturdy silhouette is the main racial look.";
-            case HALFLING -> "Subtle ears keep Halflings distinct from Dwarves.";
-            case ORC -> "Pointed ears and visible lower tusks.";
-            case GOBLIN -> "Large ears create the Goblin silhouette.";
-            case TIEFLING -> "Horns plus a body-attached animated tail.";
-            case DRAGONBORN -> "Dragon snout, crest and a heavy tail.";
-            case FAIRY -> "Fey ears plus permanent Zanza's Wings.";
+            case HUMAN -> "No forced racial geometry.";
+            case ELF -> "Pointed ears follow the head.";
+            case DWARF -> "Short, sturdy silhouette.";
+            case HALFLING -> "Small ears distinguish the face.";
+            case ORC -> "Pointed ears and lower tusks.";
+            case GOBLIN -> "Large outward ears.";
+            case TIEFLING -> "Horns and an animated tail.";
+            case DRAGONBORN -> "Dragon snout, crest and tail.";
+            case FAIRY -> "Fey ears and Zanza's Wings.";
         };
     }
 
     private String[] raceSummary(Race race) {
         return switch (race) {
-            case HUMAN -> new String[] {"Balanced and adaptable.", "No forced racial geometry."};
-            case ELF -> new String[] {"Fast and naturally magical.", "Lower base health."};
-            case DWARF -> new String[] {"Tough and resistant.", "Shorter and slightly slower."};
-            case HALFLING -> new String[] {"Small and nimble.", "Low profile, lighter frame."};
-            case ORC -> new String[] {"High health and strength.", "Lower natural mana."};
-            case GOBLIN -> new String[] {"Small and very quick.", "Fragile compared with Orcs."};
-            case TIEFLING -> new String[] {"Strong magical potential.", "Natural fire resistance."};
-            case DRAGONBORN -> new String[] {"Armoured and resilient.", "Large physical presence."};
-            case FAIRY -> new String[] {"Tiny, fast and magical.", "Very fragile; natural flight."};
+            case HUMAN -> new String[] {"Balanced and adaptable."};
+            case ELF -> new String[] {"Fast and magical.", "Lower health."};
+            case DWARF -> new String[] {"Tough and resistant.", "Slightly slower."};
+            case HALFLING -> new String[] {"Small and nimble."};
+            case ORC -> new String[] {"High health.", "Lower natural mana."};
+            case GOBLIN -> new String[] {"Small and quick.", "More fragile."};
+            case TIEFLING -> new String[] {"Strong magic.", "Fire resistance."};
+            case DRAGONBORN -> new String[] {"Armoured and resilient."};
+            case FAIRY -> new String[] {"Tiny and magical.", "Fragile; can fly."};
         };
     }
 
@@ -401,67 +393,55 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private Layout layout() {
-        int outerMargin = this.width < 640 || this.height < 360 ? 6 : 18;
+        boolean small = this.width <= 600 || this.height <= 340;
 
-        int panelWidth = Math.max(1, Math.min(860, this.width - outerMargin * 2));
-        int panelHeight = Math.max(1, Math.min(460, this.height - outerMargin * 2));
+        int margin = small ? 4 : 18;
+        int width = Math.max(300, Math.min(small ? this.width - margin * 2 : 860, this.width - margin * 2));
+        int height = Math.max(220, Math.min(small ? this.height - margin * 2 : 460, this.height - margin * 2));
 
-        int left = Math.max(0, (this.width - panelWidth) / 2);
-        int top = Math.max(0, (this.height - panelHeight) / 2);
+        width = Math.min(width, this.width);
+        height = Math.min(height, this.height);
 
-        boolean compact = panelWidth < 700 || panelHeight < 380;
+        int left = Math.max(0, (this.width - width) / 2);
+        int top = Math.max(0, (this.height - height) / 2);
+        int bottom = Math.min(this.height, top + height);
 
-        int gap = compact ? 4 : 6;
+        int gap = small ? 3 : 6;
 
-        int leftWidth;
-        int rightWidth;
-
-        if (compact) {
-            leftWidth = Math.max(118, (int) (panelWidth * 0.285D));
-            rightWidth = Math.max(118, (int) (panelWidth * 0.285D));
-
-            int maxSideWidth = Math.max(118, (panelWidth - gap * 2 - 120) / 2);
-            leftWidth = Math.min(leftWidth, maxSideWidth);
-            rightWidth = Math.min(rightWidth, maxSideWidth);
+        int sideWidth;
+        if (small) {
+            sideWidth = Math.max(96, (int) (width * 0.28D));
+            int maxSide = Math.max(96, (width - gap * 2 - 100) / 2);
+            sideWidth = Math.min(sideWidth, maxSide);
         } else {
-            leftWidth = Math.min(205, (int) (panelWidth * 0.28D));
-            rightWidth = Math.min(205, (int) (panelWidth * 0.28D));
+            sideWidth = Math.min(205, (int) (width * 0.27D));
         }
 
-        int middleWidth = Math.max(120, panelWidth - leftWidth - rightWidth - gap * 2);
+        int middleWidth = width - sideWidth * 2 - gap * 2;
 
-        if (leftWidth + rightWidth + middleWidth + gap * 2 > panelWidth) {
-            int overflow = leftWidth + rightWidth + middleWidth + gap * 2 - panelWidth;
-            int sideCut = (overflow + 1) / 2;
-            leftWidth = Math.max(96, leftWidth - sideCut);
-            rightWidth = Math.max(96, rightWidth - (overflow - sideCut));
-            middleWidth = Math.max(100, panelWidth - leftWidth - rightWidth - gap * 2);
+        if (middleWidth < 100) {
+            int needed = 100 - middleWidth;
+            int cut = (needed + 1) / 2;
+            sideWidth = Math.max(82, sideWidth - cut);
+            middleWidth = width - sideWidth * 2 - gap * 2;
         }
 
-        int middle = left + leftWidth + gap;
+        int middle = left + sideWidth + gap;
         int right = middle + middleWidth + gap;
 
         return new Layout(
             left,
             top,
-            panelWidth,
-            panelHeight,
-            leftWidth,
+            bottom,
+            width,
+            height,
+            sideWidth,
             middle,
             middleWidth,
             right,
-            rightWidth,
-            left + panelWidth / 2,
-            compact,
-            compact ? 31 : 54,
-            compact ? 21 : 43,
-            compact ? 53 : 88,
-            compact ? 30 : 58,
-            compact ? 36 : 52,
-            compact ? 48 : 78,
-            compact ? 74 : 110,
-            compact ? 26 : 36,
-            compact ? 38 : 70
+            sideWidth,
+            left + width / 2,
+            small
         );
     }
 
@@ -476,6 +456,7 @@ public final class CharacterCreatorScreen extends Screen {
     private record Layout(
         int left,
         int top,
+        int bottom,
         int width,
         int height,
         int leftWidth,
@@ -484,16 +465,7 @@ public final class CharacterCreatorScreen extends Screen {
         int right,
         int rightWidth,
         int centerX,
-        boolean compact,
-        int selectorY,
-        int sectionTitleY,
-        int statsY,
-        int previewTop,
-        int previewBottom,
-        int featureButtonY,
-        int featureTextY,
-        int confirmBottomOffset,
-        int playerBottomOffset
+        boolean small
     ) {
     }
 }
