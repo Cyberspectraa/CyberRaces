@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.event;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
+import com.cyberspectraa.cyberraces.character.CharacterSyncService;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -23,6 +24,19 @@ public final class RaceEvents {
         if (CharacterManager.isCharacterCreated(player)) {
             RaceManager.reapply(player);
         }
+
+        CharacterSyncService.syncAllTo(player);
+        if (CharacterManager.isCharacterCreated(player)) {
+            CharacterSyncService.broadcast(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getEntity() instanceof ServerPlayer viewer
+            && event.getTarget() instanceof ServerPlayer target) {
+            CharacterSyncService.syncTo(target, viewer);
+        }
     }
 
     @SubscribeEvent
@@ -36,6 +50,7 @@ public final class RaceEvents {
 
         if (CharacterManager.isCharacterCreated(newPlayer)) {
             RaceManager.reapply(newPlayer);
+            CharacterSyncService.broadcast(newPlayer);
         }
     }
 

@@ -57,6 +57,7 @@ public final class CharacterManager {
         setCharacterCreated(player, true);
         RaceManager.setRace(player, race);
         CreationHoldManager.release(player);
+        CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new CloseCharacterCreatorPacket());
         return true;
     }
@@ -70,6 +71,7 @@ public final class CharacterManager {
         setCharacterCreated(player, true);
         RaceManager.setRace(player, race);
         CreationHoldManager.release(player);
+        CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new CloseCharacterCreatorPacket());
     }
 
@@ -86,6 +88,7 @@ public final class CharacterManager {
         persistent.put(ROOT_KEY, root);
 
         CreationHoldManager.enter(player);
+        CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new OpenCharacterCreatorPacket());
     }
 
@@ -111,6 +114,9 @@ public final class CharacterManager {
             root.putBoolean(CREATED_KEY, true);
             if (!root.contains(APPEARANCE_KEY)) {
                 root.put(APPEARANCE_KEY, CharacterAppearance.defaults().save());
+            } else {
+                CharacterAppearance cleaned = CharacterAppearance.load(root.getCompound(APPEARANCE_KEY));
+                root.put(APPEARANCE_KEY, cleaned.save());
             }
             persistent.put(ROOT_KEY, root);
         }

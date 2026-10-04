@@ -223,8 +223,6 @@ public final class CyberRaceCommands {
             () -> Component.literal(
                 player.getGameProfile().getName()
                     + " character complete=" + complete
-                    + " | eyes=" + appearance.eyeStyle()
-                    + " | colour=" + appearance.eyeColor()
                     + " | feature=" + appearance.featureStyle()
             ),
             false
