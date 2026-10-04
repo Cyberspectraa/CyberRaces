@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.client;
 
+import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -14,14 +15,14 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-    private static final ResourceLocation BONE_TEXTURE =
-        new ResourceLocation("minecraft", "textures/block/bone_block_side.png");
+    private static final ResourceLocation TUSK_TEXTURE =
+        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/tusk.png");
     private static final ResourceLocation HORN_TEXTURE =
-        new ResourceLocation("minecraft", "textures/block/blackstone.png");
-    private static final ResourceLocation TIEFLING_TAIL_TEXTURE =
-        new ResourceLocation("minecraft", "textures/block/crimson_stem.png");
+        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/horn.png");
+    private static final ResourceLocation TIEFLING_TEXTURE =
+        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/tiefling.png");
     private static final ResourceLocation DRAGON_TEXTURE =
-        new ResourceLocation("minecraft", "textures/block/deepslate_tiles.png");
+        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/dragon.png");
 
     private final ModelPart skinRoot;
     private final ModelPart hardRoot;
@@ -86,7 +87,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
 
             case ORC -> {
                 renderSkinEars(poseStack, buffer, packedLight, player, "orc_ears");
-                renderHeadPair(poseStack, buffer, packedLight, BONE_TEXTURE, "tusks_" + switch (feature) {
+                renderHeadPair(poseStack, buffer, packedLight, TUSK_TEXTURE, "tusks_" + switch (feature) {
                     case 1 -> "broad";
                     case 2 -> "long";
                     default -> "small";
@@ -105,7 +106,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                     case 2 -> "tall";
                     default -> "curved";
                 });
-                renderBodyPart(poseStack, buffer, packedLight, TIEFLING_TAIL_TEXTURE, "tiefling_tail", ageInTicks, 0.10F);
+                renderBodyPart(poseStack, buffer, packedLight, TIEFLING_TEXTURE, "tiefling_tail", ageInTicks, 0.15F);
             }
 
             case DRAGONBORN -> {
@@ -115,7 +116,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                     case 2 -> "swept";
                     default -> "horned";
                 });
-                renderBodyPart(poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_tail", ageInTicks, 0.07F);
+                renderBodyPart(poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_tail", ageInTicks, 0.10F);
             }
 
             case FAIRY -> renderSkinEars(poseStack, buffer, packedLight, player, "fairy_" + switch (feature) {
@@ -203,7 +204,10 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
     ) {
         ModelPart part = hardRoot.getChild(name);
         float previousYRot = part.yRot;
-        part.yRot = previousYRot + (float) Math.sin(ageInTicks * 0.12F) * swayAmount;
+        float previousZRot = part.zRot;
+
+        part.yRot = previousYRot + (float) Math.sin(ageInTicks * 0.10F) * swayAmount;
+        part.zRot = previousZRot + (float) Math.sin(ageInTicks * 0.075F) * swayAmount * 0.35F;
 
         poseStack.pushPose();
         getParentModel().body.translateAndRotate(poseStack);
@@ -212,6 +216,8 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         part.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
         poseStack.popPose();
+
         part.yRot = previousYRot;
+        part.zRot = previousZRot;
     }
 }

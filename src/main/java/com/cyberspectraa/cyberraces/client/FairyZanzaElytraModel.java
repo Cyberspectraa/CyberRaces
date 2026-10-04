@@ -8,12 +8,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * Compatibility adapter:
- *
- * - vanilla ElytraModel supplies the animation/pose behaviour FA+Player already supports;
- * - Icarus' own ZanzasWingsModel supplies the actual Zanza wing geometry.
- *
- * No Icarus model geometry or textures are copied into CyberRaces.
+ * Uses vanilla Elytra rotations for FA+Player compatibility while preserving
+ * the Zanza model's own anchor and geometry.
  */
 public final class FairyZanzaElytraModel<T extends LivingEntity> extends ElytraModel<T> {
     private final ModelPart animatedLeftWing;
@@ -37,10 +33,15 @@ public final class FairyZanzaElytraModel<T extends LivingEntity> extends ElytraM
         float netHeadYaw,
         float headPitch
     ) {
+        // Let Icarus establish the correct Zanza anchor first.
+        zanzaModel.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+
+        // Then use Elytra's rotations so animation replacers that understand
+        // vanilla Elytra continue to drive the wings.
         super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
-        copyPose(animatedLeftWing, zanzaModel.leftWing);
-        copyPose(animatedRightWing, zanzaModel.rightWing);
+        copyRotation(animatedLeftWing, zanzaModel.leftWing);
+        copyRotation(animatedRightWing, zanzaModel.rightWing);
     }
 
     @Override
@@ -66,10 +67,7 @@ public final class FairyZanzaElytraModel<T extends LivingEntity> extends ElytraM
         );
     }
 
-    private static void copyPose(ModelPart source, ModelPart target) {
-        target.x = source.x;
-        target.y = source.y;
-        target.z = source.z;
+    private static void copyRotation(ModelPart source, ModelPart target) {
         target.xRot = source.xRot;
         target.yRot = source.yRot;
         target.zRot = source.zRot;
