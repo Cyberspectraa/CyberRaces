@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.race;
 
+import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -26,6 +27,12 @@ public final class RaceManager {
     }
 
     public static void setRace(ServerPlayer player, Race race) {
+        Race previousRace = getRace(player).orElse(null);
+
+        if (previousRace == Race.FAIRY && race != Race.FAIRY) {
+            FairyWingCompat.removeRacialWings(player);
+        }
+
         CompoundTag persistent = player.getPersistentData();
         CompoundTag root = persistent.contains(ROOT_KEY)
             ? persistent.getCompound(ROOT_KEY)
@@ -35,9 +42,15 @@ public final class RaceManager {
         persistent.put(ROOT_KEY, root);
 
         RaceAttributeApplier.apply(player, race);
+
+        if (race == Race.FAIRY) {
+            FairyWingCompat.ensureEquipped(player);
+        }
     }
 
     public static void clearRace(ServerPlayer player) {
+        FairyWingCompat.removeRacialWings(player);
+
         CompoundTag persistent = player.getPersistentData();
         if (persistent.contains(ROOT_KEY)) {
             CompoundTag root = persistent.getCompound(ROOT_KEY);
@@ -55,8 +68,18 @@ public final class RaceManager {
 
     public static void reapply(ServerPlayer player) {
         getRace(player).ifPresentOrElse(
-            race -> RaceAttributeApplier.apply(player, race),
-            () -> RaceAttributeApplier.clear(player)
+            race -> {
+                RaceAttributeApplier.apply(player, race);
+                if (race == Race.FAIRY) {
+                    FairyWingCompat.ensureEquipped(player);
+                } else {
+                    FairyWingCompat.removeRacialWings(player);
+                }
+            },
+            () -> {
+                FairyWingCompat.removeRacialWings(player);
+                RaceAttributeApplier.clear(player);
+            }
         );
     }
 
