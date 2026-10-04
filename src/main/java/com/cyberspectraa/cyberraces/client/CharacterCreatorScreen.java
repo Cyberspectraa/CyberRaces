@@ -21,9 +21,11 @@ public final class CharacterCreatorScreen extends Screen {
 
     private int raceIndex;
     private int featureStyle;
+    private int featureColor;
 
     private Button raceButton;
     private Button featureButton;
+    private Button colourButton;
 
     public CharacterCreatorScreen() {
         super(Component.literal("Create Your Character"));
@@ -70,6 +72,20 @@ public final class CharacterCreatorScreen extends Screen {
                 .bounds(
                     l.right + pad,
                     l.top + (l.small ? 42 : 78),
+                    Math.max(60, l.rightWidth - pad * 2),
+                    buttonHeight
+                )
+                .build()
+        );
+
+        this.colourButton = this.addRenderableWidget(
+            Button.builder(Component.empty(), button -> {
+                featureColor = (featureColor + 1) % CharacterAppearance.FEATURE_COLOR_COUNT;
+                refreshLabels();
+            })
+                .bounds(
+                    l.right + pad,
+                    l.top + (l.small ? 64 : 102),
                     Math.max(60, l.rightWidth - pad * 2),
                     buttonHeight
                 )
@@ -202,7 +218,7 @@ public final class CharacterCreatorScreen extends Screen {
     private void renderFeatureInfo(GuiGraphics graphics, Layout l) {
         int x = l.right + (l.small ? 6 : 12);
         int maxWidth = Math.max(48, l.rightWidth - (l.small ? 12 : 24));
-        int y = l.top + (l.small ? 68 : 110);
+        int y = l.top + (l.small ? 90 : 132);
 
         drawWrapped(
             graphics,
@@ -232,7 +248,7 @@ public final class CharacterCreatorScreen extends Screen {
             return;
         }
 
-        ClientCharacterState.setPreview(currentRace(), featureStyle);
+        ClientCharacterState.setPreview(currentRace(), featureStyle, featureColor);
 
         boolean wasInvisible = this.minecraft.player.isInvisible();
         this.minecraft.player.setInvisible(false);
@@ -318,12 +334,13 @@ public final class CharacterCreatorScreen extends Screen {
     private void changeRace(int direction) {
         raceIndex = Math.floorMod(raceIndex + direction, Race.values().length);
         featureStyle = 0;
+        featureColor = 0;
         refreshLabels();
     }
 
     private void refreshLabels() {
         Race race = currentRace();
-        ClientCharacterState.setPreview(race, featureStyle);
+        ClientCharacterState.setPreview(race, featureStyle, featureColor);
 
         if (raceButton != null) {
             raceButton.setMessage(Component.literal(race.displayName()));
@@ -332,6 +349,11 @@ public final class CharacterCreatorScreen extends Screen {
         if (featureButton != null) {
             featureButton.setMessage(Component.literal(featureLabel()));
             featureButton.active = hasFeatureVariants(race);
+        }
+
+        if (colourButton != null) {
+            colourButton.setMessage(Component.literal(colourLabel()));
+            colourButton.active = hasFeatureColour(race);
         }
     }
 
@@ -354,6 +376,24 @@ public final class CharacterCreatorScreen extends Screen {
         return labels[featureStyle];
     }
 
+    private boolean hasFeatureColour(Race race) {
+        return race != Race.HUMAN && race != Race.DWARF;
+    }
+
+    private String colourLabel() {
+        String name = FeatureColourPalette.name(featureColor);
+
+        return switch (currentRace()) {
+            case ELF, HALFLING, ORC, GOBLIN, FAIRY ->
+                "Colour: " + (featureColor == 0 ? "Skin" : name);
+            case TIEFLING ->
+                "Tail: " + (featureColor == 0 ? "Infernal" : name);
+            case DRAGONBORN ->
+                "Scales: " + (featureColor == 0 ? "Natural" : name);
+            case HUMAN, DWARF -> "No colour";
+        };
+    }
+
     private String featureDescription() {
         return switch (currentRace()) {
             case HUMAN -> "No forced racial geometry.";
@@ -363,7 +403,7 @@ public final class CharacterCreatorScreen extends Screen {
             case ORC -> "Pointed ears and lower tusks.";
             case GOBLIN -> "Large outward ears.";
             case TIEFLING -> "Horns and an animated tail.";
-            case DRAGONBORN -> "Dragon snout, crest and tail.";
+            case DRAGONBORN -> "Horned crest and scaled tail.";
             case FAIRY -> "Fey ears and Zanza's Wings.";
         };
     }
@@ -388,7 +428,7 @@ public final class CharacterCreatorScreen extends Screen {
 
     private void submit() {
         CyberRacesNetwork.sendToServer(
-            new SubmitCharacterPacket(currentRace().id(), featureStyle)
+            new SubmitCharacterPacket(currentRace().id(), featureStyle, featureColor)
         );
     }
 

@@ -35,13 +35,16 @@ public final class CharacterSyncService {
     private static CharacterSyncPacket packetFor(ServerPlayer player) {
         boolean created = CharacterManager.isCharacterCreated(player);
         Race race = RaceManager.getRace(player).orElse(Race.HUMAN);
-        int featureStyle = CharacterManager.getAppearance(player).featureStyle();
+        CharacterAppearance appearance = CharacterManager.getAppearance(player);
+        int featureStyle = appearance.featureStyle();
+        int featureColor = appearance.featureColor();
 
         return new CharacterSyncPacket(
             player.getUUID(),
             created,
             race.id(),
-            featureStyle
+            featureStyle,
+            featureColor
         );
     }
 }

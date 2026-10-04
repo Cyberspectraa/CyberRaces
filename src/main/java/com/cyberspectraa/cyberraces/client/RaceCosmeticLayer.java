@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+    private static final ResourceLocation FEATURE_TEXTURE =
+        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/feature.png");
     private static final ResourceLocation TUSK_TEXTURE =
         new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/tusk.png");
     private static final ResourceLocation HORN_TEXTURE =
@@ -58,6 +60,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 player,
                 visual.race(),
                 visual.featureStyle(),
+                visual.featureColor(),
                 ageInTicks
             )
         );
@@ -70,31 +73,32 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         AbstractClientPlayer player,
         Race race,
         int feature,
+        int featureColor,
         float ageInTicks
     ) {
         switch (race) {
-            case ELF -> renderSkinEars(poseStack, buffer, packedLight, player, "elf_" + switch (feature) {
+            case ELF -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "elf_" + switch (feature) {
                 case 1 -> "long";
                 case 2 -> "high";
                 default -> "short";
             });
 
-            case HALFLING -> renderSkinEars(poseStack, buffer, packedLight, player, "halfling_" + switch (feature) {
+            case HALFLING -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "halfling_" + switch (feature) {
                 case 1 -> "soft";
                 case 2 -> "pointed";
                 default -> "round";
             });
 
             case ORC -> {
-                renderSkinEars(poseStack, buffer, packedLight, player, "orc_ears");
+                renderEars(poseStack, buffer, packedLight, player, race, featureColor, "orc_ears");
                 renderHeadPair(poseStack, buffer, packedLight, TUSK_TEXTURE, "tusks_" + switch (feature) {
                     case 1 -> "broad";
                     case 2 -> "long";
                     default -> "small";
-                });
+                }, 1.0F, 1.0F, 1.0F);
             }
 
-            case GOBLIN -> renderSkinEars(poseStack, buffer, packedLight, player, "goblin_" + switch (feature) {
+            case GOBLIN -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "goblin_" + switch (feature) {
                 case 1 -> "long";
                 case 2 -> "swept";
                 default -> "wide";
@@ -105,21 +109,34 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                     case 1 -> "swept";
                     case 2 -> "tall";
                     default -> "curved";
-                });
-                renderBodyPart(poseStack, buffer, packedLight, TIEFLING_TEXTURE, "tiefling_tail", ageInTicks, 0.15F);
+                }, 1.0F, 1.0F, 1.0F);
+
+                float[] color = FeatureColourPalette.rgb(race, featureColor);
+                renderBodyPart(
+                    poseStack, buffer, packedLight, TIEFLING_TEXTURE, "tiefling_tail",
+                    ageInTicks, 0.15F, color[0], color[1], color[2]
+                );
             }
 
             case DRAGONBORN -> {
-                renderHeadPart(poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_snout");
-                renderHeadPair(poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_" + switch (feature) {
-                    case 1 -> "crowned";
-                    case 2 -> "swept";
-                    default -> "horned";
-                });
-                renderBodyPart(poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_tail", ageInTicks, 0.10F);
+                float[] color = FeatureColourPalette.rgb(race, featureColor);
+
+                renderHeadPair(
+                    poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_" + switch (feature) {
+                        case 1 -> "crowned";
+                        case 2 -> "swept";
+                        default -> "horned";
+                    },
+                    color[0], color[1], color[2]
+                );
+
+                renderBodyPart(
+                    poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_tail",
+                    ageInTicks, 0.10F, color[0], color[1], color[2]
+                );
             }
 
-            case FAIRY -> renderSkinEars(poseStack, buffer, packedLight, player, "fairy_" + switch (feature) {
+            case FAIRY -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "fairy_" + switch (feature) {
                 case 1 -> "sharp";
                 case 2 -> "soft";
                 default -> "classic";
@@ -130,25 +147,40 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         }
     }
 
-    private void renderSkinEars(
+    private void renderEars(
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
         AbstractClientPlayer player,
+        Race race,
+        int featureColor,
         String baseName
     ) {
         poseStack.pushPose();
         getParentModel().head.translateAndRotate(poseStack);
 
-        VertexConsumer consumer = buffer.getBuffer(
-            RenderType.entityCutoutNoCull(player.getSkinTextureLocation())
-        );
+        ResourceLocation texture;
+        float r = 1.0F;
+        float g = 1.0F;
+        float b = 1.0F;
+
+        if (FeatureColourPalette.usesPlayerSkin(race, featureColor)) {
+            texture = player.getSkinTextureLocation();
+        } else {
+            texture = FEATURE_TEXTURE;
+            float[] color = FeatureColourPalette.rgb(race, featureColor);
+            r = color[0];
+            g = color[1];
+            b = color[2];
+        }
+
+        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
 
         skinRoot.getChild(baseName + "_left").render(
-            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY
+            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
         skinRoot.getChild(baseName + "_right").render(
-            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY
+            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
 
         poseStack.popPose();
@@ -159,35 +191,20 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         MultiBufferSource buffer,
         int packedLight,
         ResourceLocation texture,
-        String baseName
+        String baseName,
+        float r,
+        float g,
+        float b
     ) {
         poseStack.pushPose();
         getParentModel().head.translateAndRotate(poseStack);
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
         hardRoot.getChild(baseName + "_left").render(
-            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY
+            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
         hardRoot.getChild(baseName + "_right").render(
-            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY
-        );
-
-        poseStack.popPose();
-    }
-
-    private void renderHeadPart(
-        PoseStack poseStack,
-        MultiBufferSource buffer,
-        int packedLight,
-        ResourceLocation texture,
-        String name
-    ) {
-        poseStack.pushPose();
-        getParentModel().head.translateAndRotate(poseStack);
-
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
-        hardRoot.getChild(name).render(
-            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY
+            poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
 
         poseStack.popPose();
@@ -200,7 +217,10 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         ResourceLocation texture,
         String name,
         float ageInTicks,
-        float swayAmount
+        float swayAmount,
+        float r,
+        float g,
+        float b
     ) {
         ModelPart part = hardRoot.getChild(name);
         float previousYRot = part.yRot;
@@ -213,7 +233,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         getParentModel().body.translateAndRotate(poseStack);
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
-        part.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
+        part.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
 
         poseStack.popPose();
 

@@ -48,16 +48,15 @@ public final class RaceCosmeticModels {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        addSegmentedTuskPair(root, "tusks_small", 1.5F, 0.75F, 0.25F);
-        addSegmentedTuskPair(root, "tusks_broad", 2.0F, 0.95F, 0.34F);
-        addSegmentedTuskPair(root, "tusks_long", 2.7F, 0.85F, 0.42F);
+        addSegmentedTuskPair(root, "tusks_small", 1.5F, 0.75F, 0.18F);
+        addSegmentedTuskPair(root, "tusks_broad", 2.0F, 0.95F, 0.30F);
+        addSegmentedTuskPair(root, "tusks_long", 2.7F, 0.85F, 0.46F);
 
         addSegmentedHornPair(root, "horns_curved", 2.1F, 1.7F, 1.25F, 0.15F, 0.24F, -0.34F);
         addSegmentedHornPair(root, "horns_swept", 2.0F, 1.8F, 1.35F, -0.18F, 0.42F, -0.18F);
         addSegmentedHornPair(root, "horns_tall", 2.5F, 2.0F, 1.55F, 0.02F, 0.08F, -0.10F);
 
         addTieflingTail(root);
-        addDragonSnout(root);
 
         addSegmentedHornPair(root, "dragon_horned", 1.8F, 1.55F, 1.15F, 0.04F, 0.18F, -0.26F);
         addSegmentedHornPair(root, "dragon_crowned", 2.1F, 1.8F, 1.3F, 0.20F, 0.10F, -0.12F);
@@ -80,7 +79,7 @@ public final class RaceCosmeticModels {
         PartDefinition left = root.addOrReplaceChild(
             name + "_left",
             CubeListBuilder.create()
-                .texOffs(0, 8)
+                .texOffs(16, 8)
                 .addBox(0.0F, -height / 2.0F, -0.55F, baseLength, height, 1.1F),
             PartPose.offsetAndRotation(3.75F, -4.8F, 0.0F, pitch, 0.0F, roll)
         );
@@ -88,7 +87,7 @@ public final class RaceCosmeticModels {
         left.addOrReplaceChild(
             "tip",
             CubeListBuilder.create()
-                .texOffs(3, 8)
+                .texOffs(18, 10)
                 .addBox(0.0F, -height * 0.34F, -0.40F, tipLength, height * 0.68F, 0.8F),
             PartPose.offsetAndRotation(baseLength - 0.15F, 0.0F, 0.0F, pitch * 0.35F, 0.0F, roll * 0.45F)
         );
@@ -106,7 +105,7 @@ public final class RaceCosmeticModels {
         right.addOrReplaceChild(
             "tip",
             CubeListBuilder.create()
-                .texOffs(3, 8)
+                .texOffs(2, 10)
                 .mirror()
                 .addBox(-tipLength, -height * 0.34F, -0.40F, tipLength, height * 0.68F, 0.8F)
                 .mirror(false),
@@ -121,8 +120,8 @@ public final class RaceCosmeticModels {
         float baseWidth,
         float outward
     ) {
-        addTusk(root, name + "_left", 1.7F, baseLength, baseWidth, outward);
-        addTusk(root, name + "_right", -1.7F, baseLength, baseWidth, -outward);
+        addTusk(root, name + "_left", 1.85F, baseLength, baseWidth, -outward);
+        addTusk(root, name + "_right", -1.85F, baseLength, baseWidth, outward);
     }
 
     private static void addTusk(
@@ -137,8 +136,8 @@ public final class RaceCosmeticModels {
             name,
             CubeListBuilder.create()
                 .texOffs(0, 0)
-                .addBox(-baseWidth / 2.0F, -baseLength, -baseWidth / 2.0F, baseWidth, baseLength, baseWidth),
-            PartPose.offsetAndRotation(x, -0.15F, -4.15F, -0.18F, 0.0F, roll)
+                .addBox(-baseWidth / 2.0F, 0.0F, -baseWidth / 2.0F, baseWidth, baseLength, baseWidth),
+            PartPose.offsetAndRotation(x, -0.55F, -4.20F, -0.20F, 0.0F, roll)
         );
 
         float midWidth = Math.max(0.45F, baseWidth * 0.72F);
@@ -146,8 +145,8 @@ public final class RaceCosmeticModels {
             "mid",
             CubeListBuilder.create()
                 .texOffs(6, 0)
-                .addBox(-midWidth / 2.0F, -baseLength * 0.72F, -midWidth / 2.0F, midWidth, baseLength * 0.72F, midWidth),
-            PartPose.offsetAndRotation(0.0F, -baseLength + 0.1F, 0.0F, -0.20F, 0.0F, roll * 0.28F)
+                .addBox(-midWidth / 2.0F, 0.0F, -midWidth / 2.0F, midWidth, baseLength * 0.72F, midWidth),
+            PartPose.offsetAndRotation(0.0F, baseLength - 0.10F, -0.08F, -0.14F, 0.0F, roll * 0.26F)
         );
 
         float tipWidth = Math.max(0.28F, baseWidth * 0.42F);
@@ -155,8 +154,8 @@ public final class RaceCosmeticModels {
             "tip",
             CubeListBuilder.create()
                 .texOffs(10, 0)
-                .addBox(-tipWidth / 2.0F, -baseLength * 0.55F, -tipWidth / 2.0F, tipWidth, baseLength * 0.55F, tipWidth),
-            PartPose.offsetAndRotation(0.0F, -baseLength * 0.68F, 0.0F, -0.26F, 0.0F, roll * 0.22F)
+                .addBox(-tipWidth / 2.0F, 0.0F, -tipWidth / 2.0F, tipWidth, baseLength * 0.55F, tipWidth),
+            PartPose.offsetAndRotation(0.0F, baseLength * 0.68F, -0.06F, -0.10F, 0.0F, roll * 0.20F)
         );
     }
 
@@ -241,42 +240,6 @@ public final class RaceCosmeticModels {
                 .texOffs(20, 0)
                 .addBox(-1.35F, -1.35F, -0.38F, 2.7F, 2.7F, 0.76F),
             PartPose.offsetAndRotation(0.0F, 4.0F, 0.45F, 0.0F, 0.0F, 0.7854F)
-        );
-    }
-
-    private static void addDragonSnout(PartDefinition root) {
-        PartDefinition snout = root.addOrReplaceChild(
-            "dragon_snout",
-            CubeListBuilder.create()
-                .texOffs(0, 16)
-                .addBox(-2.6F, -2.7F, -6.2F, 5.2F, 2.6F, 2.5F),
-            PartPose.ZERO
-        );
-
-        snout.addOrReplaceChild(
-            "nose",
-            CubeListBuilder.create()
-                .texOffs(18, 16)
-                .addBox(-2.25F, -1.55F, -2.1F, 4.5F, 1.7F, 2.2F),
-            PartPose.offset(0.0F, -0.55F, -5.2F)
-        );
-
-        snout.addOrReplaceChild(
-            "brow_left",
-            CubeListBuilder.create()
-                .texOffs(0, 24)
-                .addBox(0.0F, -0.7F, -0.7F, 2.7F, 0.9F, 1.0F),
-            PartPose.offsetAndRotation(0.5F, -3.5F, -4.35F, 0.0F, -0.08F, -0.10F)
-        );
-
-        snout.addOrReplaceChild(
-            "brow_right",
-            CubeListBuilder.create()
-                .texOffs(0, 24)
-                .mirror()
-                .addBox(-2.7F, -0.7F, -0.7F, 2.7F, 0.9F, 1.0F)
-                .mirror(false),
-            PartPose.offsetAndRotation(-0.5F, -3.5F, -4.35F, 0.0F, 0.08F, 0.10F)
         );
     }
 

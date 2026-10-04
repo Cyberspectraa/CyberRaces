@@ -224,6 +224,7 @@ public final class CyberRaceCommands {
                 player.getGameProfile().getName()
                     + " character complete=" + complete
                     + " | feature=" + appearance.featureStyle()
+                    + " | colour=" + appearance.featureColor()
             ),
             false
         );
