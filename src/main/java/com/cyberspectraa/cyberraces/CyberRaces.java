@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces;
 
 import com.cyberspectraa.cyberraces.command.CyberRaceCommands;
+import com.cyberspectraa.cyberraces.event.FairyWingEvents;
 import com.cyberspectraa.cyberraces.event.RaceEvents;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,6 +16,7 @@ public final class CyberRaces {
 
     public CyberRaces() {
         MinecraftForge.EVENT_BUS.register(RaceEvents.class);
+        MinecraftForge.EVENT_BUS.register(FairyWingEvents.class);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
         LOGGER.info("CyberRaces loaded");
