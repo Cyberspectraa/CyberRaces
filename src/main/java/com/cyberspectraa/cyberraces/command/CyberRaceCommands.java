@@ -228,6 +228,9 @@ public final class CyberRaceCommands {
                     + " | earHeight=" + appearance.earHeight()
                     + " | earSpread=" + appearance.earSpread()
                     + " | earTilt=" + appearance.earTilt()
+                    + " | bodySource=" + appearance.bodySourceColor()
+                    + " | bodyTarget=" + appearance.bodyTargetColor()
+                    + " | bodyTolerance=" + appearance.bodyTolerance()
             ),
             false
         );

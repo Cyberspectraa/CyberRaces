@@ -15,7 +15,10 @@ public record SubmitCharacterPacket(
     int featureColor,
     int earHeight,
     int earSpread,
-    int earTilt
+    int earTilt,
+    int bodySourceColor,
+    int bodyTargetColor,
+    int bodyTolerance
 ) {
     public static void encode(SubmitCharacterPacket packet, FriendlyByteBuf buffer) {
         buffer.writeUtf(packet.raceId, 32);
@@ -24,6 +27,9 @@ public record SubmitCharacterPacket(
         buffer.writeInt(packet.earHeight);
         buffer.writeInt(packet.earSpread);
         buffer.writeInt(packet.earTilt);
+        buffer.writeInt(packet.bodySourceColor);
+        buffer.writeInt(packet.bodyTargetColor);
+        buffer.writeVarInt(packet.bodyTolerance);
     }
 
     public static SubmitCharacterPacket decode(FriendlyByteBuf buffer) {
@@ -33,11 +39,17 @@ public record SubmitCharacterPacket(
             buffer.readInt(),
             buffer.readInt(),
             buffer.readInt(),
-            buffer.readInt()
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readVarInt()
         );
     }
 
-    public static void handle(SubmitCharacterPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(
+        SubmitCharacterPacket packet,
+        Supplier<NetworkEvent.Context> contextSupplier
+    ) {
         NetworkEvent.Context context = contextSupplier.get();
         ServerPlayer player = context.getSender();
         if (player == null) {
@@ -54,7 +66,10 @@ public record SubmitCharacterPacket(
                     packet.featureColor,
                     packet.earHeight,
                     packet.earSpread,
-                    packet.earTilt
+                    packet.earTilt,
+                    packet.bodySourceColor,
+                    packet.bodyTargetColor,
+                    packet.bodyTolerance
                 )
             )
         );

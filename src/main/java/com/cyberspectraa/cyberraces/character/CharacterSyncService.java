@@ -45,7 +45,10 @@ public final class CharacterSyncService {
             appearance.featureColor(),
             appearance.earHeight(),
             appearance.earSpread(),
-            appearance.earTilt()
+            appearance.earTilt(),
+            appearance.bodySourceColor(),
+            appearance.bodyTargetColor(),
+            appearance.bodyTolerance()
         );
     }
 }

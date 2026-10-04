@@ -25,11 +25,15 @@ public final class CharacterCreatorScreen extends Screen {
     private int earHeight;
     private int earSpread;
     private int earTilt;
+    private int bodySourceColor = CharacterAppearance.AUTO_COLOR;
+    private int bodyTargetColor = CharacterAppearance.AUTO_COLOR;
+    private int bodyTolerance = CharacterAppearance.BODY_TOLERANCE_DEFAULT;
 
     private Button raceButton;
     private Button featureButton;
     private Button colourButton;
     private Button earFitButton;
+    private Button bodyColourButton;
 
     public CharacterCreatorScreen() {
         super(Component.literal("Create Your Character"));
@@ -106,6 +110,29 @@ public final class CharacterCreatorScreen extends Screen {
                 .bounds(
                     l.right + pad,
                     featureY + (l.small ? 44 : 48),
+                    Math.max(60, l.rightWidth - pad * 2),
+                    buttonHeight
+                )
+                .build()
+        );
+
+        this.bodyColourButton = this.addRenderableWidget(
+            Button.builder(Component.literal("Body Colour..."), button -> {
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(
+                        new BodySkinColorScreen(
+                            this,
+                            currentRace(),
+                            bodySourceColor,
+                            bodyTargetColor,
+                            bodyTolerance
+                        )
+                    );
+                }
+            })
+                .bounds(
+                    l.right + pad,
+                    featureY + (l.small ? 66 : 72),
                     Math.max(60, l.rightWidth - pad * 2),
                     buttonHeight
                 )
@@ -238,7 +265,7 @@ public final class CharacterCreatorScreen extends Screen {
     private void renderFeatureInfo(GuiGraphics graphics, Layout l) {
         int x = l.right + (l.small ? 6 : 12);
         int maxWidth = Math.max(48, l.rightWidth - (l.small ? 12 : 24));
-        int y = l.top + (l.small ? 112 : 158);
+        int y = l.top + (l.small ? 136 : 184);
 
         drawWrapped(
             graphics,
@@ -347,7 +374,8 @@ public final class CharacterCreatorScreen extends Screen {
         // Keep preview state while temporarily visiting the colour/ear screens.
         if (!(this.minecraft != null
             && (this.minecraft.screen instanceof FeatureColorPickerScreen
-                || this.minecraft.screen instanceof EarAdjustScreen))) {
+                || this.minecraft.screen instanceof EarAdjustScreen
+                || this.minecraft.screen instanceof BodySkinColorScreen))) {
             ClientCharacterState.clearPreview();
         }
         super.removed();
@@ -365,6 +393,9 @@ public final class CharacterCreatorScreen extends Screen {
         earHeight = 0;
         earSpread = 0;
         earTilt = 0;
+        bodySourceColor = CharacterAppearance.AUTO_COLOR;
+        bodyTargetColor = CharacterAppearance.AUTO_COLOR;
+        bodyTolerance = CharacterAppearance.BODY_TOLERANCE_DEFAULT;
         refreshLabels();
     }
 
@@ -391,6 +422,17 @@ public final class CharacterCreatorScreen extends Screen {
         if (earFitButton != null) {
             earFitButton.active = FeatureColourPalette.hasEars(race);
             earFitButton.visible = FeatureColourPalette.hasEars(race);
+        }
+
+        if (bodyColourButton != null) {
+            boolean supportsBodyColour = RaceSkinOverlayManager.supports(race);
+            bodyColourButton.active = supportsBodyColour;
+            bodyColourButton.visible = supportsBodyColour;
+            bodyColourButton.setMessage(Component.literal(
+                bodySourceColor == CharacterAppearance.AUTO_COLOR
+                    ? "Body Colour..."
+                    : "Body: " + String.format("#%06X", bodyTargetColor & 0xFFFFFF)
+            ));
         }
     }
 
@@ -455,7 +497,10 @@ public final class CharacterCreatorScreen extends Screen {
             featureColor,
             earHeight,
             earSpread,
-            earTilt
+            earTilt,
+            bodySourceColor,
+            bodyTargetColor,
+            bodyTolerance
         );
     }
 
@@ -473,6 +518,23 @@ public final class CharacterCreatorScreen extends Screen {
         pushPreviewState();
     }
 
+    void setBodySkin(int sourceColor, int targetColor, int tolerance) {
+        bodySourceColor = sourceColor == CharacterAppearance.AUTO_COLOR
+            ? CharacterAppearance.AUTO_COLOR
+            : sourceColor & 0xFFFFFF;
+
+        bodyTargetColor = targetColor == CharacterAppearance.AUTO_COLOR
+            ? CharacterAppearance.AUTO_COLOR
+            : targetColor & 0xFFFFFF;
+
+        bodyTolerance = Math.max(
+            CharacterAppearance.BODY_TOLERANCE_MIN,
+            Math.min(CharacterAppearance.BODY_TOLERANCE_MAX, tolerance)
+        );
+
+        refreshLabels();
+    }
+
     void pushPreviewState() {
         ClientCharacterState.setPreview(currentRace(), currentAppearance());
     }
@@ -486,7 +548,10 @@ public final class CharacterCreatorScreen extends Screen {
                 appearance.featureColor(),
                 appearance.earHeight(),
                 appearance.earSpread(),
-                appearance.earTilt()
+                appearance.earTilt(),
+                appearance.bodySourceColor(),
+                appearance.bodyTargetColor(),
+                appearance.bodyTolerance()
             )
         );
     }

@@ -15,7 +15,10 @@ public record CharacterSyncPacket(
     int featureColor,
     int earHeight,
     int earSpread,
-    int earTilt
+    int earTilt,
+    int bodySourceColor,
+    int bodyTargetColor,
+    int bodyTolerance
 ) {
     public static void encode(CharacterSyncPacket packet, FriendlyByteBuf buffer) {
         buffer.writeUUID(packet.playerId);
@@ -26,6 +29,9 @@ public record CharacterSyncPacket(
         buffer.writeInt(packet.earHeight);
         buffer.writeInt(packet.earSpread);
         buffer.writeInt(packet.earTilt);
+        buffer.writeInt(packet.bodySourceColor);
+        buffer.writeInt(packet.bodyTargetColor);
+        buffer.writeVarInt(packet.bodyTolerance);
     }
 
     public static CharacterSyncPacket decode(FriendlyByteBuf buffer) {
@@ -37,11 +43,17 @@ public record CharacterSyncPacket(
             buffer.readInt(),
             buffer.readInt(),
             buffer.readInt(),
-            buffer.readInt()
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readVarInt()
         );
     }
 
-    public static void handle(CharacterSyncPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+    public static void handle(
+        CharacterSyncPacket packet,
+        Supplier<NetworkEvent.Context> contextSupplier
+    ) {
         NetworkEvent.Context context = contextSupplier.get();
         ClientCharacterState.apply(
             packet.playerId,
@@ -51,7 +63,10 @@ public record CharacterSyncPacket(
             packet.featureColor,
             packet.earHeight,
             packet.earSpread,
-            packet.earTilt
+            packet.earTilt,
+            packet.bodySourceColor,
+            packet.bodyTargetColor,
+            packet.bodyTolerance
         );
         context.setPacketHandled(true);
     }

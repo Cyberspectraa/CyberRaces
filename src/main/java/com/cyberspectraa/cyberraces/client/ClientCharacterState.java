@@ -27,22 +27,40 @@ public final class ClientCharacterState {
         int featureColor,
         int earHeight,
         int earSpread,
-        int earTilt
+        int earTilt,
+        int bodySourceColor,
+        int bodyTargetColor,
+        int bodyTolerance
     ) {
         if (!created) {
             CHARACTERS.remove(playerId);
+            RaceSkinOverlayManager.invalidate(playerId);
             return;
         }
 
-        Race.byId(raceId).ifPresent(race ->
-            CHARACTERS.put(
+        Race.byId(raceId).ifPresent(race -> {
+            CharacterAppearance appearance = new CharacterAppearance(
+                featureStyle,
+                featureColor,
+                earHeight,
+                earSpread,
+                earTilt,
+                bodySourceColor,
+                bodyTargetColor,
+                bodyTolerance
+            );
+
+            VisualCharacter previous = CHARACTERS.put(
                 playerId,
-                new VisualCharacter(
-                    race,
-                    new CharacterAppearance(featureStyle, featureColor, earHeight, earSpread, earTilt)
-                )
-            )
-        );
+                new VisualCharacter(race, appearance)
+            );
+
+            if (previous == null
+                || previous.race() != race
+                || !previous.appearance().equals(appearance)) {
+                RaceSkinOverlayManager.invalidate(playerId);
+            }
+        });
     }
 
     public static Optional<VisualCharacter> resolve(AbstractClientPlayer player) {
@@ -57,11 +75,21 @@ public final class ClientCharacterState {
     }
 
     public static void setPreview(Race race, CharacterAppearance appearance) {
-        previewRace = race;
-        previewAppearance = appearance;
+        if (previewRace != race || !previewAppearance.equals(appearance)) {
+            previewRace = race;
+            previewAppearance = appearance;
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.player != null) {
+                RaceSkinOverlayManager.invalidate(minecraft.player.getUUID());
+            }
+        }
     }
 
     public static void clearPreview() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player != null) {
+            RaceSkinOverlayManager.invalidate(minecraft.player.getUUID());
+        }
         previewRace = null;
         previewAppearance = CharacterAppearance.defaults();
     }
@@ -76,6 +104,7 @@ public final class ClientCharacterState {
     public static void clearAll() {
         CHARACTERS.clear();
         clearPreview();
+        RaceSkinOverlayManager.clearAll();
     }
 
     public record VisualCharacter(Race race, CharacterAppearance appearance) {
