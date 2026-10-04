@@ -2,6 +2,7 @@ package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -9,13 +10,11 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
-import java.nio.ByteBuffer;
 
 public final class FeatureColorPickerScreen extends Screen {
     private final CharacterCreatorScreen parent;
@@ -25,6 +24,9 @@ public final class FeatureColorPickerScreen extends Screen {
     private float saturation;
     private float brightness;
     private boolean automatic;
+
+    private int sampledSkinX = -1;
+    private int sampledSkinY = -1;
 
     private Button automaticButton;
 
@@ -69,6 +71,8 @@ public final class FeatureColorPickerScreen extends Screen {
         this.automaticButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
                 automatic = true;
+                sampledSkinX = -1;
+                sampledSkinY = -1;
                 parent.setFeatureColor(CharacterAppearance.AUTO_COLOR);
                 updateAutomaticLabel();
                 parent.pushPreviewState();
@@ -151,16 +155,34 @@ public final class FeatureColorPickerScreen extends Screen {
             && mouseX < l.atlasX + l.atlasSize
             && mouseY >= l.atlasY
             && mouseY < l.atlasY + l.atlasSize) {
-            int sampled = sampleFramebufferPixel(mouseX, mouseY);
+
+            int skinX = Mth.clamp(
+                (int) ((mouseX - l.atlasX) * 64.0D / l.atlasSize),
+                0,
+                63
+            );
+            int skinY = Mth.clamp(
+                (int) ((mouseY - l.atlasY) * 64.0D / l.atlasSize),
+                0,
+                63
+            );
+
+            int sampled = sampleSkinTexturePixel(skinX, skinY);
             if (sampled >= 0) {
+                sampledSkinX = skinX;
+                sampledSkinY = skinY;
                 automatic = false;
                 setHsbFromRgb(sampled);
                 parent.setFeatureColor(sampled);
                 parent.pushPreviewState();
 
-                // Re-open this screen so all three sliders jump to the sampled colour.
+                // Re-create sliders at the newly sampled H/S/B values.
                 if (this.minecraft != null) {
-                    this.minecraft.setScreen(new FeatureColorPickerScreen(parent, race, sampled));
+                    FeatureColorPickerScreen replacement =
+                        new FeatureColorPickerScreen(parent, race, sampled);
+                    replacement.sampledSkinX = skinX;
+                    replacement.sampledSkinY = skinY;
+                    this.minecraft.setScreen(replacement);
                 }
                 return true;
             }
@@ -223,7 +245,7 @@ public final class FeatureColorPickerScreen extends Screen {
 
         graphics.drawCenteredString(
             this.font,
-            "Click your skin colour",
+            "Click any pixel on your skin",
             l.atlasX + l.atlasSize / 2,
             l.atlasY - 11,
             0xE6D39A
@@ -253,45 +275,56 @@ public final class FeatureColorPickerScreen extends Screen {
             64
         );
         graphics.pose().popPose();
+
+        if (sampledSkinX >= 0 && sampledSkinY >= 0) {
+            int x1 = l.atlasX + (int) Math.floor(sampledSkinX * scale);
+            int y1 = l.atlasY + (int) Math.floor(sampledSkinY * scale);
+            int x2 = l.atlasX + (int) Math.ceil((sampledSkinX + 1) * scale);
+            int y2 = l.atlasY + (int) Math.ceil((sampledSkinY + 1) * scale);
+
+            graphics.fill(x1 - 1, y1 - 1, x2 + 1, y1, 0xFFFFFFFF);
+            graphics.fill(x1 - 1, y2, x2 + 1, y2 + 1, 0xFFFFFFFF);
+            graphics.fill(x1 - 1, y1, x1, y2, 0xFFFFFFFF);
+            graphics.fill(x2, y1, x2 + 1, y2, 0xFFFFFFFF);
+        }
     }
 
-    private int sampleFramebufferPixel(double guiX, double guiY) {
+    private int sampleSkinTexturePixel(int skinX, int skinY) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft == null) {
+        if (minecraft == null || minecraft.player == null) {
             return -1;
         }
 
-        double scale = minecraft.getWindow().getGuiScale();
-        int framebufferX = (int) Math.floor(guiX * scale);
-        int framebufferY = minecraft.getWindow().getHeight()
-            - 1
-            - (int) Math.floor(guiY * scale);
+        try {
+            AbstractTexture texture = minecraft.getTextureManager().getTexture(
+                minecraft.player.getSkinTextureLocation()
+            );
 
-        ByteBuffer pixel = BufferUtils.createByteBuffer(4);
-        GL11.glReadPixels(
-            framebufferX,
-            framebufferY,
-            1,
-            1,
-            GL11.GL_RGBA,
-            GL11.GL_UNSIGNED_BYTE,
-            pixel
-        );
+            texture.bind();
 
-        int red = pixel.get(0) & 0xFF;
-        int green = pixel.get(1) & 0xFF;
-        int blue = pixel.get(2) & 0xFF;
-        int alpha = pixel.get(3) & 0xFF;
+            try (NativeImage image = new NativeImage(64, 64, false)) {
+                image.downloadTexture(0, false);
 
-        if (alpha < 16) {
+                int red = image.getRedOrLuminance(skinX, skinY) & 0xFF;
+                int green = image.getGreenOrLuminance(skinX, skinY) & 0xFF;
+                int blue = image.getBlueOrLuminance(skinX, skinY) & 0xFF;
+                int alpha = image.getLuminanceOrAlpha(skinX, skinY) & 0xFF;
+
+                if (alpha < 16) {
+                    return -1;
+                }
+
+                return (red << 16) | (green << 8) | blue;
+            }
+        } catch (RuntimeException exception) {
             return -1;
         }
-
-        return (red << 16) | (green << 8) | blue;
     }
 
     private void useCustom() {
         automatic = false;
+        sampledSkinX = -1;
+        sampledSkinY = -1;
         parent.setFeatureColor(resolvedRgb());
         updateAutomaticLabel();
         parent.pushPreviewState();
