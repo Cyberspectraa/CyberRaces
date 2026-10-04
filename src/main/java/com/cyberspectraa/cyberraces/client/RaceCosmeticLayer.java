@@ -17,8 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     private static final ResourceLocation FEATURE_TEXTURE =
         new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/feature.png");
-    private static final ResourceLocation TUSK_TEXTURE =
-        new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/tusk.png");
     private static final ResourceLocation HORN_TEXTURE =
         new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/horn.png");
     private static final ResourceLocation TIEFLING_TEXTURE =
@@ -103,21 +101,15 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 earHeight, earSpread, earTilt
             );
 
-            case ORC -> {
-                renderEars(
-                    poseStack, buffer, packedLight, player, race, featureColor,
-                    "orc_ears", earHeight, earSpread, earTilt
-                );
-                renderHeadPair(
-                    poseStack, buffer, packedLight, TUSK_TEXTURE,
-                    "tusks_" + switch (feature) {
-                        case 1 -> "broad";
-                        case 2 -> "long";
-                        default -> "small";
-                    },
-                    1.0F, 1.0F, 1.0F
-                );
-            }
+            case ORC -> renderEars(
+                poseStack, buffer, packedLight, player, race, featureColor,
+                "orc_" + switch (feature) {
+                    case 1 -> "broad";
+                    case 2 -> "swept";
+                    default -> "short";
+                },
+                earHeight, earSpread, earTilt
+            );
 
             case GOBLIN -> renderEars(
                 poseStack, buffer, packedLight, player, race, featureColor,

@@ -406,7 +406,7 @@ public final class CharacterCreatorScreen extends Screen {
         String[] labels = switch (currentRace()) {
             case ELF -> new String[] {"Ears: Short", "Ears: Long", "Ears: High"};
             case HALFLING -> new String[] {"Ears: Round", "Ears: Soft", "Ears: Pointed"};
-            case ORC -> new String[] {"Tusks: Small", "Tusks: Broad", "Tusks: Long"};
+            case ORC -> new String[] {"Ears: Short", "Ears: Broad", "Ears: Swept"};
             case GOBLIN -> new String[] {"Ears: Wide", "Ears: Long", "Ears: Swept"};
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
             case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
@@ -423,7 +423,7 @@ public final class CharacterCreatorScreen extends Screen {
             case ELF -> "Pointed ears with adjustable placement.";
             case DWARF -> "Short, sturdy silhouette.";
             case HALFLING -> "Small adjustable ears.";
-            case ORC -> "Pointed ears and upward lower-jaw tusks.";
+            case ORC -> "Strong pointed ears with adjustable placement.";
             case GOBLIN -> "Large adjustable outward ears.";
             case TIEFLING -> "Horns and an animated tail.";
             case DRAGONBORN -> "Horned crest and scaled tail.";

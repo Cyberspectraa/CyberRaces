@@ -5,6 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -14,6 +16,10 @@ public final class EarAdjustScreen extends Screen {
     private int heightValue;
     private int spreadValue;
     private int tiltValue;
+
+    private EarSlider heightSlider;
+    private EarSlider spreadSlider;
+    private EarSlider tiltSlider;
 
     public EarAdjustScreen(
         CharacterCreatorScreen parent,
@@ -30,52 +36,43 @@ public final class EarAdjustScreen extends Screen {
 
     @Override
     protected void init() {
-        int panelWidth = Math.min(360, this.width - 20);
-        int left = (this.width - panelWidth) / 2;
-        int top = Math.max(16, this.height / 2 - 94);
-        int controlWidth = panelWidth - 40;
+        Layout l = layout();
 
-        this.addRenderableWidget(new EarSlider(
-            left + 20, top + 38, controlWidth, 20, "Height", heightValue,
+        this.heightSlider = this.addRenderableWidget(new EarSlider(
+            l.controlsX, l.top + 52, l.controlsWidth, 20, "Height", heightValue,
             value -> {
                 heightValue = value;
                 apply();
             }
         ));
 
-        this.addRenderableWidget(new EarSlider(
-            left + 20, top + 64, controlWidth, 20, "Spread", spreadValue,
+        this.spreadSlider = this.addRenderableWidget(new EarSlider(
+            l.controlsX, l.top + 78, l.controlsWidth, 20, "Spread", spreadValue,
             value -> {
                 spreadValue = value;
                 apply();
             }
         ));
 
-        this.addRenderableWidget(new EarSlider(
-            left + 20, top + 90, controlWidth, 20, "Tilt", tiltValue,
+        this.tiltSlider = this.addRenderableWidget(new EarSlider(
+            l.controlsX, l.top + 104, l.controlsWidth, 20, "Tilt", tiltValue,
             value -> {
                 tiltValue = value;
                 apply();
             }
         ));
 
+        int half = (l.controlsWidth - 6) / 2;
+
         this.addRenderableWidget(
-            Button.builder(Component.literal("Reset"), button -> {
-                heightValue = 0;
-                spreadValue = 0;
-                tiltValue = 0;
-                parent.setEarAdjust(0, 0, 0);
-                if (this.minecraft != null) {
-                    this.minecraft.setScreen(new EarAdjustScreen(parent, 0, 0, 0));
-                }
-            })
-                .bounds(left + 20, top + 122, (controlWidth - 6) / 2, 20)
+            Button.builder(Component.literal("Reset"), button -> reset())
+                .bounds(l.controlsX, l.top + 136, half, 20)
                 .build()
         );
 
         this.addRenderableWidget(
             Button.builder(Component.literal("Done"), button -> returnToParent())
-                .bounds(left + 26 + (controlWidth - 6) / 2, top + 122, (controlWidth - 6) / 2, 20)
+                .bounds(l.controlsX + half + 6, l.top + 136, half, 20)
                 .build()
         );
 
@@ -86,19 +83,36 @@ public final class EarAdjustScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics);
 
-        int panelWidth = Math.min(360, this.width - 20);
-        int left = (this.width - panelWidth) / 2;
-        int top = Math.max(16, this.height / 2 - 94);
+        Layout l = layout();
 
-        graphics.fill(left, top, left + panelWidth, top + 154, 0xD0101010);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, top + 10, 0xFFFFFF);
+        graphics.fill(l.left, l.top, l.previewRight, l.bottom, 0xD0101010);
+        graphics.fill(l.rightX, l.top, l.rightX + l.rightWidth, l.bottom, 0xD0101010);
+
         graphics.drawCenteredString(
             this.font,
-            "Move the ears until they fit your skin.",
-            this.width / 2,
-            top + 22,
+            "Live Ear Preview",
+            l.left + (l.previewRight - l.left) / 2,
+            l.top + 10,
+            0xE6D39A
+        );
+
+        graphics.drawCenteredString(
+            this.font,
+            this.title,
+            l.rightX + l.rightWidth / 2,
+            l.top + 10,
+            0xFFFFFF
+        );
+
+        graphics.drawCenteredString(
+            this.font,
+            "Drag the sliders and watch the ears move.",
+            l.rightX + l.rightWidth / 2,
+            l.top + 26,
             0xB8B8B8
         );
+
+        renderPlayerPreview(graphics, l, mouseX, mouseY);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -108,9 +122,68 @@ public final class EarAdjustScreen extends Screen {
         returnToParent();
     }
 
+    private void renderPlayerPreview(
+        GuiGraphics graphics,
+        Layout l,
+        int mouseX,
+        int mouseY
+    ) {
+        if (this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
+
+        apply();
+
+        LocalPlayer player = this.minecraft.player;
+        boolean wasInvisible = player.isInvisible();
+        player.setInvisible(false);
+
+        int centerX = l.left + (l.previewRight - l.left) / 2;
+        int availableWidth = l.previewRight - l.left;
+        int availableHeight = l.bottom - l.top;
+
+        int scale = Mth.clamp(
+            Math.min((int) (availableWidth * 0.39F), (int) (availableHeight * 0.38F)),
+            42,
+            92
+        );
+
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
+                graphics,
+                centerX,
+                l.bottom - 22,
+                scale,
+                (float) (centerX - mouseX),
+                (float) (l.top + availableHeight / 2 - mouseY),
+                player
+            );
+        } finally {
+            player.setInvisible(wasInvisible);
+        }
+    }
+
     private void apply() {
         parent.setEarAdjust(heightValue, spreadValue, tiltValue);
         parent.pushPreviewState();
+    }
+
+    private void reset() {
+        heightValue = 0;
+        spreadValue = 0;
+        tiltValue = 0;
+
+        if (heightSlider != null) {
+            heightSlider.setCurrent(0);
+        }
+        if (spreadSlider != null) {
+            spreadSlider.setCurrent(0);
+        }
+        if (tiltSlider != null) {
+            tiltSlider.setCurrent(0);
+        }
+
+        apply();
     }
 
     private void returnToParent() {
@@ -120,8 +193,41 @@ public final class EarAdjustScreen extends Screen {
         }
     }
 
+    private Layout layout() {
+        boolean small = this.width < 600 || this.height < 340;
+        int margin = small ? 4 : 12;
+        int panelWidth = Math.min(650, this.width - margin * 2);
+        int panelHeight = Math.min(340, this.height - margin * 2);
+
+        int left = (this.width - panelWidth) / 2;
+        int top = (this.height - panelHeight) / 2;
+        int bottom = top + panelHeight;
+
+        int previewWidth = Math.max(145, (int) (panelWidth * 0.50F));
+        int previewRight = left + previewWidth;
+        int rightX = previewRight + 4;
+        int rightWidth = left + panelWidth - rightX;
+
+        int controlsX = rightX + 12;
+        int controlsWidth = Math.max(90, rightWidth - 24);
+
+        return new Layout(
+            left,
+            top,
+            bottom,
+            previewRight,
+            rightX,
+            rightWidth,
+            controlsX,
+            controlsWidth
+        );
+    }
+
     private static int clamp(int value) {
-        return Math.max(CharacterAppearance.EAR_MIN, Math.min(CharacterAppearance.EAR_MAX, value));
+        return Math.max(
+            CharacterAppearance.EAR_MIN,
+            Math.min(CharacterAppearance.EAR_MAX, value)
+        );
     }
 
     private static double toSlider(int value) {
@@ -134,6 +240,18 @@ public final class EarAdjustScreen extends Screen {
             CharacterAppearance.EAR_MIN
                 + value * (CharacterAppearance.EAR_MAX - CharacterAppearance.EAR_MIN)
         ));
+    }
+
+    private record Layout(
+        int left,
+        int top,
+        int bottom,
+        int previewRight,
+        int rightX,
+        int rightWidth,
+        int controlsX,
+        int controlsWidth
+    ) {
     }
 
     private static final class EarSlider extends AbstractSliderButton {
@@ -165,6 +283,11 @@ public final class EarAdjustScreen extends Screen {
         @Override
         protected void applyValue() {
             change.accept(fromSlider(value));
+        }
+
+        private void setCurrent(int current) {
+            this.value = Mth.clamp(toSlider(current), 0.0D, 1.0D);
+            updateMessage();
         }
     }
 }

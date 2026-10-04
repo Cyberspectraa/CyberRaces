@@ -59,9 +59,8 @@ public final class FairyElytraLayer<T extends LivingEntity, M extends EntityMode
 
         poseStack.pushPose();
 
-        // Keep the Zanza model on the upper back. The previous Elytra adapter
-        // copied Elytra position values and dragged these wings down toward the hips.
-        poseStack.translate(0.0D, -0.22D, 0.125D);
+        // Anchor the Zanza wings at the shoulder-blade area. Fairy scaling made the\n        // old offset still read as hip-mounted, so this intentionally moves them much higher.
+        poseStack.translate(0.0D, -0.55D, 0.110D);
 
         getParentModel().copyPropertiesTo(wingModel);
         wingModel.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);

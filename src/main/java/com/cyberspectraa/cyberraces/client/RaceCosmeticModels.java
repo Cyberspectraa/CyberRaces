@@ -31,7 +31,9 @@ public final class RaceCosmeticModels {
         addEarPair(root, "halfling_soft", 2.1F, 1.8F, 2.4F, -0.08F, -0.10F);
         addEarPair(root, "halfling_pointed", 2.5F, 2.0F, 1.9F, -0.12F, -0.18F);
 
-        addEarPair(root, "orc_ears", 2.4F, 2.0F, 2.1F, -0.08F, -0.12F);
+        addEarPair(root, "orc_short", 2.2F, 1.7F, 2.0F, -0.08F, -0.10F);
+        addEarPair(root, "orc_broad", 2.8F, 2.0F, 2.6F, -0.04F, -0.08F);
+        addEarPair(root, "orc_swept", 3.0F, 2.2F, 2.1F, 0.06F, 0.16F);
 
         addEarPair(root, "goblin_wide", 3.7F, 2.7F, 2.9F, 0.00F, -0.05F);
         addEarPair(root, "goblin_long", 4.4F, 3.0F, 2.5F, -0.07F, -0.10F);
@@ -47,10 +49,6 @@ public final class RaceCosmeticModels {
     public static LayerDefinition createHardLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-
-        addSegmentedTuskPair(root, "tusks_small", 1.5F, 0.75F, 0.18F);
-        addSegmentedTuskPair(root, "tusks_broad", 2.0F, 0.95F, 0.30F);
-        addSegmentedTuskPair(root, "tusks_long", 2.7F, 0.85F, 0.46F);
 
         addSegmentedHornPair(root, "horns_curved", 2.1F, 1.7F, 1.25F, 0.15F, 0.24F, -0.34F);
         addSegmentedHornPair(root, "horns_swept", 2.0F, 1.8F, 1.35F, -0.18F, 0.42F, -0.18F);
@@ -110,89 +108,6 @@ public final class RaceCosmeticModels {
                 .addBox(-tipLength, -height * 0.34F, -0.40F, tipLength, height * 0.68F, 0.8F)
                 .mirror(false),
             PartPose.offsetAndRotation(-baseLength + 0.15F, 0.0F, 0.0F, pitch * 0.35F, 0.0F, -roll * 0.45F)
-        );
-    }
-
-    private static void addSegmentedTuskPair(
-        PartDefinition root,
-        String name,
-        float baseLength,
-        float baseWidth,
-        float outward
-    ) {
-        addTusk(root, name + "_left", 2.05F, baseLength, baseWidth, -outward);
-        addTusk(root, name + "_right", -2.05F, baseLength, baseWidth, outward);
-    }
-
-    private static void addTusk(
-        PartDefinition root,
-        String name,
-        float x,
-        float baseLength,
-        float baseWidth,
-        float roll
-    ) {
-        // Orc tusks grow upward from the lower jaw, but sit far enough in
-        // front of the face that the long variants do not clip into the skin.
-        PartDefinition base = root.addOrReplaceChild(
-            name,
-            CubeListBuilder.create()
-                .texOffs(0, 0)
-                .addBox(
-                    -baseWidth / 2.0F,
-                    -baseLength,
-                    -baseWidth / 2.0F,
-                    baseWidth,
-                    baseLength,
-                    baseWidth
-                ),
-            PartPose.offsetAndRotation(x, -0.05F, -4.78F, 0.08F, 0.0F, roll)
-        );
-
-        float midWidth = Math.max(0.45F, baseWidth * 0.72F);
-        PartDefinition mid = base.addOrReplaceChild(
-            "mid",
-            CubeListBuilder.create()
-                .texOffs(6, 0)
-                .addBox(
-                    -midWidth / 2.0F,
-                    -baseLength * 0.72F,
-                    -midWidth / 2.0F,
-                    midWidth,
-                    baseLength * 0.72F,
-                    midWidth
-                ),
-            PartPose.offsetAndRotation(
-                Math.signum(x) * 0.08F,
-                -baseLength + 0.10F,
-                -0.14F,
-                -0.12F,
-                0.0F,
-                roll * 0.34F
-            )
-        );
-
-        float tipWidth = Math.max(0.28F, baseWidth * 0.42F);
-        mid.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(10, 0)
-                .addBox(
-                    -tipWidth / 2.0F,
-                    -baseLength * 0.55F,
-                    -tipWidth / 2.0F,
-                    tipWidth,
-                    baseLength * 0.55F,
-                    tipWidth
-                ),
-            PartPose.offsetAndRotation(
-                Math.signum(x) * 0.10F,
-                -baseLength * 0.68F,
-                -0.10F,
-                -0.18F,
-                0.0F,
-                roll * 0.30F
-            )
         );
     }
 
