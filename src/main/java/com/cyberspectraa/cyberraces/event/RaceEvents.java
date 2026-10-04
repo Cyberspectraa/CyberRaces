@@ -1,9 +1,5 @@
 package com.cyberspectraa.cyberraces.event;
 
-import com.cyberspectraa.cyberraces.CyberRaces;
-import com.cyberspectraa.cyberraces.compat.IcarusCompat;
-import com.cyberspectraa.cyberraces.race.FlightType;
-import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -35,14 +31,6 @@ public final class RaceEvents {
                 Component.literal("Use /cyberraces race list to see the available races.")
                     .withStyle(ChatFormatting.GRAY)
             );
-        } else {
-            Race race = RaceManager.getRace(player).orElseThrow();
-            if (race.flightType() == FlightType.ICARUS_NATURAL && !IcarusCompat.isLoaded()) {
-                player.sendSystemMessage(
-                    Component.literal("CyberRaces: this race expects Icarus for natural flight, but Icarus is not loaded.")
-                        .withStyle(ChatFormatting.RED)
-                );
-            }
         }
     }
 
