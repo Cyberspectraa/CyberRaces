@@ -19,7 +19,7 @@ public enum Race {
     GOBLIN("goblin", "Goblin", 0.75f, 18.0, 1.08, 1.00, 1.00, 1.05, 1.00, -0.05, 0.0, 1.00, FlightType.NONE),
     TIEFLING("tiefling", "Tiefling", 1.00f, 20.0, 1.00, 1.00, 1.15, 1.05, 1.00, 0.00, 0.0, 0.50, FlightType.NONE),
     DRAGONBORN("dragonborn", "Dragonborn", 1.07f, 22.0, 0.98, 1.10, 1.05, 1.00, 1.05, 0.10, 2.0, 0.85, FlightType.NONE),
-    FAIRY("fairy", "Fairy", 0.60f, 14.0, 1.10, 0.90, 1.30, 1.20, 0.95, -0.10, 0.0, 1.00, FlightType.ICARUS_NATURAL);
+    FAIRY("fairy", "Fairy", 0.50f, 14.0, 1.10, 0.90, 1.30, 1.20, 0.95, -0.10, 0.0, 1.00, FlightType.ICARUS_NATURAL);
 
     private final String id;
     private final String displayName;
