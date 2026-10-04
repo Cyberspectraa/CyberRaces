@@ -1,5 +1,7 @@
 package com.cyberspectraa.cyberraces.command;
 
+import com.cyberspectraa.cyberraces.character.CharacterAppearance;
+import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.compat.IcarusCompat;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
@@ -69,12 +71,32 @@ public final class CyberRaceCommands {
                     .then(Commands.literal("clear")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.argument("player", EntityArgument.player())
-                            .executes(context -> clear(
+                            .executes(context -> resetCharacter(
                                 context.getSource(),
                                 EntityArgument.getPlayer(context, "player")
                             ))))
                     .then(Commands.literal("compat")
                         .executes(context -> compat(context.getSource())))
+                )
+                .then(Commands.literal("character")
+                    .then(Commands.literal("reset")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .executes(context -> resetCharacter(
+                                context.getSource(),
+                                EntityArgument.getPlayer(context, "player")
+                            ))))
+                    .then(Commands.literal("status")
+                        .executes(context -> characterStatus(
+                            context.getSource(),
+                            context.getSource().getPlayerOrException()
+                        ))
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .requires(source -> source.hasPermission(2))
+                            .executes(context -> characterStatus(
+                                context.getSource(),
+                                EntityArgument.getPlayer(context, "player")
+                            ))))
                 )
         );
     }
@@ -147,9 +169,9 @@ public final class CyberRaceCommands {
             return 0;
         }
 
-        if (RaceManager.hasRace(player)) {
+        if (CharacterManager.isCharacterCreated(player)) {
             source.sendFailure(Component.literal(
-                "You have already chosen a race. An admin must use /cyberraces race set to change it."
+                "Your character is already complete. An admin must reset or change it."
             ));
             return 0;
         }
@@ -160,7 +182,7 @@ public final class CyberRaceCommands {
             return 0;
         }
 
-        RaceManager.setRace(player, race);
+        CharacterManager.completeCharacter(player, race, CharacterAppearance.defaults());
         source.sendSuccess(
             () -> Component.literal("You are now a " + race.displayName() + ".").withStyle(ChatFormatting.GREEN),
             false
@@ -176,7 +198,7 @@ public final class CyberRaceCommands {
             return 0;
         }
 
-        RaceManager.setRace(player, race);
+        CharacterManager.forceComplete(player, race, CharacterManager.getAppearance(player));
         source.sendSuccess(
             () -> Component.literal("Set " + player.getGameProfile().getName() + "'s race to " + race.displayName() + "."),
             true
@@ -184,11 +206,28 @@ public final class CyberRaceCommands {
         return 1;
     }
 
-    private static int clear(CommandSourceStack source, ServerPlayer player) {
-        RaceManager.clearRace(player);
+    private static int resetCharacter(CommandSourceStack source, ServerPlayer player) {
+        CharacterManager.resetCharacter(player);
         source.sendSuccess(
-            () -> Component.literal("Cleared " + player.getGameProfile().getName() + "'s race."),
+            () -> Component.literal("Reset " + player.getGameProfile().getName() + "'s CyberRaces character creator."),
             true
+        );
+        return 1;
+    }
+
+    private static int characterStatus(CommandSourceStack source, ServerPlayer player) {
+        boolean complete = CharacterManager.isCharacterCreated(player);
+        CharacterAppearance appearance = CharacterManager.getAppearance(player);
+
+        source.sendSuccess(
+            () -> Component.literal(
+                player.getGameProfile().getName()
+                    + " character complete=" + complete
+                    + " | eyes=" + appearance.eyeStyle()
+                    + " | colour=" + appearance.eyeColor()
+                    + " | feature=" + appearance.featureStyle()
+            ),
+            false
         );
         return 1;
     }
