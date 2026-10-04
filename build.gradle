@@ -82,6 +82,9 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
+    // Generates the production refmap used to remap Mixin targets in an obfuscated Forge client.
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+
     implementation fg.deobf("com.github.Virtuoel:Pehkui:${pehkui_version}")
 
     // Fairy wings use the real Curios back slot and Icarus' Zanza's Wings.
