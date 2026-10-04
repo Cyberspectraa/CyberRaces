@@ -1,8 +1,8 @@
 package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.CyberRaces;
-import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
 import dev.cammiescorner.icarus.api.client.IcarusAPIClient;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
