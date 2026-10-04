@@ -1,8 +1,7 @@
 package com.cyberspectraa.cyberraces.event;
 
+import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.race.RaceManager;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -19,18 +18,10 @@ public final class RaceEvents {
             return;
         }
 
-        RaceManager.reapply(player);
+        CharacterManager.handleLogin(player);
 
-        if (!RaceManager.hasRace(player)) {
-            player.sendSystemMessage(
-                Component.literal("Choose your race with ")
-                    .withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal("/cyberraces race choose <race>").withStyle(ChatFormatting.YELLOW))
-            );
-            player.sendSystemMessage(
-                Component.literal("Use /cyberraces race list to see the available races.")
-                    .withStyle(ChatFormatting.GRAY)
-            );
+        if (CharacterManager.isCharacterCreated(player)) {
+            RaceManager.reapply(player);
         }
     }
 
@@ -42,7 +33,10 @@ public final class RaceEvents {
         }
 
         RaceManager.copyRaceData(oldPlayer, newPlayer);
-        RaceManager.reapply(newPlayer);
+
+        if (CharacterManager.isCharacterCreated(newPlayer)) {
+            RaceManager.reapply(newPlayer);
+        }
     }
 
     @SubscribeEvent

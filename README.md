@@ -1,6 +1,6 @@
 # CyberRaces
 
-CyberRaces is the race/ancestry system for the Season 2 Forge 1.20.1 modpack.
+CyberRaces is the race and character-creation system for the Season 2 Forge 1.20.1 modpack.
 
 Initial race roster:
 
@@ -18,51 +18,38 @@ Initial race roster:
 
 - **Pehkui** — physical race scale.
 - **Iron's Spells 'n Spellbooks** — optional race-specific mana, regeneration and spell resistance.
-- **Icarus** — optional racial-flight integration target, initially for Fairy.
-- **Ears** — optional player-skin cosmetics; CyberRaces never relies on an Ears skin to determine gameplay race.
+- **Curios + Icarus** — Fairy's permanent Zanza's Wings and flight.
+- **CyberServer** — soft first-join handshake so character creation finishes before the one-time church arrival sequence.
 
 CyberRaces deliberately keeps race separate from class. An Orc Mage, Fairy Berserker, Dwarf Cleric, etc. remain valid combinations.
 
-## Current alpha
+## Character creation
 
-The first alpha provides the backend and a command-driven testing path before the final character-creation GUI is added.
+New players are placed into a temporary hidden/frozen creation hold instead of visibly entering the world.
 
-### Player commands
+The creator currently stores:
 
-- `/cyberraces race list`
-- `/cyberraces race info <race>`
-- `/cyberraces race choose <race>`
-- `/cyberraces race get`
-- `/cyberraces race compat`
+- Race
+- Eye style
+- Eye colour
+- Race-feature variant
 
-A player may use `choose` only once. Normal race swapping is intentionally disabled.
+Once confirmed, CyberRaces marks the character as ready. CyberServer can then perform the player's actual one-time arrival/summoning sequence.
 
-### Admin/testing commands
+Existing players from older CyberRaces builds who already have a race are migrated as completed characters automatically.
+
+## Asset policy
+
+CyberRaces uses Minecraft 1.20.1's own built-in resources where possible instead of copying them into the mod. The reference repository used while locating vanilla resources is:
+
+https://github.com/InventivetalentDev/minecraft-assets/tree/1.20.1/assets
+
+Race-specific models/textures belong to CyberRaces itself.
+
+## Admin/testing commands
 
 - `/cyberraces race get <player>`
 - `/cyberraces race set <player> <race>`
 - `/cyberraces race clear <player>`
 
-These are intended for balancing and recovery while the system is in development.
-
-## First test checklist
-
-1. Join with Pehkui installed and confirm CyberRaces asks for a race.
-2. Run `/cyberraces race choose dwarf` and verify the player visibly shrinks.
-3. Confirm health, movement speed and knockback resistance reflect the race.
-4. Rejoin the world and confirm the chosen race and scale persist.
-5. With Iron's Spells installed, compare max mana/mana regen between Elf, Orc and Fairy using the admin set command.
-6. Stand in fire as a Tiefling and confirm fire damage is reduced.
-7. Run `/cyberraces race compat` to verify optional mods are detected.
-
-## Not implemented yet
-
-- First-join race selection GUI.
-- Icarus-backed Fairy flight/wings.
-- Ears race skin templates.
-- Hunger-rate modifiers.
-- School-specific Iron's affinities.
-- Active racial abilities such as Dragonborn breath.
-- The rest of each race's unique passive traits.
-
-See `docs/RACE_BALANCE.md` for the current numbers and implementation status.
+See `docs/RACE_BALANCE.md` and `docs/RACE_COSMETICS.md`.

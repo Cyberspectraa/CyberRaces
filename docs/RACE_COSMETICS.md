@@ -1,88 +1,82 @@
-# CyberRaces cosmetic direction
+# CyberRaces cosmetics
 
-Race identity should be visible without requiring a special player skin.
+CyberRaces now owns race cosmetics directly. Ears is no longer part of the design.
 
-## Rules
+## Core rules
 
-1. Core race features are rendered by CyberRaces and must not depend on Ears skin metadata.
-2. Ears remains supported as an optional extra for players who want additional skin-driven details.
-3. Cosmetic parts should attach to existing player model bones wherever possible so animation packs such as FA+Player remain compatible.
-4. Cosmetic choices are visual only unless a race explicitly defines the feature mechanically.
-5. Avoid replacing the player's normal skin unnecessarily. Full head/body replacement is reserved for races such as Dragonborn where a human skin cannot represent the race well.
-6. Use a small set of selectable cosmetic variants rather than dozens of bespoke models.
+1. A normal Minecraft skin remains the base character skin unless a race genuinely needs a stronger replacement layer.
+2. CyberRaces renders race-defining geometry itself.
+3. Cosmetic parts attach to normal player bones wherever possible so FA+Player can continue animating the player.
+4. Appearance selections are stored server-side with the race.
+5. Minecraft 1.20.1 built-in resources are reused by resource location where practical instead of copying vanilla assets into the mod.
+6. Custom CyberRaces textures/models are used for features Minecraft does not provide.
+
+## First character-creator data
+
+- Race
+- Eye style
+- Eye colour
+- Race-feature variant
+
+The first UI is deliberately smaller than a full RPG face sculptor. It creates a stable data format first, then visible race parts can be added without changing player saves.
 
 ## Race silhouettes
 
 ### Human
-- No mandatory geometry.
-- Keeps the normal Minecraft player silhouette.
-- Optional future details: scars, freckles, cosmetic backgrounds.
+- Normal player silhouette.
+- Feature variants can later represent subtle markings/scars rather than fantasy anatomy.
 
 ### Elf
-- Mandatory long pointed ears attached to the head.
-- Several future ear shapes/lengths.
-- Keep the player's normal skin visible.
+- Long pointed ears attached to the head.
+- Three ear variants planned.
 
 ### Dwarf
-- Shorter body from Pehkui.
-- Broader proportions should be explored with Pehkui width scaling.
-- Beards should be optional rather than forced.
+- Short body from Pehkui.
+- Broader/stout silhouette.
+- Beard remains optional.
 
 ### Halfling
-- Very short humanoid silhouette.
-- Slightly larger/rounded ears are optional.
-- Do not turn Halfling into a second Dwarf.
+- Very short humanoid.
+- Softer/rounder ear variants so it does not look like a second Dwarf.
 
 ### Orc
-- Mandatory lower tusks.
-- Mandatory mildly pointed ears.
-- Broader body proportions should be explored.
-- Do not force green skin; the player's own skin remains valid.
+- Lower tusks.
+- Mildly pointed ears.
+- Broader silhouette.
+- No forced green skin.
 
 ### Goblin
-- Mandatory long outward-pointing ears.
-- Optional small nose extension later.
-- Small body is already a major silhouette feature.
+- Long outward ears.
+- Small body.
+- Optional nose extension later.
 
 ### Tiefling
-- Mandatory horns.
-- Mandatory tail.
-- Horn style should eventually be selectable.
-- Tail should attach to the body bone so player animations move it naturally.
+- Horns.
+- Animated tail attached to the body.
+- Multiple horn variants.
 
 ### Dragonborn
-- Needs the strongest custom appearance.
-- Custom dragon-like head shell/snout over the player's head.
-- Horns.
+- Strongest custom model treatment.
+- Dragon-like head/snout shell.
+- Horn/crest variants.
 - Tail.
-- Optional scale colour choice.
-- The custom head can intentionally cover most of the human face because otherwise Dragonborn reads as a normal human with horns.
+- Future scale-colour option.
 
 ### Fairy
 - Very small body.
-- Permanent Zanza-style racial wings.
-- Optional small pointed/fey ears.
-- Avoid excessive particles by default.
+- Permanent Zanza's Wings.
+- Small fey-ear variants later.
 
-## Customisation screen direction
+## Arrival integration
 
-Race selection should eventually include a second cosmetic step.
+Character creation happens before the visible CyberServer arrival.
 
-Example:
+1. Player connects.
+2. CyberRaces marks unfinished players as not ready and opens the full-screen creator.
+3. Server keeps the player invisible, invulnerable, frozen and without gravity.
+4. Player confirms race and appearance.
+5. CyberRaces stores the character and sets `CharacterCreated=true`.
+6. CyberServer sees the ready flag and runs the church arrival/beam.
+7. The player is now visibly in the world.
 
-1. Choose race.
-2. Pick race cosmetic variants.
-3. Pick permitted cosmetic colours.
-4. Preview the full player model.
-5. Confirm permanently with the race choice.
-
-The first cosmetic version should remain small:
-
-- Elf: 2-3 ear shapes.
-- Orc: 2 tusk shapes.
-- Goblin: 2-3 ear shapes.
-- Tiefling: 3 horn shapes + 2 tail tips.
-- Dragonborn: 3 horn/head variants + scale colour.
-- Fairy: Zanza wings fixed initially.
-
-This is enough variety without turning CyberRaces into a full character creator.
+This avoids consuming CyberServer's one-time arrival before the player has a finished character.
