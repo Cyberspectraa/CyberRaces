@@ -9,18 +9,31 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record SubmitCharacterPacket(String raceId, int featureStyle, int featureColor) {
+public record SubmitCharacterPacket(
+    String raceId,
+    int featureStyle,
+    int featureColor,
+    int earHeight,
+    int earSpread,
+    int earTilt
+) {
     public static void encode(SubmitCharacterPacket packet, FriendlyByteBuf buffer) {
         buffer.writeUtf(packet.raceId, 32);
         buffer.writeVarInt(packet.featureStyle);
-        buffer.writeVarInt(packet.featureColor);
+        buffer.writeInt(packet.featureColor);
+        buffer.writeInt(packet.earHeight);
+        buffer.writeInt(packet.earSpread);
+        buffer.writeInt(packet.earTilt);
     }
 
     public static SubmitCharacterPacket decode(FriendlyByteBuf buffer) {
         return new SubmitCharacterPacket(
             buffer.readUtf(32),
             buffer.readVarInt(),
-            buffer.readVarInt()
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readInt(),
+            buffer.readInt()
         );
     }
 
@@ -36,7 +49,13 @@ public record SubmitCharacterPacket(String raceId, int featureStyle, int feature
             CharacterManager.completeCharacter(
                 player,
                 race,
-                new CharacterAppearance(packet.featureStyle, packet.featureColor)
+                new CharacterAppearance(
+                    packet.featureStyle,
+                    packet.featureColor,
+                    packet.earHeight,
+                    packet.earSpread,
+                    packet.earTilt
+                )
             )
         );
 

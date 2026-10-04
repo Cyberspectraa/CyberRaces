@@ -120,8 +120,8 @@ public final class RaceCosmeticModels {
         float baseWidth,
         float outward
     ) {
-        addTusk(root, name + "_left", 1.85F, baseLength, baseWidth, -outward);
-        addTusk(root, name + "_right", -1.85F, baseLength, baseWidth, outward);
+        addTusk(root, name + "_left", 2.05F, baseLength, baseWidth, -outward);
+        addTusk(root, name + "_right", -2.05F, baseLength, baseWidth, outward);
     }
 
     private static void addTusk(
@@ -132,12 +132,21 @@ public final class RaceCosmeticModels {
         float baseWidth,
         float roll
     ) {
+        // Orc tusks grow upward from the lower jaw, but sit far enough in
+        // front of the face that the long variants do not clip into the skin.
         PartDefinition base = root.addOrReplaceChild(
             name,
             CubeListBuilder.create()
                 .texOffs(0, 0)
-                .addBox(-baseWidth / 2.0F, 0.0F, -baseWidth / 2.0F, baseWidth, baseLength, baseWidth),
-            PartPose.offsetAndRotation(x, -0.55F, -4.20F, -0.20F, 0.0F, roll)
+                .addBox(
+                    -baseWidth / 2.0F,
+                    -baseLength,
+                    -baseWidth / 2.0F,
+                    baseWidth,
+                    baseLength,
+                    baseWidth
+                ),
+            PartPose.offsetAndRotation(x, -0.05F, -4.78F, 0.08F, 0.0F, roll)
         );
 
         float midWidth = Math.max(0.45F, baseWidth * 0.72F);
@@ -145,8 +154,22 @@ public final class RaceCosmeticModels {
             "mid",
             CubeListBuilder.create()
                 .texOffs(6, 0)
-                .addBox(-midWidth / 2.0F, 0.0F, -midWidth / 2.0F, midWidth, baseLength * 0.72F, midWidth),
-            PartPose.offsetAndRotation(0.0F, baseLength - 0.10F, -0.08F, -0.14F, 0.0F, roll * 0.26F)
+                .addBox(
+                    -midWidth / 2.0F,
+                    -baseLength * 0.72F,
+                    -midWidth / 2.0F,
+                    midWidth,
+                    baseLength * 0.72F,
+                    midWidth
+                ),
+            PartPose.offsetAndRotation(
+                Math.signum(x) * 0.08F,
+                -baseLength + 0.10F,
+                -0.14F,
+                -0.12F,
+                0.0F,
+                roll * 0.34F
+            )
         );
 
         float tipWidth = Math.max(0.28F, baseWidth * 0.42F);
@@ -154,8 +177,22 @@ public final class RaceCosmeticModels {
             "tip",
             CubeListBuilder.create()
                 .texOffs(10, 0)
-                .addBox(-tipWidth / 2.0F, 0.0F, -tipWidth / 2.0F, tipWidth, baseLength * 0.55F, tipWidth),
-            PartPose.offsetAndRotation(0.0F, baseLength * 0.68F, -0.06F, -0.10F, 0.0F, roll * 0.20F)
+                .addBox(
+                    -tipWidth / 2.0F,
+                    -baseLength * 0.55F,
+                    -tipWidth / 2.0F,
+                    tipWidth,
+                    baseLength * 0.55F,
+                    tipWidth
+                ),
+            PartPose.offsetAndRotation(
+                Math.signum(x) * 0.10F,
+                -baseLength * 0.68F,
+                -0.10F,
+                -0.18F,
+                0.0F,
+                roll * 0.30F
+            )
         );
     }
 

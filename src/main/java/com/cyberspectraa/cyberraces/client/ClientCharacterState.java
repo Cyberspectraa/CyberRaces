@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.client;
 
+import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -13,13 +14,21 @@ public final class ClientCharacterState {
     private static final Map<UUID, VisualCharacter> CHARACTERS = new HashMap<>();
 
     private static Race previewRace;
-    private static int previewFeatureStyle;
-    private static int previewFeatureColor;
+    private static CharacterAppearance previewAppearance = CharacterAppearance.defaults();
 
     private ClientCharacterState() {
     }
 
-    public static void apply(UUID playerId, boolean created, String raceId, int featureStyle, int featureColor) {
+    public static void apply(
+        UUID playerId,
+        boolean created,
+        String raceId,
+        int featureStyle,
+        int featureColor,
+        int earHeight,
+        int earSpread,
+        int earTilt
+    ) {
         if (!created) {
             CHARACTERS.remove(playerId);
             return;
@@ -28,30 +37,33 @@ public final class ClientCharacterState {
         Race.byId(raceId).ifPresent(race ->
             CHARACTERS.put(
                 playerId,
-                new VisualCharacter(race, clampFeature(featureStyle), clampColor(featureColor))
+                new VisualCharacter(
+                    race,
+                    new CharacterAppearance(featureStyle, featureColor, earHeight, earSpread, earTilt)
+                )
             )
         );
     }
 
     public static Optional<VisualCharacter> resolve(AbstractClientPlayer player) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (previewRace != null && minecraft.player != null && player.getUUID().equals(minecraft.player.getUUID())) {
-            return Optional.of(new VisualCharacter(previewRace, previewFeatureStyle, previewFeatureColor));
+        if (previewRace != null
+            && minecraft.player != null
+            && player.getUUID().equals(minecraft.player.getUUID())) {
+            return Optional.of(new VisualCharacter(previewRace, previewAppearance));
         }
 
         return Optional.ofNullable(CHARACTERS.get(player.getUUID()));
     }
 
-    public static void setPreview(Race race, int featureStyle, int featureColor) {
+    public static void setPreview(Race race, CharacterAppearance appearance) {
         previewRace = race;
-        previewFeatureStyle = clampFeature(featureStyle);
-        previewFeatureColor = clampColor(featureColor);
+        previewAppearance = appearance;
     }
 
     public static void clearPreview() {
         previewRace = null;
-        previewFeatureStyle = 0;
-        previewFeatureColor = 0;
+        previewAppearance = CharacterAppearance.defaults();
     }
 
     public static boolean isPreviewing(Race race, AbstractClientPlayer player) {
@@ -66,18 +78,25 @@ public final class ClientCharacterState {
         clearPreview();
     }
 
-    private static int clampFeature(int value) {
-        return Math.max(0, Math.min(2, value));
-    }
+    public record VisualCharacter(Race race, CharacterAppearance appearance) {
+        public int featureStyle() {
+            return appearance.featureStyle();
+        }
 
-    private static int clampColor(int value) {
-        return Math.max(0, Math.min(CharacterColourCount.VALUE - 1, value));
-    }
+        public int featureColor() {
+            return appearance.featureColor();
+        }
 
-    private static final class CharacterColourCount {
-        private static final int VALUE = 11;
-    }
+        public int earHeight() {
+            return appearance.earHeight();
+        }
 
-    public record VisualCharacter(Race race, int featureStyle, int featureColor) {
+        public int earSpread() {
+            return appearance.earSpread();
+        }
+
+        public int earTilt() {
+            return appearance.earTilt();
+        }
     }
 }

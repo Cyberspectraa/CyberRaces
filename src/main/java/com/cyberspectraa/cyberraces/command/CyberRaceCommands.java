@@ -225,6 +225,9 @@ public final class CyberRaceCommands {
                     + " character complete=" + complete
                     + " | feature=" + appearance.featureStyle()
                     + " | colour=" + appearance.featureColor()
+                    + " | earHeight=" + appearance.earHeight()
+                    + " | earSpread=" + appearance.earSpread()
+                    + " | earTilt=" + appearance.earTilt()
             ),
             false
         );

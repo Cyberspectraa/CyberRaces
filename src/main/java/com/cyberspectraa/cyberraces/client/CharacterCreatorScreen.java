@@ -21,11 +21,15 @@ public final class CharacterCreatorScreen extends Screen {
 
     private int raceIndex;
     private int featureStyle;
-    private int featureColor;
+    private int featureColor = CharacterAppearance.AUTO_COLOR;
+    private int earHeight;
+    private int earSpread;
+    private int earTilt;
 
     private Button raceButton;
     private Button featureButton;
     private Button colourButton;
+    private Button earFitButton;
 
     public CharacterCreatorScreen() {
         super(Component.literal("Create Your Character"));
@@ -64,28 +68,44 @@ public final class CharacterCreatorScreen extends Screen {
                 .build()
         );
 
+        int featureY = l.top + (l.small ? 42 : 78);
         this.featureButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
                 featureStyle = (featureStyle + 1) % CharacterAppearance.FEATURE_STYLE_COUNT;
                 refreshLabels();
             })
+                .bounds(l.right + pad, featureY, Math.max(60, l.rightWidth - pad * 2), buttonHeight)
+                .build()
+        );
+
+        this.colourButton = this.addRenderableWidget(
+            Button.builder(Component.empty(), button -> {
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(
+                        new FeatureColorPickerScreen(this, currentRace(), featureColor)
+                    );
+                }
+            })
                 .bounds(
                     l.right + pad,
-                    l.top + (l.small ? 42 : 78),
+                    featureY + (l.small ? 22 : 24),
                     Math.max(60, l.rightWidth - pad * 2),
                     buttonHeight
                 )
                 .build()
         );
 
-        this.colourButton = this.addRenderableWidget(
-            Button.builder(Component.empty(), button -> {
-                featureColor = (featureColor + 1) % CharacterAppearance.FEATURE_COLOR_COUNT;
-                refreshLabels();
+        this.earFitButton = this.addRenderableWidget(
+            Button.builder(Component.literal("Ear Fit..."), button -> {
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(
+                        new EarAdjustScreen(this, earHeight, earSpread, earTilt)
+                    );
+                }
             })
                 .bounds(
                     l.right + pad,
-                    l.top + (l.small ? 64 : 102),
+                    featureY + (l.small ? 44 : 48),
                     Math.max(60, l.rightWidth - pad * 2),
                     buttonHeight
                 )
@@ -218,7 +238,7 @@ public final class CharacterCreatorScreen extends Screen {
     private void renderFeatureInfo(GuiGraphics graphics, Layout l) {
         int x = l.right + (l.small ? 6 : 12);
         int maxWidth = Math.max(48, l.rightWidth - (l.small ? 12 : 24));
-        int y = l.top + (l.small ? 90 : 132);
+        int y = l.top + (l.small ? 112 : 158);
 
         drawWrapped(
             graphics,
@@ -227,18 +247,20 @@ public final class CharacterCreatorScreen extends Screen {
             y,
             maxWidth,
             0xD0D0D0,
-            l.small ? 5 : 6
+            l.small ? 4 : 5
         );
 
         if (!l.small) {
             drawWrapped(
                 graphics,
-                "Face, eyes, hair and clothing come from your normal skin.",
+                FeatureColourPalette.hasEars(currentRace())
+                    ? "Use Skin for automatic texture matching, or pick any custom colour."
+                    : "Pick any custom colour for this racial feature.",
                 x,
-                l.top + 154,
+                l.top + 202,
                 maxWidth,
                 0x9E9E9E,
-                4
+                5
             );
         }
     }
@@ -248,7 +270,7 @@ public final class CharacterCreatorScreen extends Screen {
             return;
         }
 
-        ClientCharacterState.setPreview(currentRace(), featureStyle, featureColor);
+        pushPreviewState();
 
         boolean wasInvisible = this.minecraft.player.isInvisible();
         this.minecraft.player.setInvisible(false);
@@ -322,7 +344,12 @@ public final class CharacterCreatorScreen extends Screen {
 
     @Override
     public void removed() {
-        ClientCharacterState.clearPreview();
+        // Keep preview state while temporarily visiting the colour/ear screens.
+        if (!(this.minecraft != null
+            && (this.minecraft.screen instanceof FeatureColorPickerScreen
+                || this.minecraft.screen instanceof EarAdjustScreen))) {
+            ClientCharacterState.clearPreview();
+        }
         super.removed();
     }
 
@@ -334,13 +361,16 @@ public final class CharacterCreatorScreen extends Screen {
     private void changeRace(int direction) {
         raceIndex = Math.floorMod(raceIndex + direction, Race.values().length);
         featureStyle = 0;
-        featureColor = 0;
+        featureColor = CharacterAppearance.AUTO_COLOR;
+        earHeight = 0;
+        earSpread = 0;
+        earTilt = 0;
         refreshLabels();
     }
 
     private void refreshLabels() {
         Race race = currentRace();
-        ClientCharacterState.setPreview(race, featureStyle, featureColor);
+        pushPreviewState();
 
         if (raceButton != null) {
             raceButton.setMessage(Component.literal(race.displayName()));
@@ -352,12 +382,23 @@ public final class CharacterCreatorScreen extends Screen {
         }
 
         if (colourButton != null) {
-            colourButton.setMessage(Component.literal(colourLabel()));
+            colourButton.setMessage(Component.literal(
+                "Colour: " + FeatureColourPalette.label(race, featureColor)
+            ));
             colourButton.active = hasFeatureColour(race);
+        }
+
+        if (earFitButton != null) {
+            earFitButton.active = FeatureColourPalette.hasEars(race);
+            earFitButton.visible = FeatureColourPalette.hasEars(race);
         }
     }
 
     private boolean hasFeatureVariants(Race race) {
+        return race != Race.HUMAN && race != Race.DWARF;
+    }
+
+    private boolean hasFeatureColour(Race race) {
         return race != Race.HUMAN && race != Race.DWARF;
     }
 
@@ -376,35 +417,17 @@ public final class CharacterCreatorScreen extends Screen {
         return labels[featureStyle];
     }
 
-    private boolean hasFeatureColour(Race race) {
-        return race != Race.HUMAN && race != Race.DWARF;
-    }
-
-    private String colourLabel() {
-        String name = FeatureColourPalette.name(featureColor);
-
-        return switch (currentRace()) {
-            case ELF, HALFLING, ORC, GOBLIN, FAIRY ->
-                "Colour: " + (featureColor == 0 ? "Skin" : name);
-            case TIEFLING ->
-                "Tail: " + (featureColor == 0 ? "Infernal" : name);
-            case DRAGONBORN ->
-                "Scales: " + (featureColor == 0 ? "Natural" : name);
-            case HUMAN, DWARF -> "No colour";
-        };
-    }
-
     private String featureDescription() {
         return switch (currentRace()) {
             case HUMAN -> "No forced racial geometry.";
-            case ELF -> "Pointed ears follow the head.";
+            case ELF -> "Pointed ears with adjustable placement.";
             case DWARF -> "Short, sturdy silhouette.";
-            case HALFLING -> "Small ears distinguish the face.";
-            case ORC -> "Pointed ears and lower tusks.";
-            case GOBLIN -> "Large outward ears.";
+            case HALFLING -> "Small adjustable ears.";
+            case ORC -> "Pointed ears and upward lower-jaw tusks.";
+            case GOBLIN -> "Large adjustable outward ears.";
             case TIEFLING -> "Horns and an animated tail.";
             case DRAGONBORN -> "Horned crest and scaled tail.";
-            case FAIRY -> "Fey ears and Zanza's Wings.";
+            case FAIRY -> "Adjustable fey ears and Zanza's Wings.";
         };
     }
 
@@ -422,13 +445,49 @@ public final class CharacterCreatorScreen extends Screen {
         };
     }
 
-    private Race currentRace() {
+    Race currentRace() {
         return Race.values()[raceIndex];
     }
 
+    CharacterAppearance currentAppearance() {
+        return new CharacterAppearance(
+            featureStyle,
+            featureColor,
+            earHeight,
+            earSpread,
+            earTilt
+        );
+    }
+
+    void setFeatureColor(int rgb) {
+        featureColor = rgb == CharacterAppearance.AUTO_COLOR
+            ? CharacterAppearance.AUTO_COLOR
+            : rgb & 0xFFFFFF;
+        refreshLabels();
+    }
+
+    void setEarAdjust(int height, int spread, int tilt) {
+        earHeight = height;
+        earSpread = spread;
+        earTilt = tilt;
+        pushPreviewState();
+    }
+
+    void pushPreviewState() {
+        ClientCharacterState.setPreview(currentRace(), currentAppearance());
+    }
+
     private void submit() {
+        CharacterAppearance appearance = currentAppearance();
         CyberRacesNetwork.sendToServer(
-            new SubmitCharacterPacket(currentRace().id(), featureStyle, featureColor)
+            new SubmitCharacterPacket(
+                currentRace().id(),
+                appearance.featureStyle(),
+                appearance.featureColor(),
+                appearance.earHeight(),
+                appearance.earSpread(),
+                appearance.earTilt()
+            )
         );
     }
 

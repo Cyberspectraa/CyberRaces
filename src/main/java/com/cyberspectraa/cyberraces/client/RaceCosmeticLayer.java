@@ -61,6 +61,9 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 visual.race(),
                 visual.featureStyle(),
                 visual.featureColor(),
+                visual.earHeight(),
+                visual.earSpread(),
+                visual.earTilt(),
                 ageInTicks
             )
         );
@@ -74,42 +77,68 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         Race race,
         int feature,
         int featureColor,
+        int earHeight,
+        int earSpread,
+        int earTilt,
         float ageInTicks
     ) {
         switch (race) {
-            case ELF -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "elf_" + switch (feature) {
-                case 1 -> "long";
-                case 2 -> "high";
-                default -> "short";
-            });
+            case ELF -> renderEars(
+                poseStack, buffer, packedLight, player, race, featureColor,
+                "elf_" + switch (feature) {
+                    case 1 -> "long";
+                    case 2 -> "high";
+                    default -> "short";
+                },
+                earHeight, earSpread, earTilt
+            );
 
-            case HALFLING -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "halfling_" + switch (feature) {
-                case 1 -> "soft";
-                case 2 -> "pointed";
-                default -> "round";
-            });
+            case HALFLING -> renderEars(
+                poseStack, buffer, packedLight, player, race, featureColor,
+                "halfling_" + switch (feature) {
+                    case 1 -> "soft";
+                    case 2 -> "pointed";
+                    default -> "round";
+                },
+                earHeight, earSpread, earTilt
+            );
 
             case ORC -> {
-                renderEars(poseStack, buffer, packedLight, player, race, featureColor, "orc_ears");
-                renderHeadPair(poseStack, buffer, packedLight, TUSK_TEXTURE, "tusks_" + switch (feature) {
-                    case 1 -> "broad";
-                    case 2 -> "long";
-                    default -> "small";
-                }, 1.0F, 1.0F, 1.0F);
+                renderEars(
+                    poseStack, buffer, packedLight, player, race, featureColor,
+                    "orc_ears", earHeight, earSpread, earTilt
+                );
+                renderHeadPair(
+                    poseStack, buffer, packedLight, TUSK_TEXTURE,
+                    "tusks_" + switch (feature) {
+                        case 1 -> "broad";
+                        case 2 -> "long";
+                        default -> "small";
+                    },
+                    1.0F, 1.0F, 1.0F
+                );
             }
 
-            case GOBLIN -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "goblin_" + switch (feature) {
-                case 1 -> "long";
-                case 2 -> "swept";
-                default -> "wide";
-            });
+            case GOBLIN -> renderEars(
+                poseStack, buffer, packedLight, player, race, featureColor,
+                "goblin_" + switch (feature) {
+                    case 1 -> "long";
+                    case 2 -> "swept";
+                    default -> "wide";
+                },
+                earHeight, earSpread, earTilt
+            );
 
             case TIEFLING -> {
-                renderHeadPair(poseStack, buffer, packedLight, HORN_TEXTURE, "horns_" + switch (feature) {
-                    case 1 -> "swept";
-                    case 2 -> "tall";
-                    default -> "curved";
-                }, 1.0F, 1.0F, 1.0F);
+                renderHeadPair(
+                    poseStack, buffer, packedLight, HORN_TEXTURE,
+                    "horns_" + switch (feature) {
+                        case 1 -> "swept";
+                        case 2 -> "tall";
+                        default -> "curved";
+                    },
+                    1.0F, 1.0F, 1.0F
+                );
 
                 float[] color = FeatureColourPalette.rgb(race, featureColor);
                 renderBodyPart(
@@ -122,7 +151,8 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 float[] color = FeatureColourPalette.rgb(race, featureColor);
 
                 renderHeadPair(
-                    poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_" + switch (feature) {
+                    poseStack, buffer, packedLight, DRAGON_TEXTURE,
+                    "dragon_" + switch (feature) {
                         case 1 -> "crowned";
                         case 2 -> "swept";
                         default -> "horned";
@@ -136,11 +166,15 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 );
             }
 
-            case FAIRY -> renderEars(poseStack, buffer, packedLight, player, race, featureColor, "fairy_" + switch (feature) {
-                case 1 -> "sharp";
-                case 2 -> "soft";
-                default -> "classic";
-            });
+            case FAIRY -> renderEars(
+                poseStack, buffer, packedLight, player, race, featureColor,
+                "fairy_" + switch (feature) {
+                    case 1 -> "sharp";
+                    case 2 -> "soft";
+                    default -> "classic";
+                },
+                earHeight, earSpread, earTilt
+            );
 
             case HUMAN, DWARF -> {
             }
@@ -154,7 +188,10 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         AbstractClientPlayer player,
         Race race,
         int featureColor,
-        String baseName
+        String baseName,
+        int earHeight,
+        int earSpread,
+        int earTilt
     ) {
         poseStack.pushPose();
         getParentModel().head.translateAndRotate(poseStack);
@@ -174,14 +211,45 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
             b = color[2];
         }
 
+        ModelPart left = skinRoot.getChild(baseName + "_left");
+        ModelPart right = skinRoot.getChild(baseName + "_right");
+
+        float leftX = left.x;
+        float rightX = right.x;
+        float leftY = left.y;
+        float rightY = right.y;
+        float leftRoll = left.zRot;
+        float rightRoll = right.zRot;
+
+        float heightOffset = earHeight * 0.25F;
+        float spreadOffset = earSpread * 0.22F;
+        float tiltRadians = (float) Math.toRadians(earTilt * 3.0F);
+
+        // Positive Height moves the ears upward; positive Spread moves them outward.
+        left.y -= heightOffset;
+        right.y -= heightOffset;
+        left.x += spreadOffset;
+        right.x -= spreadOffset;
+
+        // Positive Tilt makes the pair sweep upward symmetrically.
+        left.zRot -= tiltRadians;
+        right.zRot += tiltRadians;
+
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        skinRoot.getChild(baseName + "_left").render(
+        left.render(
             poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
-        skinRoot.getChild(baseName + "_right").render(
+        right.render(
             poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F
         );
+
+        left.x = leftX;
+        right.x = rightX;
+        left.y = leftY;
+        right.y = rightY;
+        left.zRot = leftRoll;
+        right.zRot = rightRoll;
 
         poseStack.popPose();
     }

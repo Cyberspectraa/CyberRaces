@@ -36,15 +36,16 @@ public final class CharacterSyncService {
         boolean created = CharacterManager.isCharacterCreated(player);
         Race race = RaceManager.getRace(player).orElse(Race.HUMAN);
         CharacterAppearance appearance = CharacterManager.getAppearance(player);
-        int featureStyle = appearance.featureStyle();
-        int featureColor = appearance.featureColor();
 
         return new CharacterSyncPacket(
             player.getUUID(),
             created,
             race.id(),
-            featureStyle,
-            featureColor
+            appearance.featureStyle(),
+            appearance.featureColor(),
+            appearance.earHeight(),
+            appearance.earSpread(),
+            appearance.earTilt()
         );
     }
 }
