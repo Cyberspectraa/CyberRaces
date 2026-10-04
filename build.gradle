@@ -59,14 +59,29 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url = 'https://jitpack.io' }
+
+    maven {
+        name = 'TheIllusiveC4'
+        url = 'https://maven.theillusivec4.top'
+    }
+
+    maven {
+        name = 'CurseMaven'
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // CyberRaces intentionally hard-depends only on Pehkui.
-    // Iron's Spells, Icarus and Ears are discovered at runtime and remain optional.
     implementation fg.deobf("com.github.Virtuoel:Pehkui:${pehkui_version}")
+
+    // Fairy wings use the real Curios back slot and Icarus' Zanza's Wings.
+    implementation fg.deobf("top.theillusivec4.curios:curios-forge:5.8.1+1.20.1")
+    compileOnly fg.deobf("curse.maven:icarus-428151:8753894")
 }
 
 tasks.named('processResources', ProcessResources).configure {
