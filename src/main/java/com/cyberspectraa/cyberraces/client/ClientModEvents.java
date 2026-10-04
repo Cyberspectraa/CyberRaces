@@ -43,8 +43,6 @@ public final class ClientModEvents {
                     continue;
                 }
 
-                renderer.addLayer(new RaceSkinOverlayLayer(renderer));
-
                 renderer.addLayer(new RaceCosmeticLayer(
                     renderer,
                     event.getEntityModels().bakeLayer(RaceCosmeticModels.SKIN_FEATURES),

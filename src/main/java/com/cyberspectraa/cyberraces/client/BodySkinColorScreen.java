@@ -310,7 +310,7 @@ public final class BodySkinColorScreen extends Screen {
         graphics.pose().translate(l.atlasX, l.atlasY, 0.0F);
         graphics.pose().scale(scale, scale, 1.0F);
         graphics.blit(
-            this.minecraft.player.getSkinTextureLocation(),
+            PlayerSkinSampler.originalTexture(this.minecraft.player),
             0,
             0,
             0.0F,
