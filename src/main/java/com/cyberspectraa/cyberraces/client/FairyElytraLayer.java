@@ -3,7 +3,7 @@ package com.cyberspectraa.cyberraces.client;
 import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.ElytraModel;
+import dev.cammiescorner.icarus.client.IcarusModels;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -18,13 +18,20 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public final class FairyElytraLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
-    private static final ResourceLocation ELYTRA_TEXTURE = new ResourceLocation("textures/entity/elytra.png");
+    private static final ResourceLocation ZANZA_LAYER_1 =
+        new ResourceLocation("icarus", "textures/entity/zanzas_wings.png");
 
-    private final ElytraModel<T> elytraModel;
+    private static final ResourceLocation ZANZA_LAYER_2 =
+        new ResourceLocation("icarus", "textures/entity/zanzas_wings_2.png");
+
+    private final FairyZanzaElytraModel<T> wingModel;
 
     public FairyElytraLayer(RenderLayerParent<T, M> parent, EntityModelSet modelSet) {
         super(parent);
-        this.elytraModel = new ElytraModel<>(modelSet.bakeLayer(ModelLayers.ELYTRA));
+        this.wingModel = new FairyZanzaElytraModel<>(
+            modelSet.bakeLayer(ModelLayers.ELYTRA),
+            modelSet.bakeLayer(IcarusModels.ZANZA)
+        );
     }
 
     @Override
@@ -48,17 +55,43 @@ public final class FairyElytraLayer<T extends LivingEntity, M extends EntityMode
         poseStack.pushPose();
         poseStack.translate(0.0D, 0.0D, 0.125D);
 
-        getParentModel().copyPropertiesTo(elytraModel);
-        elytraModel.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+        getParentModel().copyPropertiesTo(wingModel);
+        wingModel.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
+        renderPass(
+            poseStack,
+            buffer,
+            packedLight,
+            racialWings,
+            ZANZA_LAYER_2
+        );
+
+        renderPass(
+            poseStack,
+            buffer,
+            packedLight,
+            racialWings,
+            ZANZA_LAYER_1
+        );
+
+        poseStack.popPose();
+    }
+
+    private void renderPass(
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        ItemStack racialWings,
+        ResourceLocation texture
+    ) {
         VertexConsumer vertexConsumer = ItemRenderer.getArmorFoilBuffer(
             buffer,
-            RenderType.armorCutoutNoCull(ELYTRA_TEXTURE),
+            RenderType.entityTranslucent(texture),
             false,
             racialWings.hasFoil()
         );
 
-        elytraModel.renderToBuffer(
+        wingModel.renderToBuffer(
             poseStack,
             vertexConsumer,
             packedLight,
@@ -68,7 +101,5 @@ public final class FairyElytraLayer<T extends LivingEntity, M extends EntityMode
             1.0F,
             1.0F
         );
-
-        poseStack.popPose();
     }
 }
