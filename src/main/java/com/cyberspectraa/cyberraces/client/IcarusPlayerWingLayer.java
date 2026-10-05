@@ -83,7 +83,13 @@ public final class IcarusPlayerWingLayer<T extends LivingEntity, M extends Entit
             entity instanceof AbstractClientPlayer player
                 && ClientCharacterState.isPreviewing(Race.FAIRY, player);
 
-        if (wings.isEmpty() && fairyPreview) {
+        boolean externalFairy =
+            !(entity instanceof AbstractClientPlayer)
+                && ClientCharacterState.resolve(entity.getUUID())
+                    .map(visual -> visual.race() == Race.FAIRY)
+                    .orElse(false);
+
+        if (wings.isEmpty() && (fairyPreview || externalFairy)) {
             wings = new ItemStack(IcarusItems.ZANZAS_WINGS.get());
         }
 
