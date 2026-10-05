@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -15,7 +16,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
-public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+public final class RaceCosmeticLayer<T extends LivingEntity, M extends PlayerModel<T>> extends RenderLayer<T, M> {
     private static final ResourceLocation FEATURE_TEXTURE =
         new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/feature.png");
     private static final ResourceLocation HORN_TEXTURE =
@@ -32,7 +33,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
     private final ModelPart foxRoot;
 
     public RaceCosmeticLayer(
-        RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent,
+        RenderLayerParent<T, M> parent,
         ModelPart skinRoot,
         ModelPart hardRoot,
         ModelPart catRoot,
@@ -52,7 +53,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
-        AbstractClientPlayer player,
+        T entity,
         float limbSwing,
         float limbSwingAmount,
         float partialTick,
@@ -60,12 +61,17 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         float netHeadYaw,
         float headPitch
     ) {
-        ClientCharacterState.resolve(player).ifPresent(visual ->
+        java.util.Optional<ClientCharacterState.VisualCharacter> resolved =
+            entity instanceof AbstractClientPlayer player
+                ? ClientCharacterState.resolve(player)
+                : ClientCharacterState.resolve(entity.getUUID());
+
+        resolved.ifPresent(visual ->
             renderRace(
                 poseStack,
                 buffer,
                 packedLight,
-                player,
+                entity,
                 visual.race(),
                 visual.featureStyle(),
                 visual.featureColor(),
@@ -84,7 +90,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
-        AbstractClientPlayer player,
+        T entity,
         Race race,
         int feature,
         int featureColor,
@@ -98,7 +104,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
     ) {
         switch (race) {
             case ELF -> renderEars(
-                poseStack, buffer, packedLight, player, race, featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "elf_" + switch (feature) {
                     case 1 -> "long";
                     case 2 -> "high";
@@ -108,7 +114,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
             );
 
             case HALFLING -> renderEars(
-                poseStack, buffer, packedLight, player, race, featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "halfling_" + switch (feature) {
                     case 1 -> "soft";
                     case 2 -> "pointed";
@@ -118,7 +124,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
             );
 
             case ORC -> renderEars(
-                poseStack, buffer, packedLight, player, race, featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "orc_" + switch (feature) {
                     case 1 -> "broad";
                     case 2 -> "swept";
@@ -128,7 +134,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
             );
 
             case GOBLIN -> renderEars(
-                poseStack, buffer, packedLight, player, race, featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "goblin_" + switch (feature) {
                     case 1 -> "long";
                     case 2 -> "swept";
@@ -195,7 +201,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
             }
 
             case FAIRY -> renderEars(
-                poseStack, buffer, packedLight, player, race, featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "fairy_" + switch (feature) {
                     case 1 -> "sharp";
                     case 2 -> "soft";
@@ -452,7 +458,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
-        AbstractClientPlayer player,
+        T entity,
         Race race,
         int featureColor,
         String baseName,
@@ -469,7 +475,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         float b = 1.0F;
 
         if (FeatureColourPalette.usesPlayerSkin(race, featureColor)) {
-            texture = player.getSkinTextureLocation();
+            texture = getTextureLocation(entity);
         } else {
             texture = FEATURE_TEXTURE;
             float[] color = FeatureColourPalette.rgb(race, featureColor);
