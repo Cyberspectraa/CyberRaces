@@ -441,12 +441,15 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private boolean hasFeatureVariants(Race race) {
-        return race != Race.HUMAN && race != Race.DWARF;
+        return race != Race.HUMAN
+            && race != Race.DWARF
+            && race != Race.NYMPH;
     }
 
     private boolean hasFeatureColour(Race race) {
         return race != Race.HUMAN
             && race != Race.DWARF
+            && race != Race.NYMPH
             && !BeastVariantTextures.isBeastfolk(race);
     }
 
@@ -465,6 +468,7 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
             case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
             case FAIRY -> new String[] {"Ears: Classic", "Ears: Sharp", "Ears: Soft"};
+            case NYMPH -> new String[] {"Nature spirit", "Nature spirit", "Nature spirit"};
             case CATFOLK, DOGFOLK, FOXFOLK -> new String[] {
                 "Variant: " + BeastVariantTextures.name(currentRace(), featureStyle)
             };
@@ -487,6 +491,7 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> "Horns and an animated tail.";
             case DRAGONBORN -> "Horned crest and scaled tail.";
             case FAIRY -> "Adjustable fey ears and Zanza's Wings.";
+            case NYMPH -> "Human-like nature spirit with no forced racial geometry.";
             case CATFOLK -> "Vanilla Cat ears/tail with selectable Cat coat variants.";
             case DOGFOLK -> "Vanilla Wolf ears/tail with selectable Wolf coat variants.";
             case FOXFOLK -> "Vanilla Fox ears/tail with Red or Snow coat variants.";
@@ -530,6 +535,10 @@ public final class CharacterCreatorScreen extends Screen {
             case FAIRY -> new String[] {
                 "Tiny and magical; fragile.",
                 "V: Toggle 3-4 block Hover. Icarus wings remain full flight."
+            };
+            case NYMPH -> new String[] {
+                "Nature spirit: magical, graceful, slightly fragile.",
+                "+20% mana, +15% mana regen. V: Nature's Grace."
             };
             case CATFOLK -> new String[] {
                 "Fast and agile.",

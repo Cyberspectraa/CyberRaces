@@ -177,6 +177,7 @@ public final class CyberRaceCommands {
             case TIEFLING -> "50% fire damage plus flame reaction";
             case DRAGONBORN -> "V: Level 10 Fire Breath, no mana, 18s cooldown";
             case FAIRY -> "Icarus wings; V toggles 3-4 block Hover";
+            case NYMPH -> "+20% mana, +15% mana regen; V activates Nature's Grace";
             case CATFOLK -> "12% higher jump and 60% less fall damage";
             case DOGFOLK -> "35% less sprint exhaustion; V activates directional Scent";
             case FOXFOLK -> "+20% crouch speed; V activates Quickstep";

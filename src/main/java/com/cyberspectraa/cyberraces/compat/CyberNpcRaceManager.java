@@ -326,7 +326,7 @@ public final class CyberNpcRaceManager {
             case CATFOLK -> 11;
             case DOGFOLK -> 9;
             case FOXFOLK -> 2;
-            case HUMAN, DWARF -> 1;
+            case HUMAN, DWARF, NYMPH -> 1;
             default -> 3;
         };
 

@@ -279,7 +279,7 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 ageInTicks
             );
 
-            case HUMAN, DWARF -> {
+            case HUMAN, DWARF, NYMPH -> {
             }
         }
     }
