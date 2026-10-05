@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces;
 import com.cyberspectraa.cyberraces.command.CyberRaceCommands;
 import com.cyberspectraa.cyberraces.event.CharacterCreationEvents;
 import com.cyberspectraa.cyberraces.event.CyberNpcRaceEvents;
+import com.cyberspectraa.cyberraces.event.FairyHoverEvents;
 import com.cyberspectraa.cyberraces.event.FairyWingEvents;
 import com.cyberspectraa.cyberraces.event.RaceEvents;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
@@ -22,6 +23,7 @@ public final class CyberRaces {
 
         MinecraftForge.EVENT_BUS.register(RaceEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyWingEvents.class);
+        MinecraftForge.EVENT_BUS.register(FairyHoverEvents.class);
         MinecraftForge.EVENT_BUS.register(CharacterCreationEvents.class);
         MinecraftForge.EVENT_BUS.register(CyberNpcRaceEvents.class);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
