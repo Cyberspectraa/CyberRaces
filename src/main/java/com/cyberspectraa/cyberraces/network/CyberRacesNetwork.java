@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.network.packet.CharacterSyncPacket;
 import com.cyberspectraa.cyberraces.network.packet.CloseCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.EntityRaceSyncPacket;
+import com.cyberspectraa.cyberraces.network.packet.DragonBreathPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class CyberRacesNetwork {
-    private static final String PROTOCOL = "6";
+    private static final String PROTOCOL = "7";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
         new ResourceLocation(CyberRaces.MOD_ID, "main"),
@@ -57,6 +58,12 @@ public final class CyberRacesNetwork {
             .encoder(EntityRaceSyncPacket::encode)
             .decoder(EntityRaceSyncPacket::decode)
             .consumerMainThread(EntityRaceSyncPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(DragonBreathPacket.class, messageId++, NetworkDirection.PLAY_TO_SERVER)
+            .encoder(DragonBreathPacket::encode)
+            .decoder(DragonBreathPacket::decode)
+            .consumerMainThread(DragonBreathPacket::handle)
             .add();
     }
 

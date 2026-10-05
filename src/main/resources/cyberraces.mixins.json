@@ -4,6 +4,9 @@
   "package": "com.cyberspectraa.cyberraces.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "cyberraces.refmap.json",
+  "mixins": [
+    "PlayerExhaustionMixin"
+  ],
   "client": [
     "AbstractClientPlayerMixin"
   ],

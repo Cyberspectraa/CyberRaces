@@ -157,7 +157,30 @@ public final class CyberRaceCommands {
             )
         ), false);
 
+        source.sendSuccess(
+            () -> Component.literal("Trait: " + racialTrait(race))
+                .withStyle(ChatFormatting.AQUA),
+            false
+        );
+
         return 1;
+    }
+
+    private static String racialTrait(Race race) {
+        return switch (race) {
+            case HUMAN -> "+5% experience gained";
+            case ELF -> "bows reach full draw 15% sooner";
+            case DWARF -> "+15% underground mining speed";
+            case HALFLING -> "+1 Luck and 35% less fall damage";
+            case ORC -> "+20% damage below 35% health";
+            case GOBLIN -> "+0.5 Luck for scavenging";
+            case TIEFLING -> "50% fire damage plus flame reaction";
+            case DRAGONBORN -> "Level 10 Fire Breath (V), no mana, 18s cooldown";
+            case FAIRY -> "Icarus wings and 3-4 block ground hover";
+            case CATFOLK -> "12% higher jump and 60% less fall damage";
+            case DOGFOLK -> "35% less sprint exhaustion";
+            case FOXFOLK -> "+20% movement speed while crouched";
+        };
     }
 
     private static int choose(CommandSourceStack source, String raceId) {

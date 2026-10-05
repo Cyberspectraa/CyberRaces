@@ -15,6 +15,7 @@ public final class RaceAttributeApplier {
     private static final UUID SPEED_ID = UUID.fromString("26b9515c-7ff3-4dc1-8b94-8bd3eb4cb21c");
     private static final UUID KNOCKBACK_ID = UUID.fromString("cb0414bd-1949-435b-9473-cb5193c28e45");
     private static final UUID ARMOR_ID = UUID.fromString("8e1459d0-e246-42f5-bf43-c999957c9bc4");
+    private static final UUID LUCK_ID = UUID.fromString("05e2a1fb-a0de-4a38-b985-f2980c921e62");
 
     private RaceAttributeApplier() {
     }
@@ -44,6 +45,17 @@ public final class RaceAttributeApplier {
         if (race.armorBonus() != 0.0) {
             add(entity.getAttribute(Attributes.ARMOR), ARMOR_ID,
                 "CyberRaces racial natural armor", race.armorBonus(), AttributeModifier.Operation.ADDITION);
+        }
+
+        double luckBonus = switch (race) {
+            case HALFLING -> 1.0;
+            case GOBLIN -> 0.5;
+            default -> 0.0;
+        };
+
+        if (luckBonus != 0.0) {
+            add(entity.getAttribute(Attributes.LUCK), LUCK_ID,
+                "CyberRaces racial luck", luckBonus, AttributeModifier.Operation.ADDITION);
         }
 
         PehkuiCompat.applyScale(entity, race.scale());
@@ -77,6 +89,7 @@ public final class RaceAttributeApplier {
         remove(entity.getAttribute(Attributes.MOVEMENT_SPEED), SPEED_ID);
         remove(entity.getAttribute(Attributes.KNOCKBACK_RESISTANCE), KNOCKBACK_ID);
         remove(entity.getAttribute(Attributes.ARMOR), ARMOR_ID);
+        remove(entity.getAttribute(Attributes.LUCK), LUCK_ID);
     }
 
     private static void add(

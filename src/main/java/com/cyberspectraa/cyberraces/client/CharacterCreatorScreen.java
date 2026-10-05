@@ -495,18 +495,54 @@ public final class CharacterCreatorScreen extends Screen {
 
     private String[] raceSummary(Race race) {
         return switch (race) {
-            case HUMAN -> new String[] {"Balanced and adaptable."};
-            case ELF -> new String[] {"Fast and magical.", "Lower health."};
-            case DWARF -> new String[] {"Tough and resistant.", "Slightly slower."};
-            case HALFLING -> new String[] {"Small and nimble."};
-            case ORC -> new String[] {"High health.", "Lower natural mana."};
-            case GOBLIN -> new String[] {"Small and quick.", "More fragile."};
-            case TIEFLING -> new String[] {"Strong magic.", "Fire resistance."};
-            case DRAGONBORN -> new String[] {"Armoured and resilient."};
-            case FAIRY -> new String[] {"Tiny and magical.", "Fragile; can fly."};
-            case CATFOLK -> new String[] {"Fast and agile.", "Balanced magic."};
-            case DOGFOLK -> new String[] {"Sturdy and loyal.", "Slightly lower mana."};
-            case FOXFOLK -> new String[] {"Quick and magical.", "Lower health."};
+            case HUMAN -> new String[] {
+                "Balanced and adaptable.",
+                "+5% experience gained."
+            };
+            case ELF -> new String[] {
+                "Fast and magical; lower health.",
+                "Bows reach full draw 15% sooner."
+            };
+            case DWARF -> new String[] {
+                "Tough and resistant; slightly slower.",
+                "+15% mining speed underground."
+            };
+            case HALFLING -> new String[] {
+                "Small and nimble.",
+                "+1 Luck; 35% less fall damage."
+            };
+            case ORC -> new String[] {
+                "High health; lower natural mana.",
+                "+20% damage below 35% health."
+            };
+            case GOBLIN -> new String[] {
+                "Small and quick; more fragile.",
+                "+0.5 Luck for scavenging."
+            };
+            case TIEFLING -> new String[] {
+                "Strong magic.",
+                "50% fire resistance with flame reaction."
+            };
+            case DRAGONBORN -> new String[] {
+                "Armoured and resilient.",
+                "Racial Fire Breath: V, 18s cooldown."
+            };
+            case FAIRY -> new String[] {
+                "Tiny and magical; fragile.",
+                "Wings plus 3-4 block ground hover."
+            };
+            case CATFOLK -> new String[] {
+                "Fast and agile.",
+                "12% higher jump; 60% less fall damage."
+            };
+            case DOGFOLK -> new String[] {
+                "Sturdy and loyal; slightly lower mana.",
+                "35% less exhaustion while sprinting."
+            };
+            case FOXFOLK -> new String[] {
+                "Quick and magical; lower health.",
+                "+20% movement speed while crouched."
+            };
         };
     }
 
