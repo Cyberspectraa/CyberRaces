@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,28 +37,6 @@ public final class CyberNpcRaceEvents {
                 CyberNpcRaceManager.clearIfNotWild(entity);
             }
         });
-    }
-
-    @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity entity = event.getEntity();
-
-        if (entity.level().isClientSide
-            || !CyberNpcRaceManager.isCyberNpc(entity)) {
-            return;
-        }
-
-        // Fallback for unusual spawn flows where the NPC becomes Wild after
-        // EntityJoinLevelEvent. Once assigned, this branch becomes a cheap
-        // persistent-data presence check.
-        if (CyberNpcRaceManager.isWildCyberNpc(entity)) {
-            if (!CyberNpcRaceManager.hasRace(entity)) {
-                CyberNpcRaceManager.ensureAssigned(entity);
-                CyberNpcRaceManager.broadcast(entity);
-            }
-        } else if (CyberNpcRaceManager.hasRace(entity)) {
-            CyberNpcRaceManager.clearIfNotWild(entity);
-        }
     }
 
     @SubscribeEvent
