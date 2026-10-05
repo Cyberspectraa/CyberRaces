@@ -5,7 +5,7 @@ import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
-public final class RaceCosmeticLayer<T extends LivingEntity, M extends PlayerModel<T>> extends RenderLayer<T, M> {
+public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidModel<T>> extends RenderLayer<T, M> {
     private static final ResourceLocation FEATURE_TEXTURE =
         new ResourceLocation(CyberRaces.MOD_ID, "textures/entity/feature.png");
     private static final ResourceLocation HORN_TEXTURE =
@@ -66,7 +66,16 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends PlayerMod
                 ? ClientCharacterState.resolve(player)
                 : ClientCharacterState.resolve(entity.getUUID());
 
-        resolved.ifPresent(visual ->
+        resolved.ifPresent(visual -> {
+            renderNpcBodyRecolour(
+                poseStack,
+                buffer,
+                packedLight,
+                entity,
+                visual.race(),
+                visual.appearance()
+            );
+
             renderRace(
                 poseStack,
                 buffer,
@@ -82,7 +91,53 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends PlayerMod
                 limbSwing,
                 limbSwingAmount,
                 ageInTicks
-            )
+            );
+        });
+    }
+
+    private void renderNpcBodyRecolour(
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        T entity,
+        Race race,
+        CharacterAppearance appearance
+    ) {
+        /*
+         * Players already use a recoloured base skin through the player-skin
+         * mixin. CyberNpc entities instead get a transparent recolour overlay
+         * rendered with the exact same parent model instance, so their custom
+         * animations stay perfectly aligned.
+         */
+        if (entity instanceof AbstractClientPlayer) {
+            return;
+        }
+
+        ResourceLocation overlay =
+            RaceSkinOverlayManager.getNpcOverlay(
+                entity,
+                race,
+                appearance,
+                getTextureLocation(entity)
+            );
+
+        if (overlay == null) {
+            return;
+        }
+
+        VertexConsumer consumer = buffer.getBuffer(
+            RenderType.entityTranslucent(overlay)
+        );
+
+        getParentModel().renderToBuffer(
+            poseStack,
+            consumer,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            1.0F,
+            1.0F,
+            1.0F,
+            1.0F
         );
     }
 

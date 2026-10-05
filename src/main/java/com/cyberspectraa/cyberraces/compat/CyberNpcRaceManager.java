@@ -18,12 +18,31 @@ public final class CyberNpcRaceManager {
     private static final ResourceLocation CYBER_NPC_TYPE =
         new ResourceLocation("cybernpc", "cyber_npc");
 
+    private static final ResourceLocation ZOMBIE_CYBER_NPC_TYPE =
+        new ResourceLocation("cybernpc", "zombie_cyber_npc");
+
     private static final String ROOT_KEY = "CyberRacesWildNpc";
     private static final String RACE_KEY = "Race";
     private static final String APPEARANCE_KEY = "Appearance";
 
+    private static final int[] NPC_SKIN_TONES = {
+        0xF2C1B2, // pale
+        0xA46D33, // medium
+        0x79462A, // mediumdark
+        0xFCC19D, // tan
+        0xDEA27B, // tanmedium
+        0xC08359, // tandark
+        0x5F3A1F  // dark
+    };
+
+    private static final int ZOMBIE_SKIN = 0x1E6C22;
+    private static final int GOBLIN_SKIN = 0x6E9347;
+    private static final int TIEFLING_SKIN = 0xB84E5C;
+    private static final int NPC_BODY_TOLERANCE = 17;
+
     private static Class<?> cachedCyberNpcClass;
     private static Method cachedGetNpcType;
+    private static Method cachedGetSkinToneIndex;
 
     private CyberNpcRaceManager() {
     }
@@ -36,12 +55,34 @@ public final class CyberNpcRaceManager {
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES
             .getKey(entity.getType());
 
-        return CYBER_NPC_TYPE.equals(id);
+        return CYBER_NPC_TYPE.equals(id)
+            || ZOMBIE_CYBER_NPC_TYPE.equals(id);
+    }
+
+    public static boolean isZombieCyberNpc(LivingEntity entity) {
+        if (entity == null) {
+            return false;
+        }
+
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES
+            .getKey(entity.getType());
+
+        return ZOMBIE_CYBER_NPC_TYPE.equals(id);
     }
 
     public static boolean isWildCyberNpc(LivingEntity entity) {
         if (!isCyberNpc(entity)) {
             return false;
+        }
+
+        /*
+         * ZombieCyberNpc has no NpcType field. A converted zombie is treated
+         * as race-bearing only when CyberNpc copied the original Wild NPC's
+         * CyberRaces tag during conversion. Service/Main/Quest zombies that
+         * never had a race therefore stay race-free.
+         */
+        if (isZombieCyberNpc(entity)) {
+            return hasRace(entity);
         }
 
         try {
@@ -101,6 +142,13 @@ public final class CyberNpcRaceManager {
     }
 
     public static boolean ensureAssigned(LivingEntity entity) {
+        if (isZombieCyberNpc(entity)) {
+            getRace(entity).ifPresent(race ->
+                RaceAttributeApplier.apply(entity, race)
+            );
+            return false;
+        }
+
         if (!isWildCyberNpc(entity)) {
             return false;
         }
@@ -110,13 +158,33 @@ public final class CyberNpcRaceManager {
 
         if (created) {
             race = randomRace(entity);
-            CharacterAppearance appearance =
-                randomAppearance(entity, race);
 
             CompoundTag persistent = entity.getPersistentData();
             CompoundTag root = new CompoundTag();
             root.putString(RACE_KEY, race.id());
-            root.put(APPEARANCE_KEY, appearance.save());
+            root.put(
+                APPEARANCE_KEY,
+                randomAppearance(entity, race).save()
+            );
+            persistent.put(ROOT_KEY, root);
+        }
+
+        /*
+         * Migrate both new and existing Wild NPCs onto skin-aware feature
+         * colours. This preserves their chosen ear/tail style and fit values.
+         */
+        CharacterAppearance current = getAppearance(entity);
+        CharacterAppearance updated =
+            withNpcSkinColours(entity, race, current);
+
+        if (!updated.equals(current)) {
+            CompoundTag persistent = entity.getPersistentData();
+            CompoundTag root = persistent.contains(ROOT_KEY)
+                ? persistent.getCompound(ROOT_KEY)
+                : new CompoundTag();
+
+            root.putString(RACE_KEY, race.id());
+            root.put(APPEARANCE_KEY, updated.save());
             persistent.put(ROOT_KEY, root);
         }
 
@@ -187,7 +255,8 @@ public final class CyberNpcRaceManager {
         LivingEntity entity,
         Race race
     ) {
-        CharacterAppearance appearance = getAppearance(entity);
+        CharacterAppearance appearance =
+            renderAppearance(entity, race);
 
         return new EntityRaceSyncPacket(
             entity.getUUID(),
@@ -201,6 +270,38 @@ public final class CyberNpcRaceManager {
             appearance.bodySourceColor(),
             appearance.bodyTargetColor(),
             appearance.bodyTolerance()
+        );
+    }
+
+    private static CharacterAppearance renderAppearance(
+        LivingEntity entity,
+        Race race
+    ) {
+        CharacterAppearance saved = getAppearance(entity);
+
+        if (!isZombieCyberNpc(entity)) {
+            return saved;
+        }
+
+        int featureColor = switch (race) {
+            case ELF, HALFLING, ORC, GOBLIN, FAIRY, TIEFLING ->
+                ZOMBIE_SKIN;
+            default -> saved.featureColor();
+        };
+
+        /*
+         * The CyberNpc zombie skin itself is already green. Do not apply the
+         * living Goblin/Tiefling body recolour again after conversion.
+         */
+        return new CharacterAppearance(
+            saved.featureStyle(),
+            featureColor,
+            saved.earHeight(),
+            saved.earSpread(),
+            saved.earTilt(),
+            CharacterAppearance.AUTO_COLOR,
+            CharacterAppearance.AUTO_COLOR,
+            saved.bodyTolerance()
         );
     }
 
@@ -229,7 +330,7 @@ public final class CyberNpcRaceManager {
         int earSpread = randomEarSetting(entity);
         int earTilt = randomEarSetting(entity);
 
-        return new CharacterAppearance(
+        CharacterAppearance base = new CharacterAppearance(
             featureStyle,
             CharacterAppearance.AUTO_COLOR,
             earHeight,
@@ -239,6 +340,80 @@ public final class CyberNpcRaceManager {
             CharacterAppearance.AUTO_COLOR,
             CharacterAppearance.BODY_TOLERANCE_DEFAULT
         );
+
+        return withNpcSkinColours(entity, race, base);
+    }
+
+    private static CharacterAppearance withNpcSkinColours(
+        LivingEntity entity,
+        Race race,
+        CharacterAppearance appearance
+    ) {
+        int skinTone = npcSkinToneColour(entity);
+
+        int featureColor = switch (race) {
+            case ELF, HALFLING, ORC, FAIRY ->
+                skinTone;
+            case GOBLIN ->
+                GOBLIN_SKIN;
+            case TIEFLING ->
+                TIEFLING_SKIN;
+            default ->
+                appearance.featureColor();
+        };
+
+        int bodySource = appearance.bodySourceColor();
+        int bodyTarget = appearance.bodyTargetColor();
+
+        if (race == Race.GOBLIN || race == Race.TIEFLING) {
+            bodySource = skinTone;
+            bodyTarget = race == Race.GOBLIN
+                ? GOBLIN_SKIN
+                : TIEFLING_SKIN;
+        }
+
+        return new CharacterAppearance(
+            appearance.featureStyle(),
+            featureColor,
+            appearance.earHeight(),
+            appearance.earSpread(),
+            appearance.earTilt(),
+            bodySource,
+            bodyTarget,
+            race == Race.GOBLIN || race == Race.TIEFLING
+                ? NPC_BODY_TOLERANCE
+                : appearance.bodyTolerance()
+        );
+    }
+
+    private static int npcSkinToneColour(LivingEntity entity) {
+        int index = getSkinToneIndex(entity);
+        if (index < 0) {
+            return CharacterAppearance.AUTO_COLOR;
+        }
+
+        index = Math.max(0, Math.min(NPC_SKIN_TONES.length - 1, index));
+        return NPC_SKIN_TONES[index];
+    }
+
+    private static int getSkinToneIndex(LivingEntity entity) {
+        if (entity == null || isZombieCyberNpc(entity)) {
+            return -1;
+        }
+
+        try {
+            Method method = getSkinToneMethod(entity.getClass());
+            if (method == null) {
+                return -1;
+            }
+
+            Object value = method.invoke(entity);
+            return value instanceof Number number
+                ? number.intValue()
+                : -1;
+        } catch (ReflectiveOperationException | RuntimeException exception) {
+            return -1;
+        }
     }
 
     private static int randomEarSetting(LivingEntity entity) {
@@ -246,18 +421,33 @@ public final class CyberNpcRaceManager {
     }
 
     private static Method getNpcTypeMethod(Class<?> entityClass) {
+        cacheMethods(entityClass);
+        return cachedGetNpcType;
+    }
+
+    private static Method getSkinToneMethod(Class<?> entityClass) {
+        cacheMethods(entityClass);
+        return cachedGetSkinToneIndex;
+    }
+
+    private static void cacheMethods(Class<?> entityClass) {
         if (cachedCyberNpcClass == entityClass) {
-            return cachedGetNpcType;
+            return;
         }
 
         cachedCyberNpcClass = entityClass;
         cachedGetNpcType = null;
+        cachedGetSkinToneIndex = null;
 
         try {
             cachedGetNpcType = entityClass.getMethod("getNpcType");
         } catch (NoSuchMethodException ignored) {
         }
 
-        return cachedGetNpcType;
+        try {
+            cachedGetSkinToneIndex =
+                entityClass.getMethod("getSkinToneIndex");
+        } catch (NoSuchMethodException ignored) {
+        }
     }
 }

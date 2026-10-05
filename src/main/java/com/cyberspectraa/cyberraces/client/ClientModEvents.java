@@ -2,7 +2,7 @@ package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.CyberRaces;
 import dev.cammiescorner.icarus.api.client.IcarusAPIClient;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -87,11 +87,27 @@ public final class ClientModEvents {
     private static void attachCyberNpcLayers(
         EntityRenderersEvent.AddLayers event
     ) {
-        ResourceLocation cyberNpcId =
-            new ResourceLocation("cybernpc", "cyber_npc");
+        attachCyberNpcRenderer(
+            event,
+            new ResourceLocation("cybernpc", "cyber_npc"),
+            "Wild NPC"
+        );
 
+        attachCyberNpcRenderer(
+            event,
+            new ResourceLocation("cybernpc", "zombie_cyber_npc"),
+            "Zombie NPC"
+        );
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static void attachCyberNpcRenderer(
+        EntityRenderersEvent.AddLayers event,
+        ResourceLocation entityId,
+        String label
+    ) {
         EntityType<?> entityType =
-            ForgeRegistries.ENTITY_TYPES.getValue(cyberNpcId);
+            ForgeRegistries.ENTITY_TYPES.getValue(entityId);
 
         if (entityType == null) {
             return;
@@ -102,7 +118,7 @@ public final class ClientModEvents {
                 event.getRenderer((EntityType) entityType);
 
             if (renderer == null
-                || !(renderer.getModel() instanceof PlayerModel<?>)) {
+                || !(renderer.getModel() instanceof HumanoidModel<?>)) {
                 return;
             }
 
@@ -125,6 +141,11 @@ public final class ClientModEvents {
                 )
             ));
 
+            /*
+             * This also lets converted Fairy NPCs keep their racial wings.
+             * IcarusPlayerWingLayer already resolves non-player Fairy races
+             * through ClientCharacterState.
+             */
             renderer.addLayer(
                 new IcarusPlayerWingLayer(
                     renderer,
@@ -133,11 +154,13 @@ public final class ClientModEvents {
             );
 
             CyberRaces.LOGGER.info(
-                "Attached CyberRaces visuals to CyberNpc Wild NPC renderer"
+                "Attached CyberRaces visuals to CyberNpc {} renderer",
+                label
             );
         } catch (Exception exception) {
             CyberRaces.LOGGER.warn(
-                "Could not attach CyberRaces layers to CyberNpc",
+                "Could not attach CyberRaces layers to CyberNpc {}",
+                label,
                 exception
             );
         }

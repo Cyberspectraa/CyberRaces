@@ -5,6 +5,7 @@ import com.cyberspectraa.cyberraces.race.Race;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 public final class RaceSkinOverlayManager {
     private static final Map<UUID, CacheEntry> CACHE = new HashMap<>();
+    private static final Map<UUID, CacheEntry> NPC_OVERLAY_CACHE = new HashMap<>();
     private static final Map<UUID, ResourceLocation> ORIGINAL_SKINS = new HashMap<>();
 
     private RaceSkinOverlayManager() {
@@ -64,6 +66,52 @@ public final class RaceSkinOverlayManager {
         return originalSkin;
     }
 
+    public static ResourceLocation getNpcOverlay(
+        LivingEntity entity,
+        Race race,
+        CharacterAppearance appearance,
+        ResourceLocation sourceTexture
+    ) {
+        if (entity == null
+            || sourceTexture == null
+            || !supports(race)
+            || !appearance.hasBodyRecolour()) {
+            if (entity != null) {
+                invalidateNpc(entity.getUUID());
+            }
+            return null;
+        }
+
+        CacheKey key = new CacheKey(
+            sourceTexture,
+            appearance.bodySourceColor(),
+            appearance.bodyTargetColor(),
+            appearance.bodyTolerance()
+        );
+
+        CacheEntry existing = NPC_OVERLAY_CACHE.get(entity.getUUID());
+        if (existing != null && existing.key().equals(key)) {
+            return existing.texture();
+        }
+
+        invalidateNpc(entity.getUUID());
+
+        ResourceLocation generated = generateNpcOverlay(
+            entity,
+            sourceTexture,
+            appearance
+        );
+
+        if (generated != null) {
+            NPC_OVERLAY_CACHE.put(
+                entity.getUUID(),
+                new CacheEntry(key, generated)
+            );
+        }
+
+        return generated;
+    }
+
     public static void rememberOriginal(
         UUID playerId,
         ResourceLocation originalSkin
@@ -82,6 +130,17 @@ public final class RaceSkinOverlayManager {
                 .getTextureManager()
                 .release(entry.texture());
         }
+
+        invalidateNpc(playerId);
+    }
+
+    private static void invalidateNpc(UUID entityId) {
+        CacheEntry entry = NPC_OVERLAY_CACHE.remove(entityId);
+        if (entry != null) {
+            Minecraft.getInstance()
+                .getTextureManager()
+                .release(entry.texture());
+        }
     }
 
     public static void clearAll() {
@@ -91,7 +150,12 @@ public final class RaceSkinOverlayManager {
             minecraft.getTextureManager().release(entry.texture());
         }
 
+        for (CacheEntry entry : NPC_OVERLAY_CACHE.values()) {
+            minecraft.getTextureManager().release(entry.texture());
+        }
+
         CACHE.clear();
+        NPC_OVERLAY_CACHE.clear();
         ORIGINAL_SKINS.clear();
     }
 
@@ -157,6 +221,131 @@ public final class RaceSkinOverlayManager {
             }
         } catch (RuntimeException exception) {
             return null;
+        }
+    }
+
+    private static ResourceLocation generateNpcOverlay(
+        LivingEntity entity,
+        ResourceLocation sourceTextureLocation,
+        CharacterAppearance appearance
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        try {
+            AbstractTexture sourceTexture =
+                minecraft.getTextureManager().getTexture(
+                    sourceTextureLocation
+                );
+
+            sourceTexture.bind();
+
+            try (NativeImage source = new NativeImage(64, 64, false)) {
+                source.downloadTexture(0, false);
+
+                NativeImage overlay = new NativeImage(64, 64, true);
+                buildRecolouredOverlay(source, overlay, appearance);
+
+                DynamicTexture dynamicTexture =
+                    new DynamicTexture(overlay);
+
+                String name =
+                    "cyberraces_npc_overlay_"
+                        + entity.getUUID().toString().replace("-", "")
+                        + "_"
+                        + Integer.toHexString(
+                            appearance.bodySourceColor()
+                                ^ appearance.bodyTargetColor()
+                                ^ appearance.bodyTolerance()
+                        );
+
+                ResourceLocation location =
+                    minecraft.getTextureManager().register(
+                        name,
+                        dynamicTexture
+                    );
+
+                dynamicTexture.upload();
+                return location;
+            }
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
+    private static void buildRecolouredOverlay(
+        NativeImage source,
+        NativeImage result,
+        CharacterAppearance appearance
+    ) {
+        int selected = appearance.bodySourceColor();
+        int target = appearance.bodyTargetColor();
+
+        int sourceR = (selected >> 16) & 0xFF;
+        int sourceG = (selected >> 8) & 0xFF;
+        int sourceB = selected & 0xFF;
+
+        int targetR = (target >> 16) & 0xFF;
+        int targetG = (target >> 8) & 0xFF;
+        int targetB = target & 0xFF;
+
+        double sourceLuma = Math.max(
+            12.0D,
+            luminance(sourceR, sourceG, sourceB)
+        );
+
+        double threshold =
+            appearance.bodyTolerance() * 2.35D;
+        double thresholdSquared = threshold * threshold;
+
+        for (int y = 0; y < 64; y++) {
+            for (int x = 0; x < 64; x++) {
+                int alpha =
+                    source.getLuminanceOrAlpha(x, y) & 0xFF;
+
+                if (alpha < 16) {
+                    result.setPixelRGBA(x, y, 0x00000000);
+                    continue;
+                }
+
+                int red =
+                    source.getRedOrLuminance(x, y) & 0xFF;
+                int green =
+                    source.getGreenOrLuminance(x, y) & 0xFF;
+                int blue =
+                    source.getBlueOrLuminance(x, y) & 0xFF;
+
+                int dr = red - sourceR;
+                int dg = green - sourceG;
+                int db = blue - sourceB;
+
+                double distanceSquared =
+                    dr * dr + dg * dg + db * db;
+
+                if (distanceSquared > thresholdSquared) {
+                    result.setPixelRGBA(x, y, 0x00000000);
+                    continue;
+                }
+
+                double shade =
+                    luminance(red, green, blue) / sourceLuma;
+                shade = Math.max(
+                    0.34D,
+                    Math.min(1.72D, shade)
+                );
+
+                int newR =
+                    clamp((int) Math.round(targetR * shade));
+                int newG =
+                    clamp((int) Math.round(targetG * shade));
+                int newB =
+                    clamp((int) Math.round(targetB * shade));
+
+                result.setPixelRGBA(
+                    x,
+                    y,
+                    abgr(alpha, newR, newG, newB)
+                );
+            }
         }
     }
 
