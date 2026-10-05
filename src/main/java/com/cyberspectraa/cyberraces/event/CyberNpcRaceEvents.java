@@ -57,15 +57,13 @@ public final class CyberNpcRaceEvents {
             return;
         }
 
-        CyberNpcRaceManager.getRace(entity).ifPresent(race -> {
-            if (race.fireDamageMultiplier() != 1.0) {
-                event.setAmount(
-                    (float) (
-                        event.getAmount()
-                            * race.fireDamageMultiplier()
-                    )
-                );
-            }
-        });
+        double multiplier =
+            CyberNpcRaceManager.effectiveFireDamageMultiplier(entity);
+
+        if (multiplier != 1.0D) {
+            event.setAmount(
+                (float) (event.getAmount() * multiplier)
+            );
+        }
     }
 }

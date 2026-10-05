@@ -5,6 +5,8 @@ import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.compat.IcarusCompat;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.RaceEvolution;
+import com.cyberspectraa.cyberraces.race.RaceEvolutionManager;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -24,6 +26,14 @@ public final class CyberRaceCommands {
         (context, builder) -> {
             for (Race race : Race.values()) {
                 builder.suggest(race.id());
+            }
+            return builder.buildFuture();
+        };
+
+    private static final SuggestionProvider<CommandSourceStack> EVOLUTION_SUGGESTIONS =
+        (context, builder) -> {
+            for (RaceEvolution evolution : RaceEvolution.values()) {
+                builder.suggest(evolution.id());
             }
             return builder.buildFuture();
         };
@@ -77,6 +87,36 @@ public final class CyberRaceCommands {
                             ))))
                     .then(Commands.literal("compat")
                         .executes(context -> compat(context.getSource())))
+                )
+                .then(Commands.literal("evolution")
+                    .then(Commands.literal("get")
+                        .executes(context -> evolutionStatus(
+                            context.getSource(),
+                            context.getSource().getPlayerOrException()
+                        ))
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .requires(source -> source.hasPermission(2))
+                            .executes(context -> evolutionStatus(
+                                context.getSource(),
+                                EntityArgument.getPlayer(context, "player")
+                            ))))
+                    .then(Commands.literal("set")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .then(Commands.argument("evolution", StringArgumentType.word())
+                                .suggests(EVOLUTION_SUGGESTIONS)
+                                .executes(context -> setEvolution(
+                                    context.getSource(),
+                                    EntityArgument.getPlayer(context, "player"),
+                                    StringArgumentType.getString(context, "evolution")
+                                )))))
+                    .then(Commands.literal("reset")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .executes(context -> resetEvolution(
+                                context.getSource(),
+                                EntityArgument.getPlayer(context, "player")
+                            ))))
                 )
                 .then(Commands.literal("character")
                     .then(Commands.literal("reset")
@@ -227,6 +267,97 @@ public final class CyberRaceCommands {
             () -> Component.literal("Set " + player.getGameProfile().getName() + "'s race to " + race.displayName() + "."),
             true
         );
+        return 1;
+    }
+
+    private static int evolutionStatus(
+        CommandSourceStack source,
+        ServerPlayer player
+    ) {
+        Race race = RaceManager.getRace(player).orElse(null);
+
+        if (race == null) {
+            source.sendFailure(Component.literal("Player has no race."));
+            return 0;
+        }
+
+        String value = RaceManager.getEvolution(player)
+            .map(evolution ->
+                evolution.displayName()
+                    + " (" + evolution.id() + ")"
+            )
+            .orElse("None");
+
+        source.sendSuccess(
+            () -> Component.literal(
+                player.getGameProfile().getName()
+                    + " evolution: " + value
+            ),
+            false
+        );
+
+        return 1;
+    }
+
+    private static int setEvolution(
+        CommandSourceStack source,
+        ServerPlayer player,
+        String evolutionId
+    ) {
+        RaceEvolution evolution =
+            RaceEvolution.byId(evolutionId).orElse(null);
+
+        if (evolution == null) {
+            source.sendFailure(
+                Component.literal(
+                    "Unknown evolution: " + evolutionId
+                )
+            );
+            return 0;
+        }
+
+        Race race = RaceManager.getRace(player).orElse(null);
+
+        if (race == null || evolution.baseRace() != race) {
+            source.sendFailure(
+                Component.literal(
+                    evolution.displayName()
+                        + " does not belong to "
+                        + (race == null ? "this player's race" : race.displayName())
+                        + "."
+                )
+            );
+            return 0;
+        }
+
+        RaceEvolutionManager.forceSet(player, evolution);
+
+        source.sendSuccess(
+            () -> Component.literal(
+                "Set " + player.getGameProfile().getName()
+                    + "'s evolution to "
+                    + evolution.displayName() + "."
+            ),
+            true
+        );
+
+        return 1;
+    }
+
+    private static int resetEvolution(
+        CommandSourceStack source,
+        ServerPlayer player
+    ) {
+        RaceEvolutionManager.reset(player);
+
+        source.sendSuccess(
+            () -> Component.literal(
+                "Reset " + player.getGameProfile().getName()
+                    + "'s race evolution."
+            ),
+            true
+        );
+
         return 1;
     }
 

@@ -6,7 +6,10 @@ import com.cyberspectraa.cyberraces.network.packet.CloseCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.EntityRaceSyncPacket;
 import com.cyberspectraa.cyberraces.network.packet.RacialAbilityPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenCharacterCreatorPacket;
+import com.cyberspectraa.cyberraces.network.packet.OpenRaceEvolutionPacket;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
+import com.cyberspectraa.cyberraces.network.packet.SubmitRaceEvolutionPacket;
+import com.cyberspectraa.cyberraces.network.packet.CloseRaceEvolutionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
@@ -15,7 +18,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class CyberRacesNetwork {
-    private static final String PROTOCOL = "8";
+    private static final String PROTOCOL = "9";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
         new ResourceLocation(CyberRaces.MOD_ID, "main"),
@@ -64,6 +67,24 @@ public final class CyberRacesNetwork {
             .encoder(RacialAbilityPacket::encode)
             .decoder(RacialAbilityPacket::decode)
             .consumerMainThread(RacialAbilityPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(OpenRaceEvolutionPacket.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
+            .encoder(OpenRaceEvolutionPacket::encode)
+            .decoder(OpenRaceEvolutionPacket::decode)
+            .consumerMainThread(OpenRaceEvolutionPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(SubmitRaceEvolutionPacket.class, messageId++, NetworkDirection.PLAY_TO_SERVER)
+            .encoder(SubmitRaceEvolutionPacket::encode)
+            .decoder(SubmitRaceEvolutionPacket::decode)
+            .consumerMainThread(SubmitRaceEvolutionPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(CloseRaceEvolutionPacket.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
+            .encoder(CloseRaceEvolutionPacket::encode)
+            .decoder(CloseRaceEvolutionPacket::decode)
+            .consumerMainThread(CloseRaceEvolutionPacket::handle)
             .add();
     }
 

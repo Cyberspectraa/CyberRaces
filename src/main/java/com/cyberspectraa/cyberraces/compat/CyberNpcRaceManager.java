@@ -3,8 +3,10 @@ package com.cyberspectraa.cyberraces.compat;
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.EntityRaceSyncPacket;
+import com.cyberspectraa.cyberraces.progression.ProgressionManager;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceAttributeApplier;
+import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,6 +25,7 @@ public final class CyberNpcRaceManager {
 
     private static final String ROOT_KEY = "CyberRacesWildNpc";
     private static final String RACE_KEY = "Race";
+    private static final String EVOLUTION_KEY = "Evolution";
     private static final String APPEARANCE_KEY = "Appearance";
     private static final String NATURAL_WILD_ZOMBIE_KEY =
         "CyberNpcNaturalWildZombie";
@@ -126,6 +129,39 @@ public final class CyberNpcRaceManager {
         return Race.byId(root.getString(RACE_KEY));
     }
 
+    public static Optional<RaceEvolution> getEvolution(
+        LivingEntity entity
+    ) {
+        if (entity == null) {
+            return Optional.empty();
+        }
+
+        CompoundTag persistent = entity.getPersistentData();
+
+        if (!persistent.contains(ROOT_KEY)) {
+            return Optional.empty();
+        }
+
+        CompoundTag root = persistent.getCompound(ROOT_KEY);
+        Race race = getRace(entity).orElse(null);
+
+        if (race == null || !root.contains(EVOLUTION_KEY)) {
+            return Optional.empty();
+        }
+
+        RaceEvolution evolution =
+            RaceEvolution.byId(
+                root.getString(EVOLUTION_KEY)
+            ).orElse(null);
+
+        if (evolution == null
+                || evolution.baseRace() != race) {
+            return Optional.empty();
+        }
+
+        return Optional.of(evolution);
+    }
+
     public static CharacterAppearance getAppearance(LivingEntity entity) {
         if (entity == null) {
             return CharacterAppearance.defaults();
@@ -167,13 +203,19 @@ public final class CyberNpcRaceManager {
             persistent.put(ROOT_KEY, root);
         }
 
+        ensureEvolution(entity, race);
+
         /*
          * Natural Wild Zombie replacements skip living-skin migration. Their
          * actual body is already the CyberNpc zombie-green skin and
          * renderAppearance() handles green skin-matched race features.
          */
         if (isZombieCyberNpc(entity)) {
-            RaceAttributeApplier.apply(entity, race);
+            RaceAttributeApplier.apply(
+                entity,
+                race,
+                getEvolution(entity).orElse(null)
+            );
             return created;
         }
 
@@ -196,7 +238,11 @@ public final class CyberNpcRaceManager {
             persistent.put(ROOT_KEY, root);
         }
 
-        RaceAttributeApplier.apply(entity, race);
+        RaceAttributeApplier.apply(
+            entity,
+            race,
+            getEvolution(entity).orElse(null)
+        );
         return created;
     }
 
@@ -205,9 +251,71 @@ public final class CyberNpcRaceManager {
             return;
         }
 
-        getRace(entity).ifPresent(race ->
-            RaceAttributeApplier.apply(entity, race)
-        );
+        getRace(entity).ifPresent(race -> {
+            ensureEvolution(entity, race);
+            RaceAttributeApplier.apply(
+                entity,
+                race,
+                getEvolution(entity).orElse(null)
+            );
+        });
+    }
+
+    public static boolean ensureEvolution(
+        LivingEntity entity,
+        Race race
+    ) {
+        if (entity == null
+                || race == null
+                || ProgressionManager.getLevel(entity)
+                    < RaceEvolution.REQUIRED_LEVEL) {
+            return false;
+        }
+
+        if (getEvolution(entity).isPresent()) {
+            return false;
+        }
+
+        RaceEvolution evolution =
+            RaceEvolution.randomFor(
+                race,
+                entity.getRandom()
+            ).orElse(null);
+
+        if (evolution == null) {
+            return false;
+        }
+
+        CompoundTag persistent = entity.getPersistentData();
+        CompoundTag root = persistent.contains(ROOT_KEY)
+            ? persistent.getCompound(ROOT_KEY)
+            : new CompoundTag();
+
+        root.putString(EVOLUTION_KEY, evolution.id());
+        persistent.put(ROOT_KEY, root);
+        return true;
+    }
+
+    public static double effectiveFireDamageMultiplier(
+        LivingEntity entity
+    ) {
+        Race race = getRace(entity).orElse(null);
+
+        if (race == null) {
+            return 1.0D;
+        }
+
+        double multiplier = race.fireDamageMultiplier();
+
+        RaceEvolution evolution =
+            getEvolution(entity).orElse(null);
+
+        if (evolution != null) {
+            multiplier *=
+                evolution.stats().fireDamageMultiplier();
+        }
+
+        return multiplier;
     }
 
     public static void clearIfNotWild(LivingEntity entity) {

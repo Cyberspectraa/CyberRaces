@@ -17,4 +17,20 @@ public final class ClientPacketHandlers {
             minecraft.setScreen(null);
         }
     }
+
+    public static void openRaceEvolution(String baseRaceId) {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        if (!(minecraft.screen instanceof RaceEvolutionScreen)) {
+            minecraft.setScreen(new RaceEvolutionScreen(baseRaceId));
+        }
+    }
+
+    public static void closeRaceEvolution() {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        if (minecraft.screen instanceof RaceEvolutionScreen) {
+            minecraft.setScreen(null);
+        }
+    }
 }

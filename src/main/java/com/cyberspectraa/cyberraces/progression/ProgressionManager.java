@@ -1,6 +1,8 @@
 package com.cyberspectraa.cyberraces.progression;
 
+import com.cyberspectraa.cyberraces.compat.CyberNpcRaceManager;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -334,6 +336,17 @@ public final class ProgressionManager {
         int oldLevel,
         int newLevel
     ) {
+        if (oldLevel < RaceEvolution.REQUIRED_LEVEL
+                && newLevel >= RaceEvolution.REQUIRED_LEVEL
+                && CyberNpcRaceManager.isWildCyberNpc(entity)) {
+            CyberNpcRaceManager.getRace(entity).ifPresent(race -> {
+                if (CyberNpcRaceManager.ensureEvolution(entity, race)) {
+                    CyberNpcRaceManager.reapply(entity);
+                    CyberNpcRaceManager.broadcast(entity);
+                }
+            });
+        }
+
         if (!(entity instanceof ServerPlayer player)) {
             return;
         }

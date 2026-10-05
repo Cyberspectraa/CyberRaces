@@ -21,30 +21,61 @@ public final class RaceAttributeApplier {
     }
 
     public static void apply(ServerPlayer player, Race race) {
-        apply((LivingEntity) player, race);
+        apply((LivingEntity) player, race, null);
+    }
+
+    public static void apply(
+        ServerPlayer player,
+        Race race,
+        RaceEvolution evolution
+    ) {
+        apply((LivingEntity) player, race, evolution);
     }
 
     public static void apply(LivingEntity entity, Race race) {
+        apply(entity, race, null);
+    }
+
+    public static void apply(
+        LivingEntity entity,
+        Race race,
+        RaceEvolution evolution
+    ) {
         if (entity == null || race == null) {
             return;
         }
 
         clearVanilla(entity);
 
+        RaceEvolutionStats stats = evolution == null
+            ? RaceEvolutionStats.NEUTRAL
+            : evolution.stats();
+
+        double maxHealth =
+            race.maxHealth() + stats.healthBonus();
+        double movement =
+            race.movementMultiplier()
+                * stats.movementMultiplier();
+        double knockback =
+            race.knockbackResistanceBonus()
+                + stats.knockbackResistanceBonus();
+        double armor =
+            race.armorBonus() + stats.armorBonus();
+
         add(entity.getAttribute(Attributes.MAX_HEALTH), HEALTH_ID,
-            "CyberRaces racial health", race.maxHealth() - 20.0, AttributeModifier.Operation.ADDITION);
+            "CyberRaces racial health", maxHealth - 20.0, AttributeModifier.Operation.ADDITION);
 
         add(entity.getAttribute(Attributes.MOVEMENT_SPEED), SPEED_ID,
-            "CyberRaces racial movement", race.movementMultiplier() - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+            "CyberRaces racial movement", movement - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL);
 
-        if (race.knockbackResistanceBonus() > 0.0) {
+        if (knockback > 0.0) {
             add(entity.getAttribute(Attributes.KNOCKBACK_RESISTANCE), KNOCKBACK_ID,
-                "CyberRaces racial knockback resistance", race.knockbackResistanceBonus(), AttributeModifier.Operation.ADDITION);
+                "CyberRaces racial knockback resistance", knockback, AttributeModifier.Operation.ADDITION);
         }
 
-        if (race.armorBonus() != 0.0) {
+        if (armor != 0.0) {
             add(entity.getAttribute(Attributes.ARMOR), ARMOR_ID,
-                "CyberRaces racial natural armor", race.armorBonus(), AttributeModifier.Operation.ADDITION);
+                "CyberRaces racial natural armor", armor, AttributeModifier.Operation.ADDITION);
         }
 
         double luckBonus = switch (race) {
@@ -53,13 +84,21 @@ public final class RaceAttributeApplier {
             default -> 0.0;
         };
 
+        luckBonus += stats.luckBonus();
+
         if (luckBonus != 0.0) {
             add(entity.getAttribute(Attributes.LUCK), LUCK_ID,
                 "CyberRaces racial luck", luckBonus, AttributeModifier.Operation.ADDITION);
         }
 
-        PehkuiCompat.applyScale(entity, race.scale());
-        IronSpellsCompat.apply(entity, race);
+        PehkuiCompat.applyScale(
+            entity,
+            (float) (
+                race.scale()
+                    * stats.scaleMultiplier()
+            )
+        );
+        IronSpellsCompat.apply(entity, race, evolution);
 
         if (entity.getHealth() > entity.getMaxHealth()) {
             entity.setHealth(entity.getMaxHealth());

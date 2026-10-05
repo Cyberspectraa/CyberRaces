@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.event;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
+import com.cyberspectraa.cyberraces.race.RaceEvolutionManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -12,8 +13,13 @@ public final class CharacterCreationEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer player) {
+        if (event.phase == TickEvent.Phase.END
+                && event.player instanceof ServerPlayer player) {
             CharacterManager.tickCreationHold(player);
+
+            if (CharacterManager.isCharacterCreated(player)) {
+                RaceEvolutionManager.tick(player);
+            }
         }
     }
 
@@ -21,6 +27,7 @@ public final class CharacterCreationEvents {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             CharacterManager.onLogout(player);
+            RaceEvolutionManager.onLogout(player);
         }
     }
 }
