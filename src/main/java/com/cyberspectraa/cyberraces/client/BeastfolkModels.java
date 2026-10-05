@@ -55,57 +55,39 @@ public final class BeastfolkModels {
         addCatEarTuft(leftEar, false);
 
         /*
-         * Connected fluffy tail chain. The vanilla cat tail is still the
-         * proportion reference, but the middle grows slightly wider before
-         * tapering again. Every piece is a child of the previous one, so no
-         * animation can ever pull the tip away from the base.
+         * Use the exact two vanilla Cat/Ocelot tail boxes and UVs.
+         * Vanilla renders the pieces separately; we parent tail2 to tail1
+         * using the equivalent local transform so it cannot disconnect.
          */
         PartDefinition tail = root.addOrReplaceChild(
             "tail",
             CubeListBuilder.create()
                 .texOffs(0, 15)
-                .addBox(-0.50F, 0.0F, -0.50F, 1.0F, 2.15F, 1.0F),
-            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.68F, 0.0F, 0.0F)
+                .addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F),
+            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.90F, 0.0F, 0.0F)
         );
 
-        PartDefinition catMid1 = tail.addOrReplaceChild(
-            "mid1",
+        tail.addOrReplaceChild(
+            "tail2",
             CubeListBuilder.create()
                 .texOffs(4, 15)
-                .addBox(-0.62F, 0.0F, -0.62F, 1.24F, 2.35F, 1.24F),
-            PartPose.offsetAndRotation(0.0F, 1.95F, 0.28F, 0.18F, 0.0F, 0.0F)
-        );
-
-        PartDefinition catMid2 = catMid1.addOrReplaceChild(
-            "mid2",
-            CubeListBuilder.create()
-                .texOffs(0, 15)
-                .addBox(-0.74F, 0.0F, -0.74F, 1.48F, 2.55F, 1.48F),
-            PartPose.offsetAndRotation(0.0F, 2.12F, 0.24F, 0.12F, 0.0F, 0.0F)
-        );
-
-        PartDefinition catMid3 = catMid2.addOrReplaceChild(
-            "mid3",
-            CubeListBuilder.create()
-                .texOffs(4, 15)
-                .addBox(-0.64F, 0.0F, -0.64F, 1.28F, 2.35F, 1.28F),
-            PartPose.offsetAndRotation(0.0F, 2.30F, 0.18F, 0.09F, 0.0F, 0.0F)
-        );
-
-        catMid3.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(0, 15)
                 .addBox(
-                    -0.46F,
+                    -0.5F,
                     0.0F,
-                    -0.46F,
-                    0.92F,
-                    2.05F,
-                    0.92F,
-                    new CubeDeformation(-0.01F)
+                    0.0F,
+                    1.0F,
+                    8.0F,
+                    1.0F,
+                    new CubeDeformation(-0.02F)
                 ),
-            PartPose.offsetAndRotation(0.0F, 2.12F, 0.12F, 0.06F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(
+                0.0F,
+                7.965F,
+                -0.062F,
+                0.8278761F,
+                0.0F,
+                0.0F
+            )
         );
 
         return LayerDefinition.create(mesh, 64, 32);
@@ -133,36 +115,20 @@ public final class BeastfolkModels {
         );
         addWolfEarTuft(leftEar, false);
 
-        PartDefinition tail = root.addOrReplaceChild(
+        // Exact vanilla Wolf real_tail geometry and UVs.
+        root.addOrReplaceChild(
             "tail",
             CubeListBuilder.create()
                 .texOffs(9, 18)
-                .addBox(-1.0F, 0.0F, -1.0F, 2.0F, 2.15F, 2.0F),
-            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.56F, 0.0F, 0.0F)
-        );
-
-        PartDefinition dogMid1 = tail.addOrReplaceChild(
-            "mid1",
-            CubeListBuilder.create()
-                .texOffs(9, 18)
-                .addBox(-1.17F, 0.0F, -1.17F, 2.34F, 2.30F, 2.34F),
-            PartPose.offsetAndRotation(0.0F, 1.92F, 0.34F, 0.10F, 0.0F, 0.0F)
-        );
-
-        PartDefinition dogMid2 = dogMid1.addOrReplaceChild(
-            "mid2",
-            CubeListBuilder.create()
-                .texOffs(9, 18)
-                .addBox(-1.22F, 0.0F, -1.22F, 2.44F, 2.25F, 2.44F),
-            PartPose.offsetAndRotation(0.0F, 2.08F, 0.26F, 0.08F, 0.0F, 0.0F)
-        );
-
-        dogMid2.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(9, 18)
-                .addBox(-0.88F, 0.0F, -0.88F, 1.76F, 1.95F, 1.76F),
-            PartPose.offsetAndRotation(0.0F, 2.02F, 0.18F, 0.04F, 0.0F, 0.0F)
+                .addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F),
+            PartPose.offsetAndRotation(
+                0.0F,
+                8.0F,
+                2.0F,
+                (float) Math.PI / 5.0F,
+                0.0F,
+                0.0F
+            )
         );
 
         return LayerDefinition.create(mesh, 64, 32);
@@ -190,49 +156,13 @@ public final class BeastfolkModels {
         );
         addFoxEarTuft(leftEar, false);
 
-        /*
-         * Fox keeps the vanilla 4x9x5 tail as its maximum silhouette, but
-         * splits that volume into a connected chain: narrow root, full middle,
-         * tapered end. This avoids UV overflow and the inflated-shell look.
-         */
-        PartDefinition tail = root.addOrReplaceChild(
+        // Exact vanilla Fox tail geometry and UVs.
+        root.addOrReplaceChild(
             "tail",
             CubeListBuilder.create()
                 .texOffs(30, 0)
-                .addBox(-1.55F, 0.0F, -1.95F, 3.10F, 1.70F, 3.90F),
-            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.52F, 0.0F, 0.0F)
-        );
-
-        PartDefinition foxMid1 = tail.addOrReplaceChild(
-            "mid1",
-            CubeListBuilder.create()
-                .texOffs(30, 0)
-                .addBox(-1.82F, 0.0F, -2.24F, 3.64F, 1.95F, 4.48F),
-            PartPose.offsetAndRotation(0.0F, 1.45F, 0.34F, 0.08F, 0.0F, 0.0F)
-        );
-
-        PartDefinition foxMid2 = foxMid1.addOrReplaceChild(
-            "mid2",
-            CubeListBuilder.create()
-                .texOffs(30, 0)
-                .addBox(-2.0F, 0.0F, -2.5F, 4.0F, 2.15F, 5.0F),
-            PartPose.offsetAndRotation(0.0F, 1.70F, 0.26F, 0.07F, 0.0F, 0.0F)
-        );
-
-        PartDefinition foxMid3 = foxMid2.addOrReplaceChild(
-            "mid3",
-            CubeListBuilder.create()
-                .texOffs(30, 0)
-                .addBox(-1.78F, 0.0F, -2.18F, 3.56F, 1.90F, 4.36F),
-            PartPose.offsetAndRotation(0.0F, 1.92F, 0.18F, 0.05F, 0.0F, 0.0F)
-        );
-
-        foxMid3.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(30, 0)
-                .addBox(-1.35F, 0.0F, -1.70F, 2.70F, 1.55F, 3.40F),
-            PartPose.offsetAndRotation(0.0F, 1.68F, 0.10F, 0.03F, 0.0F, 0.0F)
+                .addBox(-2.0F, 0.0F, -2.5F, 4.0F, 9.0F, 5.0F),
+            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.56F, 0.0F, 0.0F)
         );
 
         return LayerDefinition.create(mesh, 48, 32);
