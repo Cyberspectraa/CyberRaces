@@ -168,7 +168,7 @@ public final class CyberRaceCommands {
 
     private static String racialTrait(Race race) {
         return switch (race) {
-            case HUMAN -> "+5% experience gained";
+            case HUMAN -> "+5% Cyber XP gained";
             case ELF -> "bows reach full draw 15% sooner";
             case DWARF -> "+15% underground mining speed";
             case HALFLING -> "+1 Luck and 35% less fall damage";
