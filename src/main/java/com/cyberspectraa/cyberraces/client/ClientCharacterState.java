@@ -71,7 +71,15 @@ public final class ClientCharacterState {
             return Optional.of(new VisualCharacter(previewRace, previewAppearance));
         }
 
-        return Optional.ofNullable(CHARACTERS.get(player.getUUID()));
+        return resolve(player.getUUID());
+    }
+
+    public static Optional<VisualCharacter> resolve(UUID entityId) {
+        if (entityId == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(CHARACTERS.get(entityId));
     }
 
     public static void setPreview(Race race, CharacterAppearance appearance) {
