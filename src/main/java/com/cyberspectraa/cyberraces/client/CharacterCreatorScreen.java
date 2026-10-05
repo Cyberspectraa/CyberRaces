@@ -75,7 +75,7 @@ public final class CharacterCreatorScreen extends Screen {
         int featureY = l.top + (l.small ? 42 : 78);
         this.featureButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
-                featureStyle = (featureStyle + 1) % CharacterAppearance.FEATURE_STYLE_COUNT;
+                featureStyle = (featureStyle + 1) % featureVariantCount(currentRace());
                 refreshLabels();
             })
                 .bounds(l.right + pad, featureY, Math.max(60, l.rightWidth - pad * 2), buttonHeight)
@@ -280,9 +280,11 @@ public final class CharacterCreatorScreen extends Screen {
         if (!l.small) {
             drawWrapped(
                 graphics,
-                FeatureColourPalette.hasEars(currentRace())
-                    ? "Use Skin for automatic texture matching, or pick any custom colour."
-                    : "Pick any custom colour for this racial feature.",
+                BeastVariantTextures.isBeastfolk(currentRace())
+                    ? "Ears and tail use the selected Minecraft animal coat texture."
+                    : FeatureColourPalette.hasEars(currentRace())
+                        ? "Use Skin for automatic texture matching, or pick any custom colour."
+                        : "Pick any custom colour for this racial feature.",
                 x,
                 l.top + 202,
                 maxWidth,
@@ -413,10 +415,12 @@ public final class CharacterCreatorScreen extends Screen {
         }
 
         if (colourButton != null) {
+            boolean featureColour = hasFeatureColour(race);
             colourButton.setMessage(Component.literal(
                 "Colour: " + FeatureColourPalette.label(race, featureColor)
             ));
-            colourButton.active = hasFeatureColour(race);
+            colourButton.active = featureColour;
+            colourButton.visible = featureColour;
         }
 
         if (earFitButton != null) {
@@ -441,7 +445,15 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private boolean hasFeatureColour(Race race) {
-        return race != Race.HUMAN && race != Race.DWARF;
+        return race != Race.HUMAN
+            && race != Race.DWARF
+            && !BeastVariantTextures.isBeastfolk(race);
+    }
+
+    private int featureVariantCount(Race race) {
+        return BeastVariantTextures.isBeastfolk(race)
+            ? BeastVariantTextures.count(race)
+            : CharacterAppearance.FEATURE_STYLE_COUNT >= 3 ? 3 : CharacterAppearance.FEATURE_STYLE_COUNT;
     }
 
     private String featureLabel() {
@@ -453,13 +465,15 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
             case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
             case FAIRY -> new String[] {"Ears: Classic", "Ears: Sharp", "Ears: Soft"};
-            case CATFOLK -> new String[] {"Ears: Pointed", "Ears: Tufted", "Ears: Round"};
-            case DOGFOLK -> new String[] {"Ears: Upright", "Ears: Floppy", "Ears: Round"};
-            case FOXFOLK -> new String[] {"Ears: Tall", "Ears: Wide", "Ears: Swept"};
+            case CATFOLK, DOGFOLK, FOXFOLK -> new String[] {
+                "Variant: " + BeastVariantTextures.name(currentRace(), featureStyle)
+            };
             case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
             case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
         };
-        return labels[featureStyle];
+        return BeastVariantTextures.isBeastfolk(currentRace())
+            ? labels[0]
+            : labels[Math.min(featureStyle, labels.length - 1)];
     }
 
     private String featureDescription() {
@@ -473,9 +487,9 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> "Horns and an animated tail.";
             case DRAGONBORN -> "Horned crest and scaled tail.";
             case FAIRY -> "Adjustable fey ears and Zanza's Wings.";
-            case CATFOLK -> "Feline ears and a long flexible tail.";
-            case DOGFOLK -> "Canine ears and a stronger wagging tail.";
-            case FOXFOLK -> "Fox ears and a full articulated tail.";
+            case CATFOLK -> "Vanilla Cat ears/tail with selectable Cat coat variants.";
+            case DOGFOLK -> "Vanilla Wolf ears/tail with selectable Wolf coat variants.";
+            case FOXFOLK -> "Vanilla Fox ears/tail with Red or Snow coat variants.";
         };
     }
 

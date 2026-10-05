@@ -12,7 +12,7 @@ public record CharacterAppearance(
     int bodyTargetColor,
     int bodyTolerance
 ) {
-    public static final int FEATURE_STYLE_COUNT = 3;
+    public static final int FEATURE_STYLE_COUNT = 11;
     public static final int AUTO_COLOR = -1;
     public static final int EAR_MIN = -8;
     public static final int EAR_MAX = 8;

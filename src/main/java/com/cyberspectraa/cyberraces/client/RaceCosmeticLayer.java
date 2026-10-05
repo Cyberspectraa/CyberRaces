@@ -27,15 +27,24 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
 
     private final ModelPart skinRoot;
     private final ModelPart hardRoot;
+    private final ModelPart catRoot;
+    private final ModelPart wolfRoot;
+    private final ModelPart foxRoot;
 
     public RaceCosmeticLayer(
         RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent,
         ModelPart skinRoot,
-        ModelPart hardRoot
+        ModelPart hardRoot,
+        ModelPart catRoot,
+        ModelPart wolfRoot,
+        ModelPart foxRoot
     ) {
         super(parent);
         this.skinRoot = skinRoot;
         this.hardRoot = hardRoot;
+        this.catRoot = catRoot;
+        this.wolfRoot = wolfRoot;
+        this.foxRoot = foxRoot;
     }
 
     @Override
@@ -195,105 +204,208 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 earHeight, earSpread, earTilt
             );
 
-            case CATFOLK -> {
-                renderEars(
-                    poseStack, buffer, packedLight, player, race, featureColor,
-                    "cat_" + switch (feature) {
-                        case 1 -> "tufted";
-                        case 2 -> "round";
-                        default -> "pointed";
-                    },
-                    earHeight, earSpread, earTilt
-                );
-
-                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
-                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
-                    ? bodyTargetColor
-                    : featureColor;
-                float[] color = FeatureColourPalette.rgb(race, tailColor);
-                renderTail(
-                    poseStack,
-                    buffer,
-                    packedLight,
-                    FEATURE_TEXTURE,
-                    "cat_tail",
-                    TailStyle.CAT,
-                    limbSwing,
-                    limbSwingAmount,
-                    ageInTicks,
-                    color[0],
-                    color[1],
-                    color[2]
-                );
-            }
-
-            case DOGFOLK -> {
-                renderEars(
-                    poseStack, buffer, packedLight, player, race, featureColor,
-                    "dog_" + switch (feature) {
-                        case 1 -> "floppy";
-                        case 2 -> "round";
-                        default -> "upright";
-                    },
-                    earHeight, earSpread, earTilt
-                );
-
-                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
-                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
-                    ? bodyTargetColor
-                    : featureColor;
-                float[] color = FeatureColourPalette.rgb(race, tailColor);
-                renderTail(
-                    poseStack,
-                    buffer,
-                    packedLight,
-                    FEATURE_TEXTURE,
-                    "dog_tail",
-                    TailStyle.DOG,
-                    limbSwing,
-                    limbSwingAmount,
-                    ageInTicks,
-                    color[0],
-                    color[1],
-                    color[2]
-                );
-            }
-
-            case FOXFOLK -> {
-                renderEars(
-                    poseStack, buffer, packedLight, player, race, featureColor,
-                    "fox_" + switch (feature) {
-                        case 1 -> "wide";
-                        case 2 -> "swept";
-                        default -> "tall";
-                    },
-                    earHeight, earSpread, earTilt
-                );
-
-                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
-                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
-                    ? bodyTargetColor
-                    : featureColor;
-                float[] color = FeatureColourPalette.rgb(race, tailColor);
-                renderTail(
-                    poseStack,
-                    buffer,
-                    packedLight,
-                    FEATURE_TEXTURE,
-                    "fox_tail",
-                    TailStyle.FOX,
-                    limbSwing,
-                    limbSwingAmount,
-                    ageInTicks,
-                    color[0],
-                    color[1],
-                    color[2]
-                );
-            }
+            case CATFOLK, DOGFOLK, FOXFOLK -> renderBeastfolk(
+                poseStack,
+                buffer,
+                packedLight,
+                race,
+                feature,
+                earHeight,
+                earSpread,
+                earTilt,
+                limbSwing,
+                limbSwingAmount,
+                ageInTicks
+            );
 
             case HUMAN, DWARF -> {
             }
         }
+    }
+
+    private void renderBeastfolk(
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        Race race,
+        int variant,
+        int earHeight,
+        int earSpread,
+        int earTilt,
+        float limbSwing,
+        float limbSwingAmount,
+        float ageInTicks
+    ) {
+        ModelPart root = switch (race) {
+            case CATFOLK -> catRoot;
+            case DOGFOLK -> wolfRoot;
+            case FOXFOLK -> foxRoot;
+            default -> throw new IllegalArgumentException("Not Beastfolk: " + race);
+        };
+
+        ResourceLocation texture = BeastVariantTextures.texture(race, variant);
+        VertexConsumer consumer = buffer.getBuffer(
+            RenderType.entityCutoutNoCull(texture)
+        );
+
+        renderBeastEars(
+            poseStack,
+            consumer,
+            packedLight,
+            root,
+            earHeight,
+            earSpread,
+            earTilt
+        );
+
+        renderBeastTail(
+            poseStack,
+            consumer,
+            packedLight,
+            root,
+            race,
+            limbSwing,
+            limbSwingAmount,
+            ageInTicks
+        );
+    }
+
+    private void renderBeastEars(
+        PoseStack poseStack,
+        VertexConsumer consumer,
+        int packedLight,
+        ModelPart root,
+        int earHeight,
+        int earSpread,
+        int earTilt
+    ) {
+        ModelPart left = root.getChild("left_ear");
+        ModelPart right = root.getChild("right_ear");
+
+        float leftX = left.x;
+        float rightX = right.x;
+        float leftY = left.y;
+        float rightY = right.y;
+        float leftRoll = left.zRot;
+        float rightRoll = right.zRot;
+
+        float heightOffset = earHeight * 0.25F;
+        float spreadOffset = earSpread * 0.22F;
+        float tiltRadians = (float) Math.toRadians(earTilt * 3.0F);
+
+        left.y -= heightOffset;
+        right.y -= heightOffset;
+        left.x += spreadOffset;
+        right.x -= spreadOffset;
+        left.zRot -= tiltRadians;
+        right.zRot += tiltRadians;
+
+        poseStack.pushPose();
+        getParentModel().head.translateAndRotate(poseStack);
+
+        left.render(
+            poseStack,
+            consumer,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            1.0F,
+            1.0F,
+            1.0F,
+            1.0F
+        );
+        right.render(
+            poseStack,
+            consumer,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            1.0F,
+            1.0F,
+            1.0F,
+            1.0F
+        );
+
+        poseStack.popPose();
+
+        left.x = leftX;
+        right.x = rightX;
+        left.y = leftY;
+        right.y = rightY;
+        left.zRot = leftRoll;
+        right.zRot = rightRoll;
+    }
+
+    private void renderBeastTail(
+        PoseStack poseStack,
+        VertexConsumer consumer,
+        int packedLight,
+        ModelPart root,
+        Race race,
+        float limbSwing,
+        float limbSwingAmount,
+        float ageInTicks
+    ) {
+        float movement = Math.max(0.0F, Math.min(1.0F, limbSwingAmount));
+
+        poseStack.pushPose();
+        getParentModel().body.translateAndRotate(poseStack);
+
+        if (race == Race.CATFOLK) {
+            ModelPart tail1 = root.getChild("tail1");
+            ModelPart tail2 = root.getChild("tail2");
+
+            float tail1Y = tail1.yRot;
+            float tail2Y = tail2.yRot;
+            float tail2X = tail2.xRot;
+
+            float idle = (float) Math.sin(ageInTicks * 0.09F) * 0.10F;
+            float walk = (float) Math.sin(limbSwing * 0.6662F) * movement * 0.14F;
+
+            tail1.yRot += idle + walk;
+            tail2.yRot += idle * 1.25F + walk * 1.35F;
+            tail2.xRot += (float) Math.cos(limbSwing * 0.52F) * movement * 0.18F;
+
+            tail1.render(
+                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
+                1.0F, 1.0F, 1.0F, 1.0F
+            );
+            tail2.render(
+                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
+                1.0F, 1.0F, 1.0F, 1.0F
+            );
+
+            tail1.yRot = tail1Y;
+            tail2.yRot = tail2Y;
+            tail2.xRot = tail2X;
+        } else {
+            ModelPart tail = root.getChild("tail");
+
+            float oldY = tail.yRot;
+            float oldX = tail.xRot;
+
+            if (race == Race.DOGFOLK) {
+                // Mirrors the vanilla Wolf's broad side-to-side wag.
+                tail.yRot +=
+                    (float) Math.cos(limbSwing * 0.6662F) * 1.15F * movement
+                        + (float) Math.sin(ageInTicks * 0.11F) * 0.08F;
+                tail.xRot += (float) Math.sin(ageInTicks * 0.055F) * 0.035F;
+            } else {
+                // Fox tails are much heavier, so keep the motion slower.
+                tail.yRot +=
+                    (float) Math.sin(ageInTicks * 0.072F) * 0.075F
+                        + (float) Math.sin(limbSwing * 0.58F) * movement * 0.10F;
+                tail.xRot += (float) Math.cos(ageInTicks * 0.045F) * 0.025F;
+            }
+
+            tail.render(
+                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
+                1.0F, 1.0F, 1.0F, 1.0F
+            );
+
+            tail.yRot = oldY;
+            tail.xRot = oldX;
+        }
+
+        poseStack.popPose();
     }
 
     private void renderEars(

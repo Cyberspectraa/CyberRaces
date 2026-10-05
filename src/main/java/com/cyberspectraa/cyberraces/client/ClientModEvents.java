@@ -37,6 +37,18 @@ public final class ClientModEvents {
             RaceCosmeticModels.HARD_FEATURES,
             RaceCosmeticModels::createHardLayer
         );
+        event.registerLayerDefinition(
+            BeastfolkModels.CAT,
+            BeastfolkModels::createCatLayer
+        );
+        event.registerLayerDefinition(
+            BeastfolkModels.WOLF,
+            BeastfolkModels::createWolfLayer
+        );
+        event.registerLayerDefinition(
+            BeastfolkModels.FOX,
+            BeastfolkModels::createFoxLayer
+        );
     }
 
     @SubscribeEvent
@@ -51,7 +63,10 @@ public final class ClientModEvents {
                 renderer.addLayer(new RaceCosmeticLayer(
                     renderer,
                     event.getEntityModels().bakeLayer(RaceCosmeticModels.SKIN_FEATURES),
-                    event.getEntityModels().bakeLayer(RaceCosmeticModels.HARD_FEATURES)
+                    event.getEntityModels().bakeLayer(RaceCosmeticModels.HARD_FEATURES),
+                    event.getEntityModels().bakeLayer(BeastfolkModels.CAT),
+                    event.getEntityModels().bakeLayer(BeastfolkModels.WOLF),
+                    event.getEntityModels().bakeLayer(BeastfolkModels.FOX)
                 ));
 
                 renderer.addLayer(new IcarusPlayerWingLayer<>(renderer, event.getEntityModels()));

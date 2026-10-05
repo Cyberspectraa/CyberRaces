@@ -60,7 +60,49 @@ minecraft {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    srcDir layout.buildDirectory.dir('generated/beast-assets')
+}
+
+def wolfVariantNames = [
+    'woods',
+    'ashen',
+    'black',
+    'chestnut',
+    'rusty',
+    'spotted',
+    'striped',
+    'snowy'
+]
+
+tasks.register('syncBeastVariantAssets') {
+    def outputRoot = layout.buildDirectory.dir('generated/beast-assets')
+    outputs.dir(outputRoot)
+
+    doLast {
+        def outputDir = outputRoot.get().dir(
+            'assets/cyberraces/textures/entity/beast'
+        ).asFile
+        outputDir.mkdirs()
+
+        wolfVariantNames.each { variant ->
+            def destination = new File(outputDir, "wolf_${variant}.png")
+            if (!destination.exists() || destination.length() == 0L) {
+                def source =
+                    "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/26.2/" +
+                    "assets/minecraft/textures/entity/wolf/wolf_${variant}.png"
+
+                logger.lifecycle("Downloading official Minecraft wolf coat: ${variant}")
+                new java.net.URL(source).withInputStream { input ->
+                    destination.withOutputStream { output ->
+                        output << input
+                    }
+                }
+            }
+        }
+    }
+}
 
 repositories {
     maven { url = 'https://jitpack.io' }
@@ -93,6 +135,7 @@ dependencies {
 }
 
 tasks.named('processResources', ProcessResources).configure {
+    dependsOn tasks.named('syncBeastVariantAssets')
     var replaceProperties = [
         minecraft_version: minecraft_version,
         minecraft_version_range: minecraft_version_range,
