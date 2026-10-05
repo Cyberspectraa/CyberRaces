@@ -2,7 +2,7 @@ package com.cyberspectraa.cyberraces.compat;
 
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -29,28 +29,28 @@ public final class IronSpellsCompat {
         return ModList.get().isLoaded(MOD_ID);
     }
 
-    public static void apply(ServerPlayer player, Race race) {
-        if (!isLoaded()) {
+    public static void apply(LivingEntity entity, Race race) {
+        if (!isLoaded() || entity == null || race == null) {
             return;
         }
 
-        applyMultiplier(player, MAX_MANA, MAX_MANA_ID, "CyberRaces racial max mana", race.maxManaMultiplier());
-        applyMultiplier(player, MANA_REGEN, MANA_REGEN_ID, "CyberRaces racial mana regeneration", race.manaRegenMultiplier());
-        applyMultiplier(player, SPELL_RESIST, SPELL_RESIST_ID, "CyberRaces racial spell resistance", race.spellResistanceMultiplier());
+        applyMultiplier(entity, MAX_MANA, MAX_MANA_ID, "CyberRaces racial max mana", race.maxManaMultiplier());
+        applyMultiplier(entity, MANA_REGEN, MANA_REGEN_ID, "CyberRaces racial mana regeneration", race.manaRegenMultiplier());
+        applyMultiplier(entity, SPELL_RESIST, SPELL_RESIST_ID, "CyberRaces racial spell resistance", race.spellResistanceMultiplier());
     }
 
-    public static void clear(ServerPlayer player) {
-        if (!isLoaded()) {
+    public static void clear(LivingEntity entity) {
+        if (!isLoaded() || entity == null) {
             return;
         }
 
-        remove(player, MAX_MANA, MAX_MANA_ID);
-        remove(player, MANA_REGEN, MANA_REGEN_ID);
-        remove(player, SPELL_RESIST, SPELL_RESIST_ID);
+        remove(entity, MAX_MANA, MAX_MANA_ID);
+        remove(entity, MANA_REGEN, MANA_REGEN_ID);
+        remove(entity, SPELL_RESIST, SPELL_RESIST_ID);
     }
 
     private static void applyMultiplier(
-        ServerPlayer player,
+        LivingEntity entity,
         ResourceLocation attributeId,
         UUID modifierId,
         String name,
@@ -61,7 +61,7 @@ public final class IronSpellsCompat {
             return;
         }
 
-        AttributeInstance instance = player.getAttribute(attribute);
+        AttributeInstance instance = entity.getAttribute(attribute);
         if (instance == null) {
             return;
         }
@@ -81,13 +81,17 @@ public final class IronSpellsCompat {
         ));
     }
 
-    private static void remove(ServerPlayer player, ResourceLocation attributeId, UUID modifierId) {
+    private static void remove(
+        LivingEntity entity,
+        ResourceLocation attributeId,
+        UUID modifierId
+    ) {
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId);
         if (attribute == null) {
             return;
         }
 
-        AttributeInstance instance = player.getAttribute(attribute);
+        AttributeInstance instance = entity.getAttribute(attribute);
         if (instance != null) {
             instance.removeModifier(modifierId);
         }
