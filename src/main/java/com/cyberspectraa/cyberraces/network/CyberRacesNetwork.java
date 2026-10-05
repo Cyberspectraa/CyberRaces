@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces.network;
 import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.network.packet.CharacterSyncPacket;
 import com.cyberspectraa.cyberraces.network.packet.CloseCharacterCreatorPacket;
+import com.cyberspectraa.cyberraces.network.packet.EntityRaceSyncPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class CyberRacesNetwork {
-    private static final String PROTOCOL = "5";
+    private static final String PROTOCOL = "6";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
         new ResourceLocation(CyberRaces.MOD_ID, "main"),
@@ -50,6 +51,12 @@ public final class CyberRacesNetwork {
             .encoder(CharacterSyncPacket::encode)
             .decoder(CharacterSyncPacket::decode)
             .consumerMainThread(CharacterSyncPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(EntityRaceSyncPacket.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
+            .encoder(EntityRaceSyncPacket::encode)
+            .decoder(EntityRaceSyncPacket::decode)
+            .consumerMainThread(EntityRaceSyncPacket::handle)
             .add();
     }
 
