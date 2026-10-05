@@ -55,6 +55,6 @@ side="BOTH"
 modId="cybernpc"
 mandatory=false
 versionRange="[0.42.1,)"
-ordering="AFTER"
+ordering="NONE"
 side="BOTH"
 
