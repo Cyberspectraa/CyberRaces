@@ -81,6 +81,7 @@ public final class ClientModEvents {
         }
 
         attachCyberNpcLayers(event);
+    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static void attachCyberNpcLayers(
@@ -143,6 +144,5 @@ public final class ClientModEvents {
 
             return;
         }
-    }
     }
 }
