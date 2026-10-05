@@ -90,59 +90,57 @@ public final class ClientModEvents {
         ResourceLocation cyberNpcId =
             new ResourceLocation("cybernpc", "cyber_npc");
 
-        for (EntityType<?> entityType : event.getEntityTypes()) {
-            if (!cyberNpcId.equals(
-                ForgeRegistries.ENTITY_TYPES.getKey(entityType)
-            )) {
-                continue;
-            }
+        EntityType<?> entityType =
+            ForgeRegistries.ENTITY_TYPES.getValue(cyberNpcId);
 
-            try {
-                LivingEntityRenderer renderer =
-                    event.getRenderer((EntityType) entityType);
-
-                if (renderer == null
-                    || !(renderer.getModel() instanceof PlayerModel<?>)) {
-                    return;
-                }
-
-                renderer.addLayer(new RaceCosmeticLayer(
-                    renderer,
-                    event.getEntityModels().bakeLayer(
-                        RaceCosmeticModels.SKIN_FEATURES
-                    ),
-                    event.getEntityModels().bakeLayer(
-                        RaceCosmeticModels.HARD_FEATURES
-                    ),
-                    event.getEntityModels().bakeLayer(
-                        BeastfolkModels.CAT
-                    ),
-                    event.getEntityModels().bakeLayer(
-                        BeastfolkModels.WOLF
-                    ),
-                    event.getEntityModels().bakeLayer(
-                        BeastfolkModels.FOX
-                    )
-                ));
-
-                renderer.addLayer(
-                    new IcarusPlayerWingLayer(
-                        renderer,
-                        event.getEntityModels()
-                    )
-                );
-
-                CyberRaces.LOGGER.info(
-                    "Attached CyberRaces visuals to CyberNpc Wild NPC renderer"
-                );
-            } catch (Exception exception) {
-                CyberRaces.LOGGER.warn(
-                    "Could not attach CyberRaces layers to CyberNpc",
-                    exception
-                );
-            }
-
+        if (entityType == null) {
             return;
         }
+
+        try {
+            LivingEntityRenderer renderer =
+                event.getRenderer((EntityType) entityType);
+
+            if (renderer == null
+                || !(renderer.getModel() instanceof PlayerModel<?>)) {
+                return;
+            }
+
+            renderer.addLayer(new RaceCosmeticLayer(
+                renderer,
+                event.getEntityModels().bakeLayer(
+                    RaceCosmeticModels.SKIN_FEATURES
+                ),
+                event.getEntityModels().bakeLayer(
+                    RaceCosmeticModels.HARD_FEATURES
+                ),
+                event.getEntityModels().bakeLayer(
+                    BeastfolkModels.CAT
+                ),
+                event.getEntityModels().bakeLayer(
+                    BeastfolkModels.WOLF
+                ),
+                event.getEntityModels().bakeLayer(
+                    BeastfolkModels.FOX
+                )
+            ));
+
+            renderer.addLayer(
+                new IcarusPlayerWingLayer(
+                    renderer,
+                    event.getEntityModels()
+                )
+            );
+
+            CyberRaces.LOGGER.info(
+                "Attached CyberRaces visuals to CyberNpc Wild NPC renderer"
+            );
+        } catch (Exception exception) {
+            CyberRaces.LOGGER.warn(
+                "Could not attach CyberRaces layers to CyberNpc",
+                exception
+            );
+        }
     }
+
 }
