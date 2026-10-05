@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces.client;
 import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.DragonBreathPacket;
+import com.cyberspectraa.cyberraces.event.FairyHoverPhysics;
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -27,8 +28,22 @@ public final class ClientForgeEvents {
         }
 
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null
-            || minecraft.screen != null) {
+        if (minecraft.player == null) {
+            return;
+        }
+
+        // Use the stored race rather than preview state so selecting Fairy in
+        // the creator does not physically move an unfinished character.
+        boolean fairy =
+            ClientCharacterState.resolve(minecraft.player.getUUID())
+                .map(visual -> visual.race() == Race.FAIRY)
+                .orElse(false);
+
+        if (fairy) {
+            FairyHoverPhysics.apply(minecraft.player);
+        }
+
+        if (minecraft.screen != null) {
             return;
         }
 
