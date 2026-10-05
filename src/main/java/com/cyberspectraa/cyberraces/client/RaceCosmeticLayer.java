@@ -62,6 +62,8 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 visual.earHeight(),
                 visual.earSpread(),
                 visual.earTilt(),
+                limbSwing,
+                limbSwingAmount,
                 ageInTicks
             )
         );
@@ -78,6 +80,8 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         int earHeight,
         int earSpread,
         int earTilt,
+        float limbSwing,
+        float limbSwingAmount,
         float ageInTicks
     ) {
         switch (race) {
@@ -133,9 +137,19 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 );
 
                 float[] color = FeatureColourPalette.rgb(race, featureColor);
-                renderBodyPart(
-                    poseStack, buffer, packedLight, TIEFLING_TEXTURE, "tiefling_tail",
-                    ageInTicks, 0.15F, color[0], color[1], color[2]
+                renderTail(
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    TIEFLING_TEXTURE,
+                    "tiefling_tail",
+                    TailStyle.TIEFLING,
+                    limbSwing,
+                    limbSwingAmount,
+                    ageInTicks,
+                    color[0],
+                    color[1],
+                    color[2]
                 );
             }
 
@@ -152,9 +166,19 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                     color[0], color[1], color[2]
                 );
 
-                renderBodyPart(
-                    poseStack, buffer, packedLight, DRAGON_TEXTURE, "dragon_tail",
-                    ageInTicks, 0.10F, color[0], color[1], color[2]
+                renderTail(
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    DRAGON_TEXTURE,
+                    "dragon_tail",
+                    TailStyle.DRAGON,
+                    limbSwing,
+                    limbSwingAmount,
+                    ageInTicks,
+                    color[0],
+                    color[1],
+                    color[2]
                 );
             }
 
@@ -270,34 +294,136 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         poseStack.popPose();
     }
 
-    private void renderBodyPart(
+    private void renderTail(
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
         ResourceLocation texture,
         String name,
+        TailStyle style,
+        float limbSwing,
+        float limbSwingAmount,
         float ageInTicks,
-        float swayAmount,
         float r,
         float g,
         float b
     ) {
-        ModelPart part = hardRoot.getChild(name);
-        float previousYRot = part.yRot;
-        float previousZRot = part.zRot;
+        ModelPart root = hardRoot.getChild(name);
+        ModelPart[] chain = tailChain(root, style);
 
-        part.yRot = previousYRot + (float) Math.sin(ageInTicks * 0.10F) * swayAmount;
-        part.zRot = previousZRot + (float) Math.sin(ageInTicks * 0.075F) * swayAmount * 0.35F;
+        float[] previousX = new float[chain.length];
+        float[] previousY = new float[chain.length];
+        float[] previousZ = new float[chain.length];
+
+        for (int index = 0; index < chain.length; index++) {
+            previousX[index] = chain[index].xRot;
+            previousY[index] = chain[index].yRot;
+            previousZ[index] = chain[index].zRot;
+        }
+
+        float movement = Math.max(0.0F, Math.min(1.0F, limbSwingAmount));
+        float idlePhase = ageInTicks * (style == TailStyle.TIEFLING ? 0.085F : 0.070F);
+        float walkPhase = limbSwing * 0.6662F;
+        float baseSway = style == TailStyle.TIEFLING ? 0.105F : 0.072F;
+
+        for (int index = 0; index < chain.length; index++) {
+            float progress = chain.length <= 1
+                ? 0.0F
+                : index / (float) (chain.length - 1);
+
+            // Each segment receives the motion slightly later than the one
+            // before it. That produces a travelling bend instead of rotating
+            // the entire tail like one stiff object.
+            float idle =
+                (float) Math.sin(idlePhase - index * 0.42F)
+                    * baseSway
+                    * (0.55F + progress * 0.75F);
+
+            float walk =
+                (float) Math.sin(walkPhase - index * 0.52F)
+                    * baseSway
+                    * movement
+                    * (0.80F + progress * 0.90F);
+
+            float lift =
+                (float) Math.cos(idlePhase * 0.72F - index * 0.30F)
+                    * baseSway
+                    * 0.12F
+                    * (0.45F + progress);
+
+            float roll =
+                (float) Math.sin(idlePhase * 0.58F + index * 0.36F)
+                    * baseSway
+                    * 0.10F
+                    * progress;
+
+            chain[index].yRot = previousY[index] + idle + walk;
+            chain[index].xRot = previousX[index] + lift;
+            chain[index].zRot = previousZ[index] + roll;
+        }
 
         poseStack.pushPose();
         getParentModel().body.translateAndRotate(poseStack);
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
-        part.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
+        VertexConsumer consumer = buffer.getBuffer(
+            RenderType.entityCutoutNoCull(texture)
+        );
+
+        root.render(
+            poseStack,
+            consumer,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            r,
+            g,
+            b,
+            1.0F
+        );
 
         poseStack.popPose();
 
-        part.yRot = previousYRot;
-        part.zRot = previousZRot;
+        for (int index = 0; index < chain.length; index++) {
+            chain[index].xRot = previousX[index];
+            chain[index].yRot = previousY[index];
+            chain[index].zRot = previousZ[index];
+        }
     }
+
+    private ModelPart[] tailChain(ModelPart root, TailStyle style) {
+        if (style == TailStyle.TIEFLING) {
+            ModelPart mid1 = root.getChild("mid1");
+            ModelPart mid2 = mid1.getChild("mid2");
+            ModelPart mid3 = mid2.getChild("mid3");
+            ModelPart tipStem = mid3.getChild("tip_stem");
+
+            return new ModelPart[] {
+                root,
+                mid1,
+                mid2,
+                mid3,
+                tipStem
+            };
+        }
+
+        ModelPart mid1 = root.getChild("mid1");
+        ModelPart mid2 = mid1.getChild("mid2");
+        ModelPart mid3 = mid2.getChild("mid3");
+        ModelPart lower = mid3.getChild("lower");
+        ModelPart tip = lower.getChild("tip");
+
+        return new ModelPart[] {
+            root,
+            mid1,
+            mid2,
+            mid3,
+            lower,
+            tip
+        };
+    }
+
+    private enum TailStyle {
+        TIEFLING,
+        DRAGON
+    }
+
 }

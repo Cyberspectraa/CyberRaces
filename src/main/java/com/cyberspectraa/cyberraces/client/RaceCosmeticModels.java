@@ -162,70 +162,159 @@ public final class RaceCosmeticModels {
     }
 
     private static void addTieflingTail(PartDefinition root) {
-        PartDefinition tail = root.addOrReplaceChild(
+        PartDefinition base = root.addOrReplaceChild(
             "tiefling_tail",
             CubeListBuilder.create()
-                .texOffs(0, 0)
-                .addBox(-0.75F, 0.0F, -0.75F, 1.5F, 4.0F, 1.5F),
-            PartPose.offsetAndRotation(0.0F, 8.2F, 2.0F, 0.64F, 0.0F, 0.0F)
+                .texOffs(0, 16)
+                .addBox(-0.72F, 0.0F, -0.72F, 1.44F, 3.0F, 1.44F),
+            PartPose.offsetAndRotation(0.0F, 8.15F, 2.05F, 0.50F, 0.0F, 0.0F)
         );
 
-        PartDefinition mid = tail.addOrReplaceChild(
-            "mid",
+        PartDefinition mid1 = base.addOrReplaceChild(
+            "mid1",
             CubeListBuilder.create()
-                .texOffs(8, 0)
-                .addBox(-0.62F, 0.0F, -0.62F, 1.24F, 4.0F, 1.24F),
-            PartPose.offsetAndRotation(0.0F, 3.6F, 0.8F, 0.45F, 0.0F, 0.0F)
+                .texOffs(6, 16)
+                .addBox(-0.62F, 0.0F, -0.62F, 1.24F, 3.1F, 1.24F),
+            PartPose.offsetAndRotation(0.0F, 2.75F, 0.72F, 0.30F, 0.0F, 0.0F)
         );
 
-        PartDefinition lower = mid.addOrReplaceChild(
-            "lower",
+        PartDefinition mid2 = mid1.addOrReplaceChild(
+            "mid2",
             CubeListBuilder.create()
-                .texOffs(14, 0)
-                .addBox(-0.48F, 0.0F, -0.48F, 0.96F, 3.8F, 0.96F),
-            PartPose.offsetAndRotation(0.0F, 3.6F, 0.75F, 0.38F, 0.0F, 0.0F)
+                .texOffs(12, 16)
+                .addBox(-0.52F, 0.0F, -0.52F, 1.04F, 3.0F, 1.04F),
+            PartPose.offsetAndRotation(0.0F, 2.85F, 0.58F, 0.24F, 0.0F, 0.0F)
         );
 
-        lower.addOrReplaceChild(
+        PartDefinition mid3 = mid2.addOrReplaceChild(
+            "mid3",
+            CubeListBuilder.create()
+                .texOffs(18, 16)
+                .addBox(-0.41F, 0.0F, -0.41F, 0.82F, 2.8F, 0.82F),
+            PartPose.offsetAndRotation(0.0F, 2.75F, 0.48F, 0.18F, 0.0F, 0.0F)
+        );
+
+        PartDefinition tipStem = mid3.addOrReplaceChild(
+            "tip_stem",
+            CubeListBuilder.create()
+                .texOffs(23, 16)
+                .addBox(-0.30F, 0.0F, -0.30F, 0.60F, 2.1F, 0.60F),
+            PartPose.offsetAndRotation(0.0F, 2.55F, 0.34F, 0.12F, 0.0F, 0.0F)
+        );
+
+        PartDefinition spade = tipStem.addOrReplaceChild(
             "spade",
+            CubeListBuilder.create(),
+            PartPose.offsetAndRotation(0.0F, 2.0F, 0.18F, -0.12F, 0.0F, 0.0F)
+        );
+
+        // A layered arrow/spade silhouette looks much cleaner than the old
+        // single rotated square while staying extremely cheap to render.
+        spade.addOrReplaceChild(
+            "core",
             CubeListBuilder.create()
-                .texOffs(20, 0)
-                .addBox(-1.35F, -1.35F, -0.38F, 2.7F, 2.7F, 0.76F),
-            PartPose.offsetAndRotation(0.0F, 4.0F, 0.45F, 0.0F, 0.0F, 0.7854F)
+                .texOffs(28, 16)
+                .addBox(-0.32F, -0.10F, -0.30F, 0.64F, 1.85F, 0.60F),
+            PartPose.ZERO
+        );
+
+        spade.addOrReplaceChild(
+            "left_blade",
+            CubeListBuilder.create()
+                .texOffs(32, 16)
+                .addBox(-1.20F, -0.05F, -0.26F, 1.25F, 1.05F, 0.52F),
+            PartPose.offsetAndRotation(-0.05F, 0.28F, 0.0F, 0.0F, 0.0F, -0.58F)
+        );
+
+        spade.addOrReplaceChild(
+            "right_blade",
+            CubeListBuilder.create()
+                .texOffs(32, 20)
+                .addBox(-0.05F, -0.05F, -0.26F, 1.25F, 1.05F, 0.52F),
+            PartPose.offsetAndRotation(0.05F, 0.28F, 0.0F, 0.0F, 0.0F, 0.58F)
+        );
+
+        spade.addOrReplaceChild(
+            "point",
+            CubeListBuilder.create()
+                .texOffs(40, 16)
+                .addBox(-0.24F, 0.0F, -0.24F, 0.48F, 1.20F, 0.48F),
+            PartPose.offsetAndRotation(0.0F, 1.55F, 0.0F, 0.0F, 0.0F, 0.0F)
         );
     }
 
     private static void addDragonTail(PartDefinition root) {
-        PartDefinition tail = root.addOrReplaceChild(
+        PartDefinition base = root.addOrReplaceChild(
             "dragon_tail",
             CubeListBuilder.create()
                 .texOffs(0, 32)
-                .addBox(-1.35F, 0.0F, -1.15F, 2.7F, 4.6F, 2.3F),
-            PartPose.offsetAndRotation(0.0F, 8.1F, 2.0F, 0.60F, 0.0F, 0.0F)
+                .addBox(-1.48F, 0.0F, -1.28F, 2.96F, 3.4F, 2.56F),
+            PartPose.offsetAndRotation(0.0F, 8.05F, 1.95F, 0.48F, 0.0F, 0.0F)
         );
 
-        PartDefinition mid = tail.addOrReplaceChild(
-            "mid",
+        addDragonRidge(base, "ridge0", 0.82F, 0.0F, 0.15F);
+
+        PartDefinition mid1 = base.addOrReplaceChild(
+            "mid1",
             CubeListBuilder.create()
                 .texOffs(12, 32)
-                .addBox(-1.08F, 0.0F, -0.90F, 2.16F, 4.5F, 1.8F),
-            PartPose.offsetAndRotation(0.0F, 4.1F, 0.9F, 0.42F, 0.0F, 0.0F)
+                .addBox(-1.28F, 0.0F, -1.10F, 2.56F, 3.6F, 2.20F),
+            PartPose.offsetAndRotation(0.0F, 3.05F, 0.78F, 0.27F, 0.0F, 0.0F)
         );
 
-        PartDefinition lower = mid.addOrReplaceChild(
+        addDragonRidge(mid1, "ridge1", 0.70F, 0.10F, 0.18F);
+
+        PartDefinition mid2 = mid1.addOrReplaceChild(
+            "mid2",
+            CubeListBuilder.create()
+                .texOffs(24, 32)
+                .addBox(-1.04F, 0.0F, -0.90F, 2.08F, 3.6F, 1.80F),
+            PartPose.offsetAndRotation(0.0F, 3.28F, 0.66F, 0.22F, 0.0F, 0.0F)
+        );
+
+        addDragonRidge(mid2, "ridge2", 0.58F, 0.15F, 0.20F);
+
+        PartDefinition mid3 = mid2.addOrReplaceChild(
+            "mid3",
+            CubeListBuilder.create()
+                .texOffs(34, 32)
+                .addBox(-0.82F, 0.0F, -0.72F, 1.64F, 3.45F, 1.44F),
+            PartPose.offsetAndRotation(0.0F, 3.30F, 0.54F, 0.18F, 0.0F, 0.0F)
+        );
+
+        addDragonRidge(mid3, "ridge3", 0.46F, 0.18F, 0.22F);
+
+        PartDefinition lower = mid3.addOrReplaceChild(
             "lower",
             CubeListBuilder.create()
-                .texOffs(22, 32)
-                .addBox(-0.78F, 0.0F, -0.68F, 1.56F, 4.2F, 1.36F),
-            PartPose.offsetAndRotation(0.0F, 4.0F, 0.75F, 0.34F, 0.0F, 0.0F)
+                .texOffs(42, 32)
+                .addBox(-0.61F, 0.0F, -0.55F, 1.22F, 3.15F, 1.10F),
+            PartPose.offsetAndRotation(0.0F, 3.18F, 0.43F, 0.14F, 0.0F, 0.0F)
         );
 
         lower.addOrReplaceChild(
             "tip",
             CubeListBuilder.create()
-                .texOffs(30, 32)
-                .addBox(-0.46F, 0.0F, -0.42F, 0.92F, 3.7F, 0.84F),
-            PartPose.offsetAndRotation(0.0F, 3.8F, 0.55F, 0.26F, 0.0F, 0.0F)
+                .texOffs(48, 32)
+                .addBox(-0.38F, 0.0F, -0.36F, 0.76F, 2.65F, 0.72F),
+            PartPose.offsetAndRotation(0.0F, 2.95F, 0.30F, 0.10F, 0.0F, 0.0F)
         );
     }
+
+    private static void addDragonRidge(
+        PartDefinition segment,
+        String name,
+        float width,
+        float y,
+        float z
+    ) {
+        segment.addOrReplaceChild(
+            name,
+            CubeListBuilder.create()
+                .texOffs(54, 32)
+                .addBox(-width / 2.0F, 0.0F, -0.20F, width, 1.15F, 0.40F),
+            PartPose.offsetAndRotation(0.0F, y + 0.65F, -z - 1.05F, -0.16F, 0.0F, 0.0F)
+        );
+    }
+
 }
