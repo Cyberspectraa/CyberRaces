@@ -3,6 +3,8 @@ package com.cyberspectraa.cyberraces.event;
 import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
 import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
+import com.cyberspectraa.cyberraces.ability.GoblinScavengerSenseAbility;
+import com.cyberspectraa.cyberraces.ability.OrcWarCryAbility;
 import com.cyberspectraa.cyberraces.compat.CyberNpcRaceManager;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
@@ -54,6 +56,18 @@ public final class RacialPassiveEvents {
             DogfolkScentAbility.cleanup(player);
         }
 
+        if (race == Race.GOBLIN) {
+            GoblinScavengerSenseAbility.tick(player);
+        } else {
+            GoblinScavengerSenseAbility.cleanup(player);
+        }
+
+        if (race == Race.ORC) {
+            OrcWarCryAbility.tick(player);
+        } else {
+            OrcWarCryAbility.cleanup(player);
+        }
+
         if (race != Race.FAIRY) {
             FairyHoverAbility.disable(player);
         }
@@ -70,6 +84,8 @@ public final class RacialPassiveEvents {
         }
 
         DogfolkScentAbility.cleanup(player);
+        GoblinScavengerSenseAbility.cleanup(player);
+        OrcWarCryAbility.cleanup(player);
         FairyHoverAbility.disable(player);
 
         if (IronSpellsCompat.isLoaded()) {

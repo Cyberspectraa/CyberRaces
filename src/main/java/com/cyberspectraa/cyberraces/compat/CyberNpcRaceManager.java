@@ -24,6 +24,8 @@ public final class CyberNpcRaceManager {
     private static final String ROOT_KEY = "CyberRacesWildNpc";
     private static final String RACE_KEY = "Race";
     private static final String APPEARANCE_KEY = "Appearance";
+    private static final String NATURAL_WILD_ZOMBIE_KEY =
+        "CyberNpcNaturalWildZombie";
 
     private static final int[] NPC_SKIN_TONES = {
         0xF2C1B2, // pale
@@ -76,13 +78,16 @@ public final class CyberNpcRaceManager {
         }
 
         /*
-         * ZombieCyberNpc has no NpcType field. A converted zombie is treated
-         * as race-bearing only when CyberNpc copied the original Wild NPC's
-         * CyberRaces tag during conversion. Service/Main/Quest zombies that
-         * never had a race therefore stay race-free.
+         * Converted Wild NPC zombies carry CyberRacesWildNpc. Zombies that
+         * replaced normal minecraft:zombie spawns carry CyberNpc's natural
+         * Wild marker and should receive a new random race. Service/Main/Quest
+         * conversions without either marker remain race-free.
          */
         if (isZombieCyberNpc(entity)) {
-            return hasRace(entity);
+            return hasRace(entity)
+                || entity.getPersistentData().getBoolean(
+                    NATURAL_WILD_ZOMBIE_KEY
+                );
         }
 
         try {
@@ -142,13 +147,6 @@ public final class CyberNpcRaceManager {
     }
 
     public static boolean ensureAssigned(LivingEntity entity) {
-        if (isZombieCyberNpc(entity)) {
-            getRace(entity).ifPresent(race ->
-                RaceAttributeApplier.apply(entity, race)
-            );
-            return false;
-        }
-
         if (!isWildCyberNpc(entity)) {
             return false;
         }
@@ -167,6 +165,16 @@ public final class CyberNpcRaceManager {
                 randomAppearance(entity, race).save()
             );
             persistent.put(ROOT_KEY, root);
+        }
+
+        /*
+         * Natural Wild Zombie replacements skip living-skin migration. Their
+         * actual body is already the CyberNpc zombie-green skin and
+         * renderAppearance() handles green skin-matched race features.
+         */
+        if (isZombieCyberNpc(entity)) {
+            RaceAttributeApplier.apply(entity, race);
+            return created;
         }
 
         /*

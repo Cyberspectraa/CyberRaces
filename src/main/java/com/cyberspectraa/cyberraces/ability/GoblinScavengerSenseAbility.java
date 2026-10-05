@@ -1,37 +1,38 @@
 package com.cyberspectraa.cyberraces.ability;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public final class DogfolkScentAbility {
+public final class GoblinScavengerSenseAbility {
     public static final int ACTIVE_TICKS = 8 * 20;
     public static final int COOLDOWN_TICKS = 24 * 20;
-    public static final double RADIUS = 24.0D;
+
+    private static final int HORIZONTAL_RADIUS = 16;
+    private static final int VERTICAL_RADIUS = 6;
 
     private static final String READY_TICK_KEY =
-        "DogfolkScentReadyTick";
+        "GoblinScavengerReadyTick";
 
     private static final Map<UUID, Long> ACTIVE_UNTIL =
         new HashMap<>();
 
-    private DogfolkScentAbility() {
+    private GoblinScavengerSenseAbility() {
     }
 
     public static void tryActivate(ServerPlayer player) {
@@ -43,7 +44,7 @@ public final class DogfolkScentAbility {
             player.displayClientMessage(
                 Component.literal(
                     String.format(
-                        "Scent: %.1fs cooldown",
+                        "Scavenger Sense: %.1fs cooldown",
                         seconds
                     )
                 ),
@@ -64,7 +65,7 @@ public final class DogfolkScentAbility {
 
         player.displayClientMessage(
             Component.literal(
-                "Scent active — follow the direction markers"
+                "Scavenger Sense active — sniffing out loot"
             ),
             true
         );
@@ -79,17 +80,18 @@ public final class DogfolkScentAbility {
         }
 
         long now = player.level().getGameTime();
+
         if (now >= until) {
             ACTIVE_UNTIL.remove(player.getUUID());
             player.displayClientMessage(
-                Component.literal("Scent faded"),
+                Component.literal("Scavenger Sense faded"),
                 true
             );
             return;
         }
 
-        // Half-second refresh feels responsive without doing a continuous scan.
-        if (now % 10L == 0L) {
+        // Container scanning is intentionally only once per second.
+        if (now % 20L == 0L) {
             scan(player);
         }
     }
@@ -103,114 +105,114 @@ public final class DogfolkScentAbility {
             return;
         }
 
-        AABB area =
-            player.getBoundingBox().inflate(RADIUS);
+        AABB itemArea =
+            player.getBoundingBox().inflate(HORIZONTAL_RADIUS);
 
-        ItemEntity item = nearest(
+        ItemEntity drop =
             level.getEntitiesOfClass(
                 ItemEntity.class,
-                area,
+                itemArea,
                 Entity::isAlive
-            ),
-            player
-        );
+            ).stream()
+                .min(
+                    Comparator.comparingDouble(
+                        player::distanceToSqr
+                    )
+                )
+                .orElse(null);
 
-        Animal animal = nearest(
-            level.getEntitiesOfClass(
-                Animal.class,
-                area,
-                Entity::isAlive
-            ),
-            player
-        );
+        BlockPos cache =
+            findNearestLootContainer(level, player);
 
-        Monster hostile = nearest(
-            level.getEntitiesOfClass(
-                Monster.class,
-                area,
-                Entity::isAlive
-            ),
-            player
-        );
-
-        // No more particle trail from the player's face. A single private
-        // marker sits on the tracked target and the action bar does the real
-        // directional work.
-        if (item != null) {
-            markTarget(
-                level,
+        if (drop != null) {
+            level.sendParticles(
                 player,
-                item,
-                ParticleTypes.END_ROD
+                ParticleTypes.END_ROD,
+                true,
+                drop.getX(),
+                drop.getY() + 0.20D,
+                drop.getZ(),
+                1,
+                0.04D,
+                0.03D,
+                0.04D,
+                0.0D
             );
         }
 
-        if (animal != null) {
-            markTarget(
-                level,
+        if (cache != null) {
+            level.sendParticles(
                 player,
-                animal,
-                ParticleTypes.COMPOSTER
-            );
-        }
-
-        if (hostile != null) {
-            markTarget(
-                level,
-                player,
-                hostile,
-                ParticleTypes.SMOKE
+                ParticleTypes.ENCHANT,
+                true,
+                cache.getX() + 0.5D,
+                cache.getY() + 0.8D,
+                cache.getZ() + 0.5D,
+                2,
+                0.12D,
+                0.10D,
+                0.12D,
+                0.0D
             );
         }
 
         player.displayClientMessage(
             Component.literal(
-                "Scent | "
-                    + targetLabel("Item", player, item)
+                "Scavenge | "
+                    + entityLabel("Drop", player, drop)
                     + " | "
-                    + targetLabel("Animal", player, animal)
-                    + " | "
-                    + targetLabel("Danger", player, hostile)
+                    + blockLabel("Cache", player, cache)
             ),
             true
         );
     }
 
-    private static <T extends Entity> T nearest(
-        List<T> entities,
+    private static BlockPos findNearestLootContainer(
+        ServerLevel level,
         ServerPlayer player
     ) {
-        return entities.stream()
-            .min(
-                Comparator.comparingDouble(
-                    player::distanceToSqr
-                )
-            )
-            .orElse(null);
-    }
+        BlockPos origin = player.blockPosition();
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
 
-    private static void markTarget(
-        ServerLevel level,
-        ServerPlayer player,
-        Entity target,
-        ParticleOptions particle
-    ) {
-        level.sendParticles(
-            player,
-            particle,
-            true,
-            target.getX(),
-            target.getY() + target.getBbHeight() * 0.72D,
-            target.getZ(),
-            1,
-            target.getBbWidth() * 0.08D,
-            target.getBbHeight() * 0.05D,
-            target.getBbWidth() * 0.08D,
-            0.0D
+        BlockPos min = origin.offset(
+            -HORIZONTAL_RADIUS,
+            -VERTICAL_RADIUS,
+            -HORIZONTAL_RADIUS
         );
+
+        BlockPos max = origin.offset(
+            HORIZONTAL_RADIUS,
+            VERTICAL_RADIUS,
+            HORIZONTAL_RADIUS
+        );
+
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            if (!level.hasChunkAt(pos)) {
+                continue;
+            }
+
+            BlockEntity blockEntity =
+                level.getBlockEntity(pos);
+
+            if (!(blockEntity instanceof Container container)
+                || container.isEmpty()) {
+                continue;
+            }
+
+            double distance =
+                pos.distSqr(origin);
+
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = pos.immutable();
+            }
+        }
+
+        return best;
     }
 
-    private static String targetLabel(
+    private static String entityLabel(
         String label,
         ServerPlayer player,
         Entity entity
@@ -225,7 +227,37 @@ public final class DogfolkScentAbility {
 
         return label
             + " "
-            + directionArrow(player, entity)
+            + directionArrow(
+                player,
+                entity.getX(),
+                entity.getZ()
+            )
+            + " "
+            + blocks
+            + "m";
+    }
+
+    private static String blockLabel(
+        String label,
+        ServerPlayer player,
+        BlockPos pos
+    ) {
+        if (pos == null) {
+            return label + " --";
+        }
+
+        double x = pos.getX() + 0.5D;
+        double z = pos.getZ() + 0.5D;
+        double dx = x - player.getX();
+        double dy = pos.getY() + 0.5D - player.getY();
+        double dz = z - player.getZ();
+        int blocks = (int) Math.round(
+            Math.sqrt(dx * dx + dy * dy + dz * dz)
+        );
+
+        return label
+            + " "
+            + directionArrow(player, x, z)
             + " "
             + blocks
             + "m";
@@ -233,10 +265,11 @@ public final class DogfolkScentAbility {
 
     private static String directionArrow(
         ServerPlayer player,
-        Entity target
+        double x,
+        double z
     ) {
-        double dx = target.getX() - player.getX();
-        double dz = target.getZ() - player.getZ();
+        double dx = x - player.getX();
+        double dz = z - player.getZ();
 
         float targetYaw =
             (float) Math.toDegrees(Math.atan2(dz, dx)) - 90.0F;

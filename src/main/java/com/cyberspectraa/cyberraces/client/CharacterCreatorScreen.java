@@ -513,11 +513,11 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case ORC -> new String[] {
                 "High health; lower natural mana.",
-                "+20% damage below 35% health."
+                "+20% damage below 35% health. V: War Cry."
             };
             case GOBLIN -> new String[] {
                 "Small and quick; more fragile.",
-                "+0.5 Luck for scavenging."
+                "+0.5 Luck. V: Scavenger Sense tracks nearby loot."
             };
             case TIEFLING -> new String[] {
                 "Strong magic.",
@@ -537,11 +537,11 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DOGFOLK -> new String[] {
                 "Sturdy and loyal; slightly lower mana.",
-                "35% less sprint exhaustion. V: Scent nearby targets."
+                "35% less sprint exhaustion. V: directional Scent tracking."
             };
             case FOXFOLK -> new String[] {
                 "Quick and magical; lower health.",
-                "+20% movement speed while crouched."
+                "+20% crouch speed. V: Quickstep dash."
             };
         };
     }
