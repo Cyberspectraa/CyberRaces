@@ -55,18 +55,24 @@ public final class ProgressionEvents {
             return;
         }
 
-        event.getAdvancement().getDisplay().ifPresent(display -> {
-            long reward = switch (display.getFrame()) {
-                case TASK -> 75L;
-                case GOAL -> 150L;
-                case CHALLENGE -> 300L;
-            };
+        var display = event.getAdvancement().getDisplay();
 
-            ProgressionManager.addExperience(
-                player,
-                reward,
-                "advancement"
-            );
-        });
+        // Recipe/background advancements have no display and should not
+        // become an invisible Cyber XP farm.
+        if (display == null) {
+            return;
+        }
+
+        long reward = switch (display.getFrame()) {
+            case TASK -> 75L;
+            case GOAL -> 150L;
+            case CHALLENGE -> 300L;
+        };
+
+        ProgressionManager.addExperience(
+            player,
+            reward,
+            "advancement"
+        );
     }
 }
