@@ -43,6 +43,18 @@ public final class RaceCosmeticModels {
         addEarPair(root, "fairy_sharp", 2.7F, 2.3F, 1.5F, -0.22F, -0.28F);
         addEarPair(root, "fairy_soft", 1.9F, 1.7F, 2.2F, -0.06F, -0.08F);
 
+        addTopEarPair(root, "cat_pointed", 2.05F, 2.15F, 1.15F, 1.55F, 2.15F, 0.08F);
+        addTopEarPair(root, "cat_tufted", 2.15F, 2.35F, 1.10F, 1.85F, 2.20F, 0.12F);
+        addTopEarPair(root, "cat_round", 2.35F, 1.65F, 1.30F, 1.05F, 2.10F, 0.04F);
+
+        addTopEarPair(root, "dog_upright", 2.35F, 2.55F, 1.35F, 1.55F, 2.25F, 0.08F);
+        addFloppyEarPair(root, "dog_floppy", 2.65F, 3.05F, 1.45F, 0.22F);
+        addEarPair(root, "dog_round", 2.55F, 1.95F, 2.55F, -0.02F, -0.04F);
+
+        addTopEarPair(root, "fox_tall", 2.10F, 3.00F, 1.20F, 2.10F, 2.45F, 0.10F);
+        addTopEarPair(root, "fox_wide", 2.55F, 2.55F, 1.30F, 1.85F, 2.65F, 0.16F);
+        addTopEarPair(root, "fox_swept", 2.20F, 2.70F, 1.15F, 1.95F, 2.50F, 0.28F);
+
         return LayerDefinition.create(mesh, 64, 64);
     }
 
@@ -61,6 +73,10 @@ public final class RaceCosmeticModels {
         addSegmentedHornPair(root, "dragon_swept", 2.0F, 1.7F, 1.3F, -0.20F, 0.40F, -0.16F);
 
         addDragonTail(root);
+
+        addCatTail(root);
+        addDogTail(root);
+        addFoxTail(root);
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -108,6 +124,98 @@ public final class RaceCosmeticModels {
                 .addBox(-tipLength, -height * 0.34F, -0.40F, tipLength, height * 0.68F, 0.8F)
                 .mirror(false),
             PartPose.offsetAndRotation(-baseLength + 0.15F, 0.0F, 0.0F, pitch * 0.35F, 0.0F, -roll * 0.45F)
+        );
+    }
+
+    private static void addTopEarPair(
+        PartDefinition root,
+        String name,
+        float width,
+        float height,
+        float depth,
+        float tipHeight,
+        float spacing,
+        float roll
+    ) {
+        PartDefinition left = root.addOrReplaceChild(
+            name + "_left",
+            CubeListBuilder.create()
+                .texOffs(20, 8)
+                .addBox(-width / 2.0F, -height, -depth / 2.0F, width, height, depth),
+            PartPose.offsetAndRotation(spacing, -7.8F, 0.0F, 0.0F, 0.0F, -roll)
+        );
+
+        left.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(24, 8)
+                .addBox(-width * 0.32F, -tipHeight, -depth * 0.36F, width * 0.64F, tipHeight, depth * 0.72F),
+            PartPose.offsetAndRotation(0.0F, -height + 0.10F, 0.0F, -0.04F, 0.0F, -roll * 0.35F)
+        );
+
+        PartDefinition right = root.addOrReplaceChild(
+            name + "_right",
+            CubeListBuilder.create()
+                .texOffs(20, 8)
+                .mirror()
+                .addBox(-width / 2.0F, -height, -depth / 2.0F, width, height, depth)
+                .mirror(false),
+            PartPose.offsetAndRotation(-spacing, -7.8F, 0.0F, 0.0F, 0.0F, roll)
+        );
+
+        right.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(24, 8)
+                .mirror()
+                .addBox(-width * 0.32F, -tipHeight, -depth * 0.36F, width * 0.64F, tipHeight, depth * 0.72F)
+                .mirror(false),
+            PartPose.offsetAndRotation(0.0F, -height + 0.10F, 0.0F, -0.04F, 0.0F, roll * 0.35F)
+        );
+    }
+
+    private static void addFloppyEarPair(
+        PartDefinition root,
+        String name,
+        float width,
+        float length,
+        float depth,
+        float outwardRoll
+    ) {
+        PartDefinition left = root.addOrReplaceChild(
+            name + "_left",
+            CubeListBuilder.create()
+                .texOffs(28, 8)
+                .addBox(-0.15F, 0.0F, -depth / 2.0F, width, length, depth),
+            PartPose.offsetAndRotation(3.65F, -6.35F, 0.0F, 0.06F, 0.0F, outwardRoll)
+        );
+
+        left.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(34, 8)
+                .addBox(0.0F, 0.0F, -depth * 0.38F, width * 0.72F, length * 0.58F, depth * 0.76F),
+            PartPose.offsetAndRotation(width * 0.18F, length - 0.25F, 0.0F, 0.18F, 0.0F, outwardRoll * 0.25F)
+        );
+
+        PartDefinition right = root.addOrReplaceChild(
+            name + "_right",
+            CubeListBuilder.create()
+                .texOffs(28, 8)
+                .mirror()
+                .addBox(-width + 0.15F, 0.0F, -depth / 2.0F, width, length, depth)
+                .mirror(false),
+            PartPose.offsetAndRotation(-3.65F, -6.35F, 0.0F, 0.06F, 0.0F, -outwardRoll)
+        );
+
+        right.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(34, 8)
+                .mirror()
+                .addBox(-width * 0.72F, 0.0F, -depth * 0.38F, width * 0.72F, length * 0.58F, depth * 0.76F)
+                .mirror(false),
+            PartPose.offsetAndRotation(-width * 0.18F, length - 0.25F, 0.0F, 0.18F, 0.0F, -outwardRoll * 0.25F)
         );
     }
 
@@ -298,6 +406,124 @@ public final class RaceCosmeticModels {
                 .texOffs(48, 32)
                 .addBox(-0.38F, 0.0F, -0.36F, 0.76F, 2.65F, 0.72F),
             PartPose.offsetAndRotation(0.0F, 2.95F, 0.30F, 0.10F, 0.0F, 0.0F)
+        );
+    }
+
+    private static void addCatTail(PartDefinition root) {
+        PartDefinition base = root.addOrReplaceChild(
+            "cat_tail",
+            CubeListBuilder.create()
+                .texOffs(0, 48)
+                .addBox(-0.46F, 0.0F, -0.46F, 0.92F, 3.0F, 0.92F),
+            PartPose.offsetAndRotation(0.0F, 8.1F, 2.0F, 0.44F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid1 = base.addOrReplaceChild(
+            "mid1",
+            CubeListBuilder.create()
+                .texOffs(4, 48)
+                .addBox(-0.42F, 0.0F, -0.42F, 0.84F, 3.1F, 0.84F),
+            PartPose.offsetAndRotation(0.0F, 2.8F, 0.52F, 0.18F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid2 = mid1.addOrReplaceChild(
+            "mid2",
+            CubeListBuilder.create()
+                .texOffs(8, 48)
+                .addBox(-0.37F, 0.0F, -0.37F, 0.74F, 3.0F, 0.74F),
+            PartPose.offsetAndRotation(0.0F, 2.85F, 0.38F, 0.12F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid3 = mid2.addOrReplaceChild(
+            "mid3",
+            CubeListBuilder.create()
+                .texOffs(12, 48)
+                .addBox(-0.31F, 0.0F, -0.31F, 0.62F, 2.8F, 0.62F),
+            PartPose.offsetAndRotation(0.0F, 2.75F, 0.28F, 0.08F, 0.0F, 0.0F)
+        );
+
+        mid3.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(16, 48)
+                .addBox(-0.24F, 0.0F, -0.24F, 0.48F, 2.4F, 0.48F),
+            PartPose.offsetAndRotation(0.0F, 2.55F, 0.20F, 0.05F, 0.0F, 0.0F)
+        );
+    }
+
+    private static void addDogTail(PartDefinition root) {
+        PartDefinition base = root.addOrReplaceChild(
+            "dog_tail",
+            CubeListBuilder.create()
+                .texOffs(20, 48)
+                .addBox(-0.72F, 0.0F, -0.72F, 1.44F, 2.8F, 1.44F),
+            PartPose.offsetAndRotation(0.0F, 8.0F, 1.95F, 0.30F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid1 = base.addOrReplaceChild(
+            "mid1",
+            CubeListBuilder.create()
+                .texOffs(26, 48)
+                .addBox(-0.62F, 0.0F, -0.62F, 1.24F, 2.7F, 1.24F),
+            PartPose.offsetAndRotation(0.0F, 2.55F, 0.42F, -0.02F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid2 = mid1.addOrReplaceChild(
+            "mid2",
+            CubeListBuilder.create()
+                .texOffs(32, 48)
+                .addBox(-0.49F, 0.0F, -0.49F, 0.98F, 2.5F, 0.98F),
+            PartPose.offsetAndRotation(0.0F, 2.45F, 0.25F, -0.08F, 0.0F, 0.0F)
+        );
+
+        mid2.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(38, 48)
+                .addBox(-0.34F, 0.0F, -0.34F, 0.68F, 2.1F, 0.68F),
+            PartPose.offsetAndRotation(0.0F, 2.25F, 0.12F, -0.12F, 0.0F, 0.0F)
+        );
+    }
+
+    private static void addFoxTail(PartDefinition root) {
+        PartDefinition base = root.addOrReplaceChild(
+            "fox_tail",
+            CubeListBuilder.create()
+                .texOffs(42, 48)
+                .addBox(-1.05F, 0.0F, -0.92F, 2.10F, 3.0F, 1.84F),
+            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.38F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid1 = base.addOrReplaceChild(
+            "mid1",
+            CubeListBuilder.create()
+                .texOffs(50, 48)
+                .addBox(-1.18F, 0.0F, -1.02F, 2.36F, 3.15F, 2.04F),
+            PartPose.offsetAndRotation(0.0F, 2.65F, 0.60F, 0.17F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid2 = mid1.addOrReplaceChild(
+            "mid2",
+            CubeListBuilder.create()
+                .texOffs(0, 56)
+                .addBox(-1.08F, 0.0F, -0.94F, 2.16F, 3.10F, 1.88F),
+            PartPose.offsetAndRotation(0.0F, 2.85F, 0.48F, 0.13F, 0.0F, 0.0F)
+        );
+
+        PartDefinition mid3 = mid2.addOrReplaceChild(
+            "mid3",
+            CubeListBuilder.create()
+                .texOffs(8, 56)
+                .addBox(-0.86F, 0.0F, -0.78F, 1.72F, 2.85F, 1.56F),
+            PartPose.offsetAndRotation(0.0F, 2.82F, 0.38F, 0.09F, 0.0F, 0.0F)
+        );
+
+        mid3.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(16, 56)
+                .addBox(-0.56F, 0.0F, -0.52F, 1.12F, 2.35F, 1.04F),
+            PartPose.offsetAndRotation(0.0F, 2.55F, 0.25F, 0.05F, 0.0F, 0.0F)
         );
     }
 

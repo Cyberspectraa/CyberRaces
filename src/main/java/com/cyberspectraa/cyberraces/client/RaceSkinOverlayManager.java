@@ -96,13 +96,20 @@ public final class RaceSkinOverlayManager {
     }
 
     public static boolean supports(Race race) {
-        return race == Race.GOBLIN || race == Race.TIEFLING;
+        return race == Race.GOBLIN
+            || race == Race.TIEFLING
+            || race == Race.CATFOLK
+            || race == Race.DOGFOLK
+            || race == Race.FOXFOLK;
     }
 
     public static int defaultTarget(Race race) {
         return switch (race) {
             case GOBLIN -> 0x6E9347;
             case TIEFLING -> 0xB84E5C;
+            case CATFOLK -> 0xC49A6C;
+            case DOGFOLK -> 0xA97852;
+            case FOXFOLK -> 0xC96B35;
             default -> CharacterAppearance.AUTO_COLOR;
         };
     }

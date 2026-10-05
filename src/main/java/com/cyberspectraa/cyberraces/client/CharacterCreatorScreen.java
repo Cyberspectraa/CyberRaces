@@ -453,6 +453,9 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
             case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
             case FAIRY -> new String[] {"Ears: Classic", "Ears: Sharp", "Ears: Soft"};
+            case CATFOLK -> new String[] {"Ears: Pointed", "Ears: Tufted", "Ears: Round"};
+            case DOGFOLK -> new String[] {"Ears: Upright", "Ears: Floppy", "Ears: Round"};
+            case FOXFOLK -> new String[] {"Ears: Tall", "Ears: Wide", "Ears: Swept"};
             case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
             case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
         };
@@ -470,6 +473,9 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> "Horns and an animated tail.";
             case DRAGONBORN -> "Horned crest and scaled tail.";
             case FAIRY -> "Adjustable fey ears and Zanza's Wings.";
+            case CATFOLK -> "Feline ears and a long flexible tail.";
+            case DOGFOLK -> "Canine ears and a stronger wagging tail.";
+            case FOXFOLK -> "Fox ears and a full articulated tail.";
         };
     }
 
@@ -484,6 +490,9 @@ public final class CharacterCreatorScreen extends Screen {
             case TIEFLING -> new String[] {"Strong magic.", "Fire resistance."};
             case DRAGONBORN -> new String[] {"Armoured and resilient."};
             case FAIRY -> new String[] {"Tiny and magical.", "Fragile; can fly."};
+            case CATFOLK -> new String[] {"Fast and agile.", "Balanced magic."};
+            case DOGFOLK -> new String[] {"Sturdy and loyal.", "Slightly lower mana."};
+            case FOXFOLK -> new String[] {"Quick and magical.", "Lower health."};
         };
     }
 

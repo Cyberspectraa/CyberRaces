@@ -11,6 +11,9 @@ public final class FeatureColourPalette {
         return switch (race) {
             case TIEFLING -> 0xC24F5B;
             case DRAGONBORN -> 0x76AFA1;
+            case CATFOLK -> 0xC49A6C;
+            case DOGFOLK -> 0xA97852;
+            case FOXFOLK -> 0xC96B35;
             default -> 0xD8A38D;
         };
     }
@@ -33,7 +36,7 @@ public final class FeatureColourPalette {
         }
 
         return switch (race) {
-            case ELF, HALFLING, ORC, GOBLIN, FAIRY -> true;
+            case ELF, HALFLING, ORC, GOBLIN, FAIRY, CATFOLK, DOGFOLK, FOXFOLK -> true;
             default -> false;
         };
     }
@@ -41,7 +44,7 @@ public final class FeatureColourPalette {
     public static String label(Race race, int packedRgb) {
         if (packedRgb == CharacterAppearance.AUTO_COLOR) {
             return switch (race) {
-                case ELF, HALFLING, ORC, GOBLIN, FAIRY -> "Skin";
+                case ELF, HALFLING, ORC, GOBLIN, FAIRY, CATFOLK, DOGFOLK, FOXFOLK -> "Skin";
                 default -> "Natural";
             };
         }
@@ -51,7 +54,7 @@ public final class FeatureColourPalette {
 
     public static boolean hasEars(Race race) {
         return switch (race) {
-            case ELF, HALFLING, ORC, GOBLIN, FAIRY -> true;
+            case ELF, HALFLING, ORC, GOBLIN, FAIRY, CATFOLK, DOGFOLK, FOXFOLK -> true;
             default -> false;
         };
     }

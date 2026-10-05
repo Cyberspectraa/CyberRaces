@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.CyberRaces;
+import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -62,6 +63,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 visual.earHeight(),
                 visual.earSpread(),
                 visual.earTilt(),
+                visual.appearance().bodyTargetColor(),
                 limbSwing,
                 limbSwingAmount,
                 ageInTicks
@@ -80,6 +82,7 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         int earHeight,
         int earSpread,
         int earTilt,
+        int bodyTargetColor,
         float limbSwing,
         float limbSwingAmount,
         float ageInTicks
@@ -191,6 +194,102 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
                 },
                 earHeight, earSpread, earTilt
             );
+
+            case CATFOLK -> {
+                renderEars(
+                    poseStack, buffer, packedLight, player, race, featureColor,
+                    "cat_" + switch (feature) {
+                        case 1 -> "tufted";
+                        case 2 -> "round";
+                        default -> "pointed";
+                    },
+                    earHeight, earSpread, earTilt
+                );
+
+                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
+                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
+                    ? bodyTargetColor
+                    : featureColor;
+                float[] color = FeatureColourPalette.rgb(race, tailColor);
+                renderTail(
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    FEATURE_TEXTURE,
+                    "cat_tail",
+                    TailStyle.CAT,
+                    limbSwing,
+                    limbSwingAmount,
+                    ageInTicks,
+                    color[0],
+                    color[1],
+                    color[2]
+                );
+            }
+
+            case DOGFOLK -> {
+                renderEars(
+                    poseStack, buffer, packedLight, player, race, featureColor,
+                    "dog_" + switch (feature) {
+                        case 1 -> "floppy";
+                        case 2 -> "round";
+                        default -> "upright";
+                    },
+                    earHeight, earSpread, earTilt
+                );
+
+                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
+                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
+                    ? bodyTargetColor
+                    : featureColor;
+                float[] color = FeatureColourPalette.rgb(race, tailColor);
+                renderTail(
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    FEATURE_TEXTURE,
+                    "dog_tail",
+                    TailStyle.DOG,
+                    limbSwing,
+                    limbSwingAmount,
+                    ageInTicks,
+                    color[0],
+                    color[1],
+                    color[2]
+                );
+            }
+
+            case FOXFOLK -> {
+                renderEars(
+                    poseStack, buffer, packedLight, player, race, featureColor,
+                    "fox_" + switch (feature) {
+                        case 1 -> "wide";
+                        case 2 -> "swept";
+                        default -> "tall";
+                    },
+                    earHeight, earSpread, earTilt
+                );
+
+                int tailColor = featureColor == CharacterAppearance.AUTO_COLOR
+                    && bodyTargetColor != CharacterAppearance.AUTO_COLOR
+                    ? bodyTargetColor
+                    : featureColor;
+                float[] color = FeatureColourPalette.rgb(race, tailColor);
+                renderTail(
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    FEATURE_TEXTURE,
+                    "fox_tail",
+                    TailStyle.FOX,
+                    limbSwing,
+                    limbSwingAmount,
+                    ageInTicks,
+                    color[0],
+                    color[1],
+                    color[2]
+                );
+            }
 
             case HUMAN, DWARF -> {
             }
@@ -322,9 +421,9 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         }
 
         float movement = Math.max(0.0F, Math.min(1.0F, limbSwingAmount));
-        float idlePhase = ageInTicks * (style == TailStyle.TIEFLING ? 0.085F : 0.070F);
+        float idlePhase = ageInTicks * tailIdleSpeed(style);
         float walkPhase = limbSwing * 0.6662F;
-        float baseSway = style == TailStyle.TIEFLING ? 0.105F : 0.072F;
+        float baseSway = tailSway(style);
 
         for (int index = 0; index < chain.length; index++) {
             float progress = chain.length <= 1
@@ -390,40 +489,95 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
     }
 
     private ModelPart[] tailChain(ModelPart root, TailStyle style) {
-        if (style == TailStyle.TIEFLING) {
-            ModelPart mid1 = root.getChild("mid1");
-            ModelPart mid2 = mid1.getChild("mid2");
-            ModelPart mid3 = mid2.getChild("mid3");
-            ModelPart tipStem = mid3.getChild("tip_stem");
+        return switch (style) {
+            case TIEFLING -> {
+                ModelPart mid1 = root.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart mid3 = mid2.getChild("mid3");
+                ModelPart tipStem = mid3.getChild("tip_stem");
 
-            return new ModelPart[] {
-                root,
-                mid1,
-                mid2,
-                mid3,
-                tipStem
-            };
-        }
+                yield new ModelPart[] {
+                    root,
+                    mid1,
+                    mid2,
+                    mid3,
+                    tipStem
+                };
+            }
 
-        ModelPart mid1 = root.getChild("mid1");
-        ModelPart mid2 = mid1.getChild("mid2");
-        ModelPart mid3 = mid2.getChild("mid3");
-        ModelPart lower = mid3.getChild("lower");
-        ModelPart tip = lower.getChild("tip");
+            case DRAGON -> {
+                ModelPart mid1 = root.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart mid3 = mid2.getChild("mid3");
+                ModelPart lower = mid3.getChild("lower");
+                ModelPart tip = lower.getChild("tip");
 
-        return new ModelPart[] {
-            root,
-            mid1,
-            mid2,
-            mid3,
-            lower,
-            tip
+                yield new ModelPart[] {
+                    root,
+                    mid1,
+                    mid2,
+                    mid3,
+                    lower,
+                    tip
+                };
+            }
+
+            case CAT, FOX -> {
+                ModelPart mid1 = root.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart mid3 = mid2.getChild("mid3");
+                ModelPart tip = mid3.getChild("tip");
+
+                yield new ModelPart[] {
+                    root,
+                    mid1,
+                    mid2,
+                    mid3,
+                    tip
+                };
+            }
+
+            case DOG -> {
+                ModelPart mid1 = root.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart tip = mid2.getChild("tip");
+
+                yield new ModelPart[] {
+                    root,
+                    mid1,
+                    mid2,
+                    tip
+                };
+            }
+        };
+    }
+
+    private float tailIdleSpeed(TailStyle style) {
+        return switch (style) {
+            case TIEFLING -> 0.085F;
+            case DRAGON -> 0.070F;
+            case CAT -> 0.105F;
+            case DOG -> 0.120F;
+            case FOX -> 0.078F;
+        };
+    }
+
+    private float tailSway(TailStyle style) {
+        return switch (style) {
+            case TIEFLING -> 0.105F;
+            case DRAGON -> 0.072F;
+            case CAT -> 0.125F;
+            case DOG -> 0.155F;
+            case FOX -> 0.095F;
         };
     }
 
     private enum TailStyle {
         TIEFLING,
-        DRAGON
+        DRAGON,
+        CAT,
+        DOG,
+        FOX
     }
 
 }
