@@ -1,6 +1,6 @@
 package com.cyberspectraa.cyberraces.compat;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import virtuoel.pehkui.api.ScaleData;
 import virtuoel.pehkui.api.ScaleTypes;
 
@@ -10,13 +10,17 @@ public final class PehkuiCompat {
     private PehkuiCompat() {
     }
 
-    public static void applyScale(ServerPlayer player, float scale) {
-        ScaleData data = ScaleTypes.BASE.getScaleData(player);
+    public static void applyScale(Entity entity, float scale) {
+        if (entity == null) {
+            return;
+        }
+
+        ScaleData data = ScaleTypes.BASE.getScaleData(entity);
         data.setScaleTickDelay(TRANSITION_TICKS);
         data.setTargetScale(scale);
     }
 
-    public static void resetScale(ServerPlayer player) {
-        applyScale(player, 1.0f);
+    public static void resetScale(Entity entity) {
+        applyScale(entity, 1.0f);
     }
 }
