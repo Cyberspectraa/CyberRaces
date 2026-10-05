@@ -344,68 +344,141 @@ public final class RaceCosmeticLayer extends RenderLayer<AbstractClientPlayer, P
         float limbSwingAmount,
         float ageInTicks
     ) {
+        ModelPart tail = root.getChild("tail");
+        ModelPart[] chain = beastTailChain(tail, race);
+
+        float[] oldX = new float[chain.length];
+        float[] oldY = new float[chain.length];
+        float[] oldZ = new float[chain.length];
+
+        for (int i = 0; i < chain.length; i++) {
+            oldX[i] = chain[i].xRot;
+            oldY[i] = chain[i].yRot;
+            oldZ[i] = chain[i].zRot;
+        }
+
         float movement = Math.max(0.0F, Math.min(1.0F, limbSwingAmount));
+
+        float idleSpeed = switch (race) {
+            case CATFOLK -> 0.085F;
+            case DOGFOLK -> 0.075F;
+            case FOXFOLK -> 0.060F;
+            default -> 0.070F;
+        };
+
+        float idleAmount = switch (race) {
+            case CATFOLK -> 0.040F;
+            case DOGFOLK -> 0.025F;
+            case FOXFOLK -> 0.025F;
+            default -> 0.030F;
+        };
+
+        float walkAmount = switch (race) {
+            case CATFOLK -> 0.065F;
+            case DOGFOLK -> 0.145F;
+            case FOXFOLK -> 0.055F;
+            default -> 0.060F;
+        };
+
+        for (int i = 0; i < chain.length; i++) {
+            float progress = chain.length <= 1
+                ? 0.0F
+                : i / (float) (chain.length - 1);
+
+            float idle =
+                (float) Math.sin(ageInTicks * idleSpeed - i * 0.34F)
+                    * idleAmount
+                    * (0.55F + progress * 0.65F);
+
+            float walk =
+                (float) Math.sin(limbSwing * 0.6662F - i * 0.40F)
+                    * movement
+                    * walkAmount
+                    * (0.55F + progress * 0.70F);
+
+            chain[i].yRot = oldY[i] + idle + walk;
+
+            if (race == Race.CATFOLK) {
+                // Cat tail gets a small travelling curl rather than a whip.
+                chain[i].xRot =
+                    oldX[i]
+                        + (float) Math.cos(
+                            ageInTicks * 0.045F - i * 0.22F
+                        )
+                        * 0.018F
+                        * (0.4F + progress);
+            } else if (race == Race.DOGFOLK) {
+                // Keep humanoid Dogfolk wag restrained; previous 1.15 rad
+                // swing was far too exaggerated.
+                chain[i].xRot =
+                    oldX[i]
+                        + (float) Math.sin(ageInTicks * 0.040F)
+                        * 0.010F;
+            } else {
+                chain[i].xRot =
+                    oldX[i]
+                        + (float) Math.cos(
+                            ageInTicks * 0.035F - i * 0.18F
+                        )
+                        * 0.010F;
+            }
+        }
 
         poseStack.pushPose();
         getParentModel().body.translateAndRotate(poseStack);
 
-        if (race == Race.CATFOLK) {
-            ModelPart tail1 = root.getChild("tail1");
-            ModelPart tail2 = root.getChild("tail2");
-
-            float tail1Y = tail1.yRot;
-            float tail2Y = tail2.yRot;
-            float tail2X = tail2.xRot;
-
-            float idle = (float) Math.sin(ageInTicks * 0.09F) * 0.10F;
-            float walk = (float) Math.sin(limbSwing * 0.6662F) * movement * 0.14F;
-
-            tail1.yRot += idle + walk;
-            tail2.yRot += idle * 1.25F + walk * 1.35F;
-            tail2.xRot += (float) Math.cos(limbSwing * 0.52F) * movement * 0.18F;
-
-            tail1.render(
-                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
-                1.0F, 1.0F, 1.0F, 1.0F
-            );
-            tail2.render(
-                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
-                1.0F, 1.0F, 1.0F, 1.0F
-            );
-
-            tail1.yRot = tail1Y;
-            tail2.yRot = tail2Y;
-            tail2.xRot = tail2X;
-        } else {
-            ModelPart tail = root.getChild("tail");
-
-            float oldY = tail.yRot;
-            float oldX = tail.xRot;
-
-            if (race == Race.DOGFOLK) {
-                // Mirrors the vanilla Wolf's broad side-to-side wag.
-                tail.yRot +=
-                    (float) Math.cos(limbSwing * 0.6662F) * 1.15F * movement
-                        + (float) Math.sin(ageInTicks * 0.11F) * 0.08F;
-                tail.xRot += (float) Math.sin(ageInTicks * 0.055F) * 0.035F;
-            } else {
-                // Fox tails are much heavier, so keep the motion slower.
-                tail.yRot +=
-                    (float) Math.sin(ageInTicks * 0.072F) * 0.075F
-                        + (float) Math.sin(limbSwing * 0.58F) * movement * 0.10F;
-                tail.xRot += (float) Math.cos(ageInTicks * 0.045F) * 0.025F;
-            }
-
-            tail.render(
-                poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
-                1.0F, 1.0F, 1.0F, 1.0F
-            );
-
-            tail.yRot = oldY;
-            tail.xRot = oldX;
-        }
+        tail.render(
+            poseStack,
+            consumer,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            1.0F,
+            1.0F,
+            1.0F,
+            1.0F
+        );
 
         poseStack.popPose();
+
+        for (int i = 0; i < chain.length; i++) {
+            chain[i].xRot = oldX[i];
+            chain[i].yRot = oldY[i];
+            chain[i].zRot = oldZ[i];
+        }
+    }
+
+    private ModelPart[] beastTailChain(ModelPart tail, Race race) {
+        return switch (race) {
+            case CATFOLK, FOXFOLK -> {
+                ModelPart mid1 = tail.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart mid3 = mid2.getChild("mid3");
+                ModelPart tip = mid3.getChild("tip");
+
+                yield new ModelPart[] {
+                    tail,
+                    mid1,
+                    mid2,
+                    mid3,
+                    tip
+                };
+            }
+
+            case DOGFOLK -> {
+                ModelPart mid1 = tail.getChild("mid1");
+                ModelPart mid2 = mid1.getChild("mid2");
+                ModelPart tip = mid2.getChild("tip");
+
+                yield new ModelPart[] {
+                    tail,
+                    mid1,
+                    mid2,
+                    tip
+                };
+            }
+
+            default -> new ModelPart[] {tail};
+        };
     }
 
     private void renderEars(
