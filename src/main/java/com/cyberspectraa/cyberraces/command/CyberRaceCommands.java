@@ -175,10 +175,10 @@ public final class CyberRaceCommands {
             case ORC -> "+20% damage below 35% health";
             case GOBLIN -> "+0.5 Luck for scavenging";
             case TIEFLING -> "50% fire damage plus flame reaction";
-            case DRAGONBORN -> "Level 10 Fire Breath (V), no mana, 18s cooldown";
-            case FAIRY -> "Icarus wings and 3-4 block ground hover";
+            case DRAGONBORN -> "V: Level 10 Fire Breath, no mana, 18s cooldown";
+            case FAIRY -> "Icarus wings; V toggles 3-4 block Hover";
             case CATFOLK -> "12% higher jump and 60% less fall damage";
-            case DOGFOLK -> "35% less sprint exhaustion";
+            case DOGFOLK -> "35% less sprint exhaustion; V activates Scent";
             case FOXFOLK -> "+20% movement speed while crouched";
         };
     }

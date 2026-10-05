@@ -525,11 +525,11 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DRAGONBORN -> new String[] {
                 "Armoured and resilient.",
-                "Racial Fire Breath: V, 18s cooldown."
+                "V: Level 10 Fire Breath, no mana, 18s cooldown."
             };
             case FAIRY -> new String[] {
                 "Tiny and magical; fragile.",
-                "Wings plus 3-4 block ground hover."
+                "V: Toggle 3-4 block Hover. Icarus wings remain full flight."
             };
             case CATFOLK -> new String[] {
                 "Fast and agile.",
@@ -537,7 +537,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DOGFOLK -> new String[] {
                 "Sturdy and loyal; slightly lower mana.",
-                "35% less exhaustion while sprinting."
+                "35% less sprint exhaustion. V: Scent nearby targets."
             };
             case FOXFOLK -> new String[] {
                 "Quick and magical; lower health.",

@@ -1,9 +1,9 @@
 package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.CyberRaces;
-import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
-import com.cyberspectraa.cyberraces.network.packet.DragonBreathPacket;
 import com.cyberspectraa.cyberraces.event.FairyHoverPhysics;
+import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
+import com.cyberspectraa.cyberraces.network.packet.RacialAbilityPacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -28,18 +28,20 @@ public final class ClientForgeEvents {
         }
 
         Minecraft minecraft = Minecraft.getInstance();
+
         if (minecraft.player == null) {
+            ClientAbilityState.disableFairyHover();
             return;
         }
 
-        // Use the stored race rather than preview state so selecting Fairy in
-        // the creator does not physically move an unfinished character.
-        boolean fairy =
+        Race race =
             ClientCharacterState.resolve(minecraft.player.getUUID())
-                .map(visual -> visual.race() == Race.FAIRY)
-                .orElse(false);
+                .map(ClientCharacterState.VisualCharacter::race)
+                .orElse(null);
 
-        if (fairy) {
+        if (race != Race.FAIRY) {
+            ClientAbilityState.disableFairyHover();
+        } else if (ClientAbilityState.isFairyHoverEnabled()) {
             FairyHoverPhysics.apply(minecraft.player);
         }
 
@@ -47,24 +49,26 @@ public final class ClientForgeEvents {
             return;
         }
 
-        while (ClientKeyMappings.DRAGON_BREATH.consumeClick()) {
-            boolean dragonborn =
-                ClientCharacterState.resolve(minecraft.player)
-                    .map(visual -> visual.race() == Race.DRAGONBORN)
-                    .orElse(false);
-
-            if (!dragonborn) {
+        while (ClientKeyMappings.RACIAL_ABILITY.consumeClick()) {
+            if (race == null) {
                 minecraft.player.displayClientMessage(
                     Component.literal(
-                        "Fire Breath is a Dragonborn racial ability."
+                        "Choose a race before using a racial ability."
                     ),
                     true
                 );
                 continue;
             }
 
+            boolean toggleState = false;
+
+            if (race == Race.FAIRY) {
+                toggleState =
+                    ClientAbilityState.toggleFairyHover();
+            }
+
             CyberRacesNetwork.sendToServer(
-                new DragonBreathPacket()
+                new RacialAbilityPacket(toggleState)
             );
         }
     }

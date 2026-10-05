@@ -1,6 +1,8 @@
 package com.cyberspectraa.cyberraces.event;
 
+import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
+import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
 import com.cyberspectraa.cyberraces.compat.CyberNpcRaceManager;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
@@ -42,7 +44,19 @@ public final class RacialPassiveEvents {
             return;
         }
 
+        Race race = RaceManager.getRace(player).orElse(null);
+
         updateFoxSneakSpeed(player);
+
+        if (race == Race.DOGFOLK) {
+            DogfolkScentAbility.tick(player);
+        } else {
+            DogfolkScentAbility.cleanup(player);
+        }
+
+        if (race != Race.FAIRY) {
+            FairyHoverAbility.disable(player);
+        }
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.tick(player);
@@ -51,8 +65,14 @@ public final class RacialPassiveEvents {
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player
-            && IronSpellsCompat.isLoaded()) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+
+        DogfolkScentAbility.cleanup(player);
+        FairyHoverAbility.disable(player);
+
+        if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);
         }
     }

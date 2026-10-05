@@ -15,9 +15,9 @@ import org.lwjgl.glfw.GLFW;
     value = Dist.CLIENT
 )
 public final class ClientKeyMappings {
-    public static final KeyMapping DRAGON_BREATH =
+    public static final KeyMapping RACIAL_ABILITY =
         new KeyMapping(
-            "key.cyberraces.dragon_breath",
+            "key.cyberraces.racial_ability",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
             "key.categories.cyberraces"
@@ -28,6 +28,6 @@ public final class ClientKeyMappings {
 
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
-        event.register(DRAGON_BREATH);
+        event.register(RACIAL_ABILITY);
     }
 }

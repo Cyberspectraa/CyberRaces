@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.event;
 
+import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +22,8 @@ public final class FairyHoverEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END
             || !(event.player instanceof ServerPlayer player)
-            || RaceManager.getRace(player).orElse(null) != Race.FAIRY) {
+            || RaceManager.getRace(player).orElse(null) != Race.FAIRY
+            || !FairyHoverAbility.isEnabled(player)) {
             return;
         }
 
