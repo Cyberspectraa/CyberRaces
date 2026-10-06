@@ -62,6 +62,8 @@ public enum RaceEvolution {
         s(3,0.99,1.04,1.02,1.10,0.06,1.5,0,1.02,1), "dragon_breath_frost"),
     STORMBLOOD("stormblood", "Stormblood", "A dragonborn lineage charged with speed and storm-like energy.", Race.DRAGONBORN,
         s(2,1.05,1.06,1.05,1.06,0.04,0.5,0,1.01,1), "dragon_breath_lightning"),
+    SKYBORN("skyborn", "Skyborn", "A winged dragonborn lineage that awakens true draconic flight through Icarus dragon wings.", Race.DRAGONBORN,
+        s(2,1.04,1.03,1.03,1.05,0.03,0.5,0,1.01,1), "dragon_breath_skyborn"),
 
     SYLPH("sylph", "Sylph", "A fairy evolution focused on air control, hover mobility and evasive movement.", Race.FAIRY,
         s(1,1.10,1.02,1.05,1.02,0,0,0,0.95,1), "fairy_hover_sylph"),
@@ -98,7 +100,21 @@ public enum RaceEvolution {
     TRICKSTER("trickster", "Trickster", "A deceptive foxfolk evolution specialising in misdirection and escape.", Race.FOXFOLK,
         s(1,1.07,1.04,1.05,1.05,0,0,0.25,1,1), "quickstep_trickster"),
     SPIRIT_FOX("spirit_fox", "Spirit Fox", "A supernatural foxfolk evolution whose magic affinity foreshadows a future Kitsune ascension.", Race.FOXFOLK,
-        s(1,1.04,1.15,1.12,1.10,0,0,0,1,1), "quickstep_spirit");
+        s(1,1.04,1.15,1.12,1.10,0,0,0,1,1), "quickstep_spirit"),
+
+    SERAPHIC("seraphic", "Seraphic", "A radiant aasimar lineage that deepens its connection to Holy magic and celestial power.", Race.AASIMAR,
+        s(1,1.02,1.12,1.10,1.10,0,0.5,0,1,1), "aasimar_seraphic"),
+    FALLEN("fallen", "Fallen", "An aasimar that turns away from radiance and channels necromantic power instead.", Race.AASIMAR,
+        s(2,1.03,1.10,1.08,1.08,0.02,0.5,0,1,1), "aasimar_fallen"),
+    CELESTIAL_GUARDIAN("guardian", "Guardian", "A defensive aasimar lineage focused on protection, resilience and shielding allies.", Race.AASIMAR,
+        s(4,0.99,1.04,1.04,1.12,0.08,2,0,1.02,1), "aasimar_guardian"),
+
+    RAPTOR("raptor", "Raptor", "A birdfolk lineage built around speed, diving attacks and aggressive aerial movement.", Race.BIRDFOLK,
+        s(1,1.08,1,1,1,0,0,0,1,1), "wing_burst_raptor"),
+    NIGHTWING("nightwing", "Nightwing", "A quiet birdfolk lineage adapted for darkness, scouting and controlled flight.", Race.BIRDFOLK,
+        s(1,1.05,1.03,1.03,1.05,0,0,0.25,1,1), "wing_burst_nightwing"),
+    STORMWING("stormwing", "Stormwing", "A high-altitude birdfolk lineage empowered by storms and exceptional aerial mobility.", Race.BIRDFOLK,
+        s(2,1.07,1.05,1.05,1.08,0.02,0.5,0,1,1), "wing_burst_storm");
 
     public static final int REQUIRED_LEVEL = 30;
 

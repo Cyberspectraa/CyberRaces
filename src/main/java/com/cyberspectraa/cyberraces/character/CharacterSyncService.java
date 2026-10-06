@@ -41,6 +41,9 @@ public final class CharacterSyncService {
             player.getUUID(),
             created,
             race.id(),
+            RaceManager.getEvolution(player)
+                .map(evolution -> evolution.id())
+                .orElse(""),
             appearance.featureStyle(),
             appearance.featureColor(),
             appearance.earHeight(),

@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.compat;
 
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -35,6 +36,8 @@ public final class CyberNpcRacialAi {
     private static final String ORC_READY = "OrcWarCryReady";
     private static final String NYMPH_READY = "NymphGraceReady";
     private static final String CAT_READY = "CatPounceReady";
+    private static final String AASIMAR_READY = "AasimarRadianceReady";
+    private static final String BIRDFOLK_READY = "BirdfolkWingBurstReady";
 
     private static Class<?> cachedCollectClass;
     private static Method cachedCollectMethod;
@@ -79,6 +82,8 @@ public final class CyberNpcRacialAi {
             case ORC -> tryOrcWarCry(level, mob, target, distanceSqr);
             case NYMPH -> tryNymphGrace(level, mob);
             case CATFOLK -> tryCatPounce(level, mob, target, distanceSqr, lineOfSight);
+            case AASIMAR -> tryAasimarRadiance(level, mob, target, distanceSqr, lineOfSight);
+            case BIRDFOLK -> tryBirdfolkWingBurst(level, mob, target, distanceSqr);
             default -> {
                 // These races already receive their passive CyberRaces
                 // attributes/effects. They do not need forced active AI here.
@@ -161,14 +166,23 @@ public final class CyberNpcRacialAi {
             return;
         }
 
+        RaceEvolution evolution =
+            CyberNpcRaceManager.getEvolution(mob).orElse(null);
+
         Vec3 from = mob.getEyePosition();
         Vec3 to = target.getEyePosition();
         Vec3 ray = to.subtract(from);
 
+        var particle = evolution == RaceEvolution.FROSTBLOOD
+            ? ParticleTypes.SNOWFLAKE
+            : evolution == RaceEvolution.STORMBLOOD
+                ? ParticleTypes.ELECTRIC_SPARK
+                : ParticleTypes.FLAME;
+
         for (int i = 1; i <= 8; i++) {
             Vec3 point = from.add(ray.scale(i / 8.0D));
             level.sendParticles(
-                    ParticleTypes.FLAME,
+                    particle,
                     point.x,
                     point.y,
                     point.z,
@@ -183,17 +197,35 @@ public final class CyberNpcRacialAi {
         level.playSound(
                 null,
                 mob.blockPosition(),
-                SoundEvents.BLAZE_SHOOT,
+                evolution == RaceEvolution.STORMBLOOD
+                    ? SoundEvents.LIGHTNING_BOLT_THUNDER
+                    : evolution == RaceEvolution.FROSTBLOOD
+                        ? SoundEvents.POWDER_SNOW_BREAK
+                        : SoundEvents.BLAZE_SHOOT,
                 SoundSource.NEUTRAL,
-                0.85F,
-                0.78F
+                evolution == RaceEvolution.STORMBLOOD ? 0.35F : 0.85F,
+                evolution == RaceEvolution.FROSTBLOOD ? 1.15F : 0.78F
         );
 
         target.hurt(
                 level.damageSources().mobAttack(mob),
-                5.0F
+                evolution == RaceEvolution.STORMBLOOD ? 6.0F : 5.0F
         );
-        target.setSecondsOnFire(4);
+
+        if (evolution == RaceEvolution.FROSTBLOOD) {
+            target.addEffect(
+                new MobEffectInstance(
+                    MobEffects.MOVEMENT_SLOWDOWN,
+                    4 * 20,
+                    1,
+                    false,
+                    true,
+                    true
+                )
+            );
+        } else if (evolution != RaceEvolution.STORMBLOOD) {
+            target.setSecondsOnFire(4);
+        }
 
         setCooldown(mob, DRAGON_READY, 18 * 20);
     }
@@ -464,6 +496,141 @@ public final class CyberNpcRacialAi {
         );
 
         setCooldown(mob, CAT_READY, 8 * 20);
+    }
+
+    private static void tryAasimarRadiance(
+            ServerLevel level,
+            PathfinderMob mob,
+            LivingEntity target,
+            double distanceSqr,
+            boolean lineOfSight
+    ) {
+        if (!lineOfSight
+                || distanceSqr > 14.0D * 14.0D
+                || !isReady(mob, AASIMAR_READY)) {
+            return;
+        }
+
+        RaceEvolution evolution =
+            CyberNpcRaceManager.getEvolution(mob).orElse(null);
+        boolean fallen = evolution == RaceEvolution.FALLEN;
+
+        Vec3 from = mob.getEyePosition();
+        Vec3 to = target.getEyePosition();
+        Vec3 ray = to.subtract(from);
+
+        for (int i = 1; i <= 10; i++) {
+            Vec3 point = from.add(ray.scale(i / 10.0D));
+            level.sendParticles(
+                fallen ? ParticleTypes.SOUL : ParticleTypes.END_ROD,
+                point.x,
+                point.y,
+                point.z,
+                1,
+                0.04D,
+                0.04D,
+                0.04D,
+                0.0D
+            );
+        }
+
+        target.hurt(
+            level.damageSources().mobAttack(mob),
+            fallen ? 6.0F : 5.0F
+        );
+
+        if (fallen) {
+            target.addEffect(
+                new MobEffectInstance(
+                    MobEffects.WITHER,
+                    4 * 20,
+                    0,
+                    false,
+                    true,
+                    true
+                )
+            );
+        } else {
+            target.addEffect(
+                new MobEffectInstance(
+                    MobEffects.GLOWING,
+                    5 * 20,
+                    0,
+                    false,
+                    true,
+                    true
+                )
+            );
+        }
+
+        level.playSound(
+            null,
+            mob.blockPosition(),
+            fallen
+                ? SoundEvents.SOUL_ESCAPE
+                : SoundEvents.AMETHYST_BLOCK_CHIME,
+            SoundSource.NEUTRAL,
+            0.65F,
+            fallen ? 0.75F : 1.35F
+        );
+
+        setCooldown(
+            mob,
+            AASIMAR_READY,
+            evolution == RaceEvolution.SERAPHIC
+                ? 16 * 20
+                : 20 * 20
+        );
+    }
+
+    private static void tryBirdfolkWingBurst(
+            ServerLevel level,
+            PathfinderMob mob,
+            LivingEntity target,
+            double distanceSqr
+    ) {
+        if (distanceSqr < 3.0D * 3.0D
+                || distanceSqr > 10.0D * 10.0D
+                || mob.isPassenger()
+                || mob.isInWaterOrBubble()
+                || !isReady(mob, BIRDFOLK_READY)) {
+            return;
+        }
+
+        Vec3 toward = horizontalNormal(
+            target.position().subtract(mob.position())
+        );
+
+        mob.setDeltaMovement(
+            toward.x * 0.72D,
+            Math.max(mob.getDeltaMovement().y, 0.42D),
+            toward.z * 0.72D
+        );
+        mob.hurtMarked = true;
+        mob.fallDistance = 0.0F;
+
+        level.sendParticles(
+            ParticleTypes.CLOUD,
+            mob.getX(),
+            mob.getY() + 0.20D,
+            mob.getZ(),
+            8,
+            0.25D,
+            0.10D,
+            0.25D,
+            0.02D
+        );
+
+        level.playSound(
+            null,
+            mob.blockPosition(),
+            SoundEvents.PHANTOM_FLAP,
+            SoundSource.NEUTRAL,
+            0.60F,
+            1.18F
+        );
+
+        setCooldown(mob, BIRDFOLK_READY, 7 * 20);
     }
 
     private static Vec3 horizontalNormal(Vec3 vector) {

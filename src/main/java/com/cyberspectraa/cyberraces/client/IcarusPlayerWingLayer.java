@@ -79,18 +79,34 @@ public final class IcarusPlayerWingLayer<T extends LivingEntity, M extends Entit
     ) {
         ItemStack wings = IcarusAPIClient.getWingsForRendering(entity);
 
-        boolean fairyPreview =
+        ClientCharacterState.VisualCharacter visual =
             entity instanceof AbstractClientPlayer player
-                && ClientCharacterState.isPreviewing(Race.FAIRY, player);
+                ? ClientCharacterState.resolve(player).orElse(null)
+                : ClientCharacterState.resolve(entity.getUUID()).orElse(null);
 
-        boolean externalFairy =
-            !(entity instanceof AbstractClientPlayer)
-                && ClientCharacterState.resolve(entity.getUUID())
-                    .map(visual -> visual.race() == Race.FAIRY)
-                    .orElse(false);
-
-        if (wings.isEmpty() && (fairyPreview || externalFairy)) {
-            wings = new ItemStack(IcarusItems.ZANZAS_WINGS.get());
+        if (wings.isEmpty() && visual != null) {
+            if (visual.race() == Race.FAIRY) {
+                wings = new ItemStack(IcarusItems.ZANZAS_WINGS.get());
+            } else if (visual.race() == Race.BIRDFOLK) {
+                wings = new ItemStack(
+                    birdfolkWing(visual.featureStyle())
+                );
+            } else if (visual.race() == Race.DRAGONBORN
+                    && "skyborn".equals(visual.evolutionId())) {
+                wings = new ItemStack(
+                    dragonWing(visual.featureColor())
+                );
+            } else if (visual.race() == Race.AASIMAR) {
+                wings = switch (visual.evolutionId()) {
+                    case "seraphic" ->
+                        new ItemStack(IcarusItems.WHITE_LIGHT_WINGS.get());
+                    case "fallen" ->
+                        new ItemStack(IcarusItems.BLACK_LIGHT_WINGS.get());
+                    case "guardian" ->
+                        new ItemStack(IcarusItems.YELLOW_LIGHT_WINGS.get());
+                    default -> ItemStack.EMPTY;
+                };
+            }
         }
 
         if (!(wings.getItem() instanceof WingItem wingItem)) {
@@ -169,6 +185,84 @@ public final class IcarusPlayerWingLayer<T extends LivingEntity, M extends Entit
         );
 
         poseStack.popPose();
+    }
+
+    private net.minecraft.world.item.Item birdfolkWing(int style) {
+        return switch (Math.floorMod(style, 16)) {
+            case 0 -> IcarusItems.WHITE_FEATHERED_WINGS.get();
+            case 1 -> IcarusItems.ORANGE_FEATHERED_WINGS.get();
+            case 2 -> IcarusItems.MAGENTA_FEATHERED_WINGS.get();
+            case 3 -> IcarusItems.LIGHT_BLUE_FEATHERED_WINGS.get();
+            case 4 -> IcarusItems.YELLOW_FEATHERED_WINGS.get();
+            case 5 -> IcarusItems.LIME_FEATHERED_WINGS.get();
+            case 6 -> IcarusItems.PINK_FEATHERED_WINGS.get();
+            case 7 -> IcarusItems.GRAY_FEATHERED_WINGS.get();
+            case 8 -> IcarusItems.LIGHT_GRAY_FEATHERED_WINGS.get();
+            case 9 -> IcarusItems.CYAN_FEATHERED_WINGS.get();
+            case 10 -> IcarusItems.PURPLE_FEATHERED_WINGS.get();
+            case 11 -> IcarusItems.BLUE_FEATHERED_WINGS.get();
+            case 12 -> IcarusItems.BROWN_FEATHERED_WINGS.get();
+            case 13 -> IcarusItems.GREEN_FEATHERED_WINGS.get();
+            case 14 -> IcarusItems.RED_FEATHERED_WINGS.get();
+            default -> IcarusItems.BLACK_FEATHERED_WINGS.get();
+        };
+    }
+
+    private net.minecraft.world.item.Item dragonWing(int packedRgb) {
+        int index = nearestDye(
+            packedRgb < 0 ? 0x76AFA1 : packedRgb
+        );
+
+        return switch (index) {
+            case 0 -> IcarusItems.WHITE_DRAGON_WINGS.get();
+            case 1 -> IcarusItems.ORANGE_DRAGON_WINGS.get();
+            case 2 -> IcarusItems.MAGENTA_DRAGON_WINGS.get();
+            case 3 -> IcarusItems.LIGHT_BLUE_DRAGON_WINGS.get();
+            case 4 -> IcarusItems.YELLOW_DRAGON_WINGS.get();
+            case 5 -> IcarusItems.LIME_DRAGON_WINGS.get();
+            case 6 -> IcarusItems.PINK_DRAGON_WINGS.get();
+            case 7 -> IcarusItems.GRAY_DRAGON_WINGS.get();
+            case 8 -> IcarusItems.LIGHT_GRAY_DRAGON_WINGS.get();
+            case 9 -> IcarusItems.CYAN_DRAGON_WINGS.get();
+            case 10 -> IcarusItems.PURPLE_DRAGON_WINGS.get();
+            case 11 -> IcarusItems.BLUE_DRAGON_WINGS.get();
+            case 12 -> IcarusItems.BROWN_DRAGON_WINGS.get();
+            case 13 -> IcarusItems.GREEN_DRAGON_WINGS.get();
+            case 14 -> IcarusItems.RED_DRAGON_WINGS.get();
+            default -> IcarusItems.BLACK_DRAGON_WINGS.get();
+        };
+    }
+
+    private int nearestDye(int rgb) {
+        int[] colours = {
+            0xF9FFFE, 0xF9801D, 0xC74EBD, 0x3AB3DA,
+            0xFED83D, 0x80C71F, 0xF38BAA, 0x474F52,
+            0x9D9D97, 0x169C9C, 0x8932B8, 0x3C44AA,
+            0x835432, 0x5E7C16, 0xB02E26, 0x1D1D21
+        };
+
+        int red = (rgb >> 16) & 0xFF;
+        int green = (rgb >> 8) & 0xFF;
+        int blue = rgb & 0xFF;
+        long bestDistance = Long.MAX_VALUE;
+        int best = 0;
+
+        for (int i = 0; i < colours.length; i++) {
+            int dr = red - ((colours[i] >> 16) & 0xFF);
+            int dg = green - ((colours[i] >> 8) & 0xFF);
+            int db = blue - (colours[i] & 0xFF);
+            long distance =
+                (long) dr * dr
+                    + (long) dg * dg
+                    + (long) db * db;
+
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = i;
+            }
+        }
+
+        return best;
     }
 
     private WingEntityModel<T> resolveModel(

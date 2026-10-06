@@ -11,6 +11,7 @@ public record CharacterSyncPacket(
     UUID playerId,
     boolean created,
     String raceId,
+    String evolutionId,
     int featureStyle,
     int featureColor,
     int earHeight,
@@ -24,6 +25,7 @@ public record CharacterSyncPacket(
         buffer.writeUUID(packet.playerId);
         buffer.writeBoolean(packet.created);
         buffer.writeUtf(packet.raceId, 32);
+        buffer.writeUtf(packet.evolutionId, 48);
         buffer.writeVarInt(packet.featureStyle);
         buffer.writeInt(packet.featureColor);
         buffer.writeInt(packet.earHeight);
@@ -39,6 +41,7 @@ public record CharacterSyncPacket(
             buffer.readUUID(),
             buffer.readBoolean(),
             buffer.readUtf(32),
+            buffer.readUtf(48),
             buffer.readVarInt(),
             buffer.readInt(),
             buffer.readInt(),
@@ -59,6 +62,7 @@ public record CharacterSyncPacket(
             packet.playerId,
             packet.created,
             packet.raceId,
+            packet.evolutionId,
             packet.featureStyle,
             packet.featureColor,
             packet.earHeight,

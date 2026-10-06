@@ -11,6 +11,7 @@ public record EntityRaceSyncPacket(
     UUID entityId,
     boolean active,
     String raceId,
+    String evolutionId,
     int featureStyle,
     int featureColor,
     int earHeight,
@@ -24,6 +25,7 @@ public record EntityRaceSyncPacket(
         return new EntityRaceSyncPacket(
             entityId,
             false,
+            "",
             "",
             0,
             -1,
@@ -43,6 +45,7 @@ public record EntityRaceSyncPacket(
         buffer.writeUUID(packet.entityId);
         buffer.writeBoolean(packet.active);
         buffer.writeUtf(packet.raceId, 32);
+        buffer.writeUtf(packet.evolutionId, 48);
         buffer.writeVarInt(packet.featureStyle);
         buffer.writeInt(packet.featureColor);
         buffer.writeInt(packet.earHeight);
@@ -58,6 +61,7 @@ public record EntityRaceSyncPacket(
             buffer.readUUID(),
             buffer.readBoolean(),
             buffer.readUtf(32),
+            buffer.readUtf(48),
             buffer.readVarInt(),
             buffer.readInt(),
             buffer.readInt(),
@@ -79,6 +83,7 @@ public record EntityRaceSyncPacket(
             packet.entityId,
             packet.active,
             packet.raceId,
+            packet.evolutionId,
             packet.featureStyle,
             packet.featureColor,
             packet.earHeight,

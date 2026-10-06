@@ -1,5 +1,7 @@
 package com.cyberspectraa.cyberraces.network.packet;
 
+import com.cyberspectraa.cyberraces.ability.AasimarRadianceAbility;
+import com.cyberspectraa.cyberraces.ability.BirdfolkWingBurstAbility;
 import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.FoxfolkQuickstepAbility;
 import com.cyberspectraa.cyberraces.ability.GoblinScavengerSenseAbility;
@@ -87,6 +89,22 @@ public record RacialAbilityPacket(
 
             case NYMPH ->
                 NymphNatureGraceAbility.tryActivate(player);
+
+            case AASIMAR -> {
+                if (!IronSpellsCompat.isLoaded()) {
+                    player.displayClientMessage(
+                        Component.literal(
+                            "Aasimar Radiance requires Iron's Spells 'n Spellbooks."
+                        ),
+                        true
+                    );
+                } else {
+                    AasimarRadianceAbility.tryCast(player);
+                }
+            }
+
+            case BIRDFOLK ->
+                BirdfolkWingBurstAbility.tryActivate(player);
 
             default ->
                 player.displayClientMessage(

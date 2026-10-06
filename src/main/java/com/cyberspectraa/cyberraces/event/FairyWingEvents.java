@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.event;
 
 import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
+import com.cyberspectraa.cyberraces.compat.NaturalWingCompat;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,7 +18,8 @@ public final class FairyWingEvents {
 
     @SubscribeEvent
     public static void onUnequip(CurioUnequipEvent event) {
-        if (FairyWingCompat.isRacialFairyWing(event.getStack())) {
+        if (FairyWingCompat.isRacialFairyWing(event.getStack())
+                || NaturalWingCompat.isNaturalWing(event.getStack())) {
             event.setResult(Event.Result.DENY);
         }
     }
@@ -25,6 +27,7 @@ public final class FairyWingEvents {
     @SubscribeEvent
     public static void onDropRules(DropRulesEvent event) {
         event.addOverride(FairyWingCompat::isRacialFairyWing, ICurio.DropRule.ALWAYS_KEEP);
+        event.addOverride(NaturalWingCompat::isNaturalWing, ICurio.DropRule.ALWAYS_KEEP);
     }
 
     @SubscribeEvent
@@ -35,8 +38,17 @@ public final class FairyWingEvents {
             return;
         }
 
-        if (RaceManager.getRace(player).orElse(null) == Race.FAIRY) {
+        Race race = RaceManager.getRace(player).orElse(null);
+
+        if (race == Race.FAIRY) {
             FairyWingCompat.ensureEquipped(player);
+        }
+
+        if (race == Race.BIRDFOLK
+                || race == Race.AASIMAR
+                || race == Race.DRAGONBORN
+                || !NaturalWingCompat.getEquippedNaturalWing(player).isEmpty()) {
+            NaturalWingCompat.ensureCorrectWing(player);
         }
     }
 }

@@ -378,6 +378,9 @@ public final class CyberNpcRaceManager {
             entity.getUUID(),
             true,
             race.id(),
+            getEvolution(entity)
+                .map(evolution -> evolution.id())
+                .orElse(""),
             appearance.featureStyle(),
             appearance.featureColor(),
             appearance.earHeight(),
@@ -434,7 +437,8 @@ public final class CyberNpcRaceManager {
             case CATFOLK -> 11;
             case DOGFOLK -> 9;
             case FOXFOLK -> 2;
-            case HUMAN, DWARF, NYMPH -> 1;
+            case BIRDFOLK -> 16;
+            case HUMAN, DWARF, NYMPH, AASIMAR -> 1;
             default -> 3;
         };
 

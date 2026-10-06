@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.event;
 
+import com.cyberspectraa.cyberraces.ability.AasimarRadianceAbility;
 import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
 import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
@@ -74,6 +75,12 @@ public final class RacialPassiveEvents {
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.tick(player);
+
+            if (race == Race.AASIMAR) {
+                AasimarRadianceAbility.tick(player);
+            } else {
+                AasimarRadianceAbility.cleanup(player);
+            }
         }
     }
 
@@ -90,6 +97,7 @@ public final class RacialPassiveEvents {
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);
+            AasimarRadianceAbility.cleanup(player);
         }
     }
 
@@ -174,12 +182,16 @@ public final class RacialPassiveEvents {
         LivingEntity target = event.getEntity();
         Race targetRace = resolveRace(target).orElse(null);
 
-        if (targetRace == Race.CATFOLK
-            && event.getSource().is(DamageTypeTags.IS_FALL)) {
-            event.setAmount(event.getAmount() * 0.40F);
-        } else if (targetRace == Race.HALFLING
-            && event.getSource().is(DamageTypeTags.IS_FALL)) {
-            event.setAmount(event.getAmount() * 0.65F);
+        if (event.getSource().is(DamageTypeTags.IS_FALL)) {
+            if (targetRace == Race.CATFOLK) {
+                event.setAmount(event.getAmount() * 0.40F);
+            } else if (targetRace == Race.HALFLING) {
+                event.setAmount(event.getAmount() * 0.65F);
+            } else if (targetRace == Race.BIRDFOLK) {
+                event.setAmount(event.getAmount() * 0.35F);
+            } else if (targetRace == Race.AASIMAR) {
+                event.setAmount(event.getAmount() * 0.80F);
+            }
         }
 
         if (targetRace == Race.TIEFLING

@@ -221,6 +221,8 @@ public final class CyberRaceCommands {
             case CATFOLK -> "12% higher jump and 60% less fall damage";
             case DOGFOLK -> "35% less sprint exhaustion; V activates directional Scent";
             case FOXFOLK -> "+20% crouch speed; V activates Quickstep";
+            case AASIMAR -> "celestial spell resistance; V casts no-mana Radiant Bolt";
+            case BIRDFOLK -> "Icarus feathered wings, 65% less fall damage; V activates Wing Burst";
         };
     }
 

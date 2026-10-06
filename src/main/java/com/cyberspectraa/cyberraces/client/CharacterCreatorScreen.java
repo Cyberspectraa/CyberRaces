@@ -16,6 +16,13 @@ import net.minecraft.util.Mth;
 import java.util.List;
 
 public final class CharacterCreatorScreen extends Screen {
+    private static final String[] BIRD_WING_NAMES = {
+        "White", "Orange", "Magenta", "Light Blue",
+        "Yellow", "Lime", "Pink", "Gray",
+        "Light Gray", "Cyan", "Purple", "Blue",
+        "Brown", "Green", "Red", "Black"
+    };
+
     private static final ResourceLocation BACKGROUND =
         new ResourceLocation("minecraft", "textures/gui/options_background.png");
 
@@ -443,17 +450,24 @@ public final class CharacterCreatorScreen extends Screen {
     private boolean hasFeatureVariants(Race race) {
         return race != Race.HUMAN
             && race != Race.DWARF
-            && race != Race.NYMPH;
+            && race != Race.NYMPH
+            && race != Race.AASIMAR;
     }
 
     private boolean hasFeatureColour(Race race) {
         return race != Race.HUMAN
             && race != Race.DWARF
             && race != Race.NYMPH
+            && race != Race.AASIMAR
+            && race != Race.BIRDFOLK
             && !BeastVariantTextures.isBeastfolk(race);
     }
 
     private int featureVariantCount(Race race) {
+        if (race == Race.BIRDFOLK) {
+            return BIRD_WING_NAMES.length;
+        }
+
         return BeastVariantTextures.isBeastfolk(race)
             ? BeastVariantTextures.count(race)
             : CharacterAppearance.FEATURE_STYLE_COUNT >= 3 ? 3 : CharacterAppearance.FEATURE_STYLE_COUNT;
@@ -472,6 +486,10 @@ public final class CharacterCreatorScreen extends Screen {
             case CATFOLK, DOGFOLK, FOXFOLK -> new String[] {
                 "Variant: " + BeastVariantTextures.name(currentRace(), featureStyle)
             };
+            case BIRDFOLK -> new String[] {
+                "Wings: " + BIRD_WING_NAMES[Math.floorMod(featureStyle, BIRD_WING_NAMES.length)]
+            };
+            case AASIMAR -> new String[] {"Celestial", "Celestial", "Celestial"};
             case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
             case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
         };
@@ -495,6 +513,8 @@ public final class CharacterCreatorScreen extends Screen {
             case CATFOLK -> "Vanilla Cat ears/tail with selectable Cat coat variants.";
             case DOGFOLK -> "Vanilla Wolf ears/tail with selectable Wolf coat variants.";
             case FOXFOLK -> "Vanilla Fox ears/tail with Red or Snow coat variants.";
+            case AASIMAR -> "Celestial heritage; evolved paths can awaken visible light or fallen wings.";
+            case BIRDFOLK -> "Permanent Icarus feathered wings with 16 selectable feather colours.";
         };
     }
 
@@ -551,6 +571,14 @@ public final class CharacterCreatorScreen extends Screen {
             case FOXFOLK -> new String[] {
                 "Quick and magical; lower health.",
                 "+20% crouch speed. V: Quickstep dash."
+            };
+            case AASIMAR -> new String[] {
+                "Celestial and naturally resistant to magic.",
+                "V: no-mana Radiant Bolt. Evolutions can become Seraphic, Fallen or Guardian."
+            };
+            case BIRDFOLK -> new String[] {
+                "Winged aerial species with lower health and high mobility.",
+                "Icarus feathered wings; V: Wing Burst. 65% less fall damage."
             };
         };
     }

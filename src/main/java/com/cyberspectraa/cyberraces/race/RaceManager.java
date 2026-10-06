@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.race;
 
 import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
+import com.cyberspectraa.cyberraces.compat.NaturalWingCompat;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -90,7 +91,11 @@ public final class RaceManager {
 
         if (race == Race.FAIRY) {
             FairyWingCompat.ensureEquipped(player);
+        } else {
+            FairyWingCompat.removeRacialWings(player);
         }
+
+        NaturalWingCompat.ensureCorrectWing(player);
     }
 
     public static boolean setEvolution(
@@ -187,6 +192,7 @@ public final class RaceManager {
 
     public static void clearRace(ServerPlayer player) {
         FairyWingCompat.removeRacialWings(player);
+        NaturalWingCompat.removeNaturalWings(player);
 
         CompoundTag persistent = player.getPersistentData();
         if (persistent.contains(ROOT_KEY)) {
@@ -218,9 +224,12 @@ public final class RaceManager {
                 } else {
                     FairyWingCompat.removeRacialWings(player);
                 }
+
+                NaturalWingCompat.ensureCorrectWing(player);
             },
             () -> {
                 FairyWingCompat.removeRacialWings(player);
+                NaturalWingCompat.removeNaturalWings(player);
                 RaceAttributeApplier.clear(player);
             }
         );

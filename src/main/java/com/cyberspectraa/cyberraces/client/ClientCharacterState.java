@@ -23,6 +23,7 @@ public final class ClientCharacterState {
         UUID playerId,
         boolean created,
         String raceId,
+        String evolutionId,
         int featureStyle,
         int featureColor,
         int earHeight,
@@ -52,11 +53,18 @@ public final class ClientCharacterState {
 
             VisualCharacter previous = CHARACTERS.put(
                 playerId,
-                new VisualCharacter(race, appearance)
+                new VisualCharacter(
+                    race,
+                    evolutionId == null ? "" : evolutionId,
+                    appearance
+                )
             );
 
             if (previous == null
                 || previous.race() != race
+                || !previous.evolutionId().equals(
+                    evolutionId == null ? "" : evolutionId
+                )
                 || !previous.appearance().equals(appearance)) {
                 RaceSkinOverlayManager.invalidate(playerId);
             }
@@ -68,7 +76,9 @@ public final class ClientCharacterState {
         if (previewRace != null
             && minecraft.player != null
             && player.getUUID().equals(minecraft.player.getUUID())) {
-            return Optional.of(new VisualCharacter(previewRace, previewAppearance));
+            return Optional.of(
+                new VisualCharacter(previewRace, "", previewAppearance)
+            );
         }
 
         return resolve(player.getUUID());
@@ -115,7 +125,11 @@ public final class ClientCharacterState {
         RaceSkinOverlayManager.clearAll();
     }
 
-    public record VisualCharacter(Race race, CharacterAppearance appearance) {
+    public record VisualCharacter(
+        Race race,
+        String evolutionId,
+        CharacterAppearance appearance
+    ) {
         public int featureStyle() {
             return appearance.featureStyle();
         }

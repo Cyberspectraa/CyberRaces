@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces.race;
 
+import com.cyberspectraa.cyberraces.character.CharacterSyncService;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.CloseRaceEvolutionPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenRaceEvolutionPacket;
@@ -69,6 +70,7 @@ public final class RaceEvolutionManager {
         }
 
         PROMPTED.remove(player.getUUID());
+        CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(
             player,
             new CloseRaceEvolutionPacket()
@@ -96,6 +98,7 @@ public final class RaceEvolutionManager {
 
         RaceManager.forceSetEvolution(player, evolution);
         PROMPTED.remove(player.getUUID());
+        CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(
             player,
             new CloseRaceEvolutionPacket()
@@ -109,6 +112,7 @@ public final class RaceEvolutionManager {
 
         RaceManager.clearEvolution(player);
         PROMPTED.remove(player.getUUID());
+        CharacterSyncService.broadcast(player);
 
         if (eligible(player)) {
             openSelection(player);

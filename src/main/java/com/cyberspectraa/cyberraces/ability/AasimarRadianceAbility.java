@@ -17,32 +17,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public final class DragonBreathAbility {
-    public static final int SPELL_LEVEL = 10;
-    public static final int COOLDOWN_TICKS = 18 * 20;
+public final class AasimarRadianceAbility {
+    private static final String READY_TICK_KEY = "AasimarRadianceReadyTick";
+    private static final Map<UUID, ActiveCast> ACTIVE = new HashMap<>();
 
-    private static final String READY_TICK_KEY =
-        "DragonBreathReadyTick";
-
-    private static final Map<UUID, ActiveCast> ACTIVE =
-        new HashMap<>();
-
-    private DragonBreathAbility() {
+    private AasimarRadianceAbility() {
     }
 
     public static void tryCast(ServerPlayer player) {
-        BreathProfile profile = profile(player);
+        AbilityProfile profile = profile(player);
         long now = player.level().getGameTime();
         long readyAt = getReadyTick(player);
 
         if (readyAt > now) {
-            double seconds = (readyAt - now) / 20.0D;
             player.displayClientMessage(
                 Component.literal(
                     String.format(
                         "%s: %.1fs cooldown",
                         profile.name(),
-                        seconds
+                        (readyAt - now) / 20.0D
                     )
                 ),
                 true
@@ -50,8 +43,7 @@ public final class DragonBreathAbility {
             return;
         }
 
-        MagicData magicData =
-            MagicData.getPlayerMagicData(player);
+        MagicData magicData = MagicData.getPlayerMagicData(player);
 
         if (magicData.isCasting()) {
             player.displayClientMessage(
@@ -65,14 +57,11 @@ public final class DragonBreathAbility {
         }
 
         AbstractSpell spell = profile.spell();
-
         int level = Math.min(
-            SPELL_LEVEL,
+            profile.level(),
             Math.max(1, spell.getMaxLevel())
         );
-
-        int effectiveCastTime =
-            spell.getEffectiveCastTime(level, player);
+        int effectiveCastTime = spell.getEffectiveCastTime(level, player);
 
         var cooldowns = magicData.getPlayerCooldowns();
         CooldownInstance existing =
@@ -92,22 +81,16 @@ public final class DragonBreathAbility {
             player,
             CastSource.NONE,
             false,
-            "cyberraces_dragon_breath"
+            "cyberraces_aasimar_innate"
         );
 
         if (!started) {
             return;
         }
 
-        /*
-         * Start the racial timer immediately and include the channel duration,
-         * which makes the ability available 18 seconds after a normal
-         * five-second Fire Breath finishes. It also prevents relogging during
-         * the channel from bypassing the cooldown.
-         */
         setReadyTick(
             player,
-            now + effectiveCastTime + COOLDOWN_TICKS
+            now + effectiveCastTime + profile.cooldownTicks()
         );
 
         ACTIVE.put(
@@ -123,12 +106,12 @@ public final class DragonBreathAbility {
 
     public static void tick(ServerPlayer player) {
         ActiveCast active = ACTIVE.get(player.getUUID());
+
         if (active == null) {
             return;
         }
 
-        MagicData magicData =
-            MagicData.getPlayerMagicData(player);
+        MagicData magicData = MagicData.getPlayerMagicData(player);
 
         boolean sameCast =
             magicData.isCasting()
@@ -140,7 +123,7 @@ public final class DragonBreathAbility {
             player.level().getGameTime() - active.startedAt();
 
         if (sameCast
-            && elapsed <= active.expectedCastTicks() + 20L) {
+                && elapsed <= active.expectedCastTicks() + 20L) {
             return;
         }
 
@@ -150,6 +133,7 @@ public final class DragonBreathAbility {
 
     public static void cleanup(ServerPlayer player) {
         ActiveCast active = ACTIVE.remove(player.getUUID());
+
         if (active == null) {
             return;
         }
@@ -160,36 +144,33 @@ public final class DragonBreathAbility {
         restoreIronCooldown(player, active, elapsed);
     }
 
-    public static long getRemainingTicks(ServerPlayer player) {
-        return Math.max(
-            0L,
-            getReadyTick(player) - player.level().getGameTime()
-        );
-    }
-
-    private static BreathProfile profile(ServerPlayer player) {
+    private static AbilityProfile profile(ServerPlayer player) {
         RaceEvolution evolution =
             RaceManager.getEvolution(player).orElse(null);
 
-        if (evolution == RaceEvolution.FROSTBLOOD) {
-            return new BreathProfile(
-                "Frost Breath",
-                SpellRegistry.CONE_OF_COLD_SPELL.get()
+        if (evolution == RaceEvolution.FALLEN) {
+            return new AbilityProfile(
+                "Grave Bolt",
+                SpellRegistry.WITHER_SKULL_SPELL.get(),
+                5,
+                18 * 20
             );
         }
 
-        if (evolution == RaceEvolution.STORMBLOOD) {
-            return new BreathProfile(
-                "Storm Breath",
-                SpellRegistry.LIGHTNING_LANCE_SPELL.get()
+        if (evolution == RaceEvolution.SERAPHIC) {
+            return new AbilityProfile(
+                "Radiant Bolt",
+                SpellRegistry.GUIDING_BOLT_SPELL.get(),
+                6,
+                16 * 20
             );
         }
 
-        return new BreathProfile(
-            evolution == RaceEvolution.SKYBORN
-                ? "Skyborn Breath"
-                : "Fire Breath",
-            SpellRegistry.FIRE_BREATH_SPELL.get()
+        return new AbilityProfile(
+            "Radiant Bolt",
+            SpellRegistry.GUIDING_BOLT_SPELL.get(),
+            evolution == RaceEvolution.CELESTIAL_GUARDIAN ? 4 : 3,
+            20 * 20
         );
     }
 
@@ -198,9 +179,7 @@ public final class DragonBreathAbility {
         ActiveCast active,
         long elapsed
     ) {
-        MagicData magicData =
-            MagicData.getPlayerMagicData(player);
-
+        MagicData magicData = MagicData.getPlayerMagicData(player);
         var cooldowns = magicData.getPlayerCooldowns();
         cooldowns.removeCooldown(active.spellId());
 
@@ -224,11 +203,8 @@ public final class DragonBreathAbility {
     }
 
     private static long getReadyTick(ServerPlayer player) {
-        CompoundTag root =
-            player.getPersistentData().getCompound(
-                CharacterManager.ROOT_KEY
-            );
-
+        CompoundTag root = player.getPersistentData()
+            .getCompound(CharacterManager.ROOT_KEY);
         return root.getLong(READY_TICK_KEY);
     }
 
@@ -246,9 +222,11 @@ public final class DragonBreathAbility {
         persistent.put(CharacterManager.ROOT_KEY, root);
     }
 
-    private record BreathProfile(
+    private record AbilityProfile(
         String name,
-        AbstractSpell spell
+        AbstractSpell spell,
+        int level,
+        int cooldownTicks
     ) {
     }
 
