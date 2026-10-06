@@ -26,6 +26,8 @@ public final class CyberNpcRaceManager {
     private static final String ROOT_KEY = "CyberRacesWildNpc";
     private static final String RACE_KEY = "Race";
     private static final String EVOLUTION_KEY = "Evolution";
+    public static final String EVOLUTION_LOCK_TAG =
+        "CyberRacesEvolutionLocked";
     private static final String APPEARANCE_KEY = "Appearance";
     private static final String NATURAL_WILD_ZOMBIE_KEY =
         "CyberNpcNaturalWildZombie";
@@ -267,6 +269,9 @@ public final class CyberNpcRaceManager {
     ) {
         if (entity == null
                 || race == null
+                || entity.getPersistentData().getBoolean(
+                    EVOLUTION_LOCK_TAG
+                )
                 || ProgressionManager.getLevel(entity)
                     < RaceEvolution.REQUIRED_LEVEL) {
             return false;
