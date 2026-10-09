@@ -25,6 +25,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.1.1'
+          cache-read-only: true
 
       - name: Build
         run: gradle build --stacktrace
@@ -36,3 +37,4 @@ jobs:
           name: CyberRaces-${{ github.sha }}
           path: build/libs/*.jar
           if-no-files-found: error
+          retention-days: 7
