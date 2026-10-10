@@ -17,7 +17,15 @@ public final class CyberResetAllCommands {
     private CyberResetAllCommands() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("cyberresetall")
+        // The full spelling and commonly mistyped version are both accepted.
+        // Commands must still be run by an operator (permission level 2).
+        registerNamed(dispatcher, "cyberresetall");
+        registerNamed(dispatcher, "cyberresetal");
+    }
+
+    private static void registerNamed(CommandDispatcher<CommandSourceStack> dispatcher,
+                                       String name) {
+        dispatcher.register(Commands.literal(name)
             .requires(source -> source.hasPermission(2))
             .executes(ctx -> reset(ctx.getSource(), ctx.getSource().getPlayerOrException()))
             .then(Commands.argument("player", EntityArgument.player())
