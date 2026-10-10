@@ -18,7 +18,8 @@ public final class CyberProgressionCommands {
         CommandDispatcher<CommandSourceStack> dispatcher
     ) {
         dispatcher.register(
-            Commands.literal("cyberlevel")
+            Commands.literal("cyberraces")
+                .then(Commands.literal("level")
                 .then(
                     Commands.literal("status")
                         .executes(context -> status(
@@ -99,6 +100,7 @@ public final class CyberProgressionCommands {
                                         ))
                                 )
                         )
+                )
                 )
         );
     }
