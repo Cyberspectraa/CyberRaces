@@ -5,6 +5,8 @@ import com.cyberspectraa.cyberraces.network.packet.CloseCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
+import net.minecraftforge.fml.ModList;
+import java.lang.reflect.Method;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -22,7 +24,10 @@ public final class CharacterManager {
         migrateLegacy(player);
 
         if (isCharacterCreated(player)) {
-            CreationHoldManager.release(player);
+            // An interrupted first-arrival intro must reclaim the hidden player
+            // before the default creator hold releases invisibility.
+            if (introHook(player, "resumeIfPending")) CreationHoldManager.forget(player);
+            else CreationHoldManager.release(player);
             return;
         }
 
@@ -56,9 +61,12 @@ public final class CharacterManager {
         saveAppearance(player, appearance);
         setCharacterCreated(player, true);
         RaceManager.setRace(player, race);
-        CreationHoldManager.release(player);
+        // Close character creation before the server sends the cinematic
+        // screen. Keep invisibility until the summoning reveal, not creation.
         CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new CloseCharacterCreatorPacket());
+        if (introHook(player, "beginSummoning")) CreationHoldManager.forget(player);
+        else CreationHoldManager.release(player);
         return true;
     }
 
@@ -70,9 +78,10 @@ public final class CharacterManager {
         saveAppearance(player, appearance);
         setCharacterCreated(player, true);
         RaceManager.setRace(player, race);
-        CreationHoldManager.release(player);
         CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new CloseCharacterCreatorPacket());
+        if (introHook(player, "beginSummoning")) CreationHoldManager.forget(player);
+        else CreationHoldManager.release(player);
     }
 
     public static void resetCharacter(ServerPlayer player) {
@@ -100,6 +109,20 @@ public final class CharacterManager {
 
     public static void onLogout(ServerPlayer player) {
         CreationHoldManager.forget(player);
+    }
+
+    private static boolean introHook(ServerPlayer player, String methodName) {
+        // No hard class dependency: CyberRaces continues working without
+        // CyberNpc installed, while the combined pack gets a seamless handoff.
+        if (!ModList.get().isLoaded("cybernpc")) return false;
+        try {
+            Class<?> service = Class.forName(
+                    "com.cyberspectraa.cybernpc.intro.CyberIntroService");
+            Method method = service.getMethod(methodName, ServerPlayer.class);
+            return Boolean.TRUE.equals(method.invoke(null, player));
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return false;
+        }
     }
 
     private static void migrateLegacy(ServerPlayer player) {

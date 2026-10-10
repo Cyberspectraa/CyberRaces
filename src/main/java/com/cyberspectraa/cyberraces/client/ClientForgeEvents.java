@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -19,6 +20,13 @@ import net.minecraftforge.fml.common.Mod;
 )
 public final class ClientForgeEvents {
     private ClientForgeEvents() {
+    }
+
+    @SubscribeEvent
+    public static void hideInvisiblePlayers(RenderPlayerEvent.Pre event) {
+        // Cancelling the complete renderer hides held items, armor, race
+        // cosmetics, and nameplates along with the body during creation.
+        if (event.getEntity().isInvisible()) event.setCanceled(true);
     }
 
     @SubscribeEvent
