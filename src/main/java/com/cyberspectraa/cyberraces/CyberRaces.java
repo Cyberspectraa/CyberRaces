@@ -2,6 +2,7 @@ package com.cyberspectraa.cyberraces;
 
 import com.cyberspectraa.cyberraces.command.CyberProgressionCommands;
 import com.cyberspectraa.cyberraces.command.CyberRaceCommands;
+import com.cyberspectraa.cyberraces.command.CyberResetAllCommands;
 import com.cyberspectraa.cyberraces.event.CharacterCreationEvents;
 import com.cyberspectraa.cyberraces.event.CyberNpcRaceEvents;
 import com.cyberspectraa.cyberraces.event.FairyHoverEvents;
@@ -39,5 +40,6 @@ public final class CyberRaces {
     private void registerCommands(RegisterCommandsEvent event) {
         CyberRaceCommands.register(event.getDispatcher());
         CyberProgressionCommands.register(event.getDispatcher());
+        CyberResetAllCommands.register(event.getDispatcher());
     }
 }
