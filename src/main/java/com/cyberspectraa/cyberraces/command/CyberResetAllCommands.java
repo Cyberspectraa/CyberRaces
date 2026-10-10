@@ -17,10 +17,9 @@ public final class CyberResetAllCommands {
     private CyberResetAllCommands() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        // The full spelling and commonly mistyped version are both accepted.
-        // Commands must still be run by an operator (permission level 2).
+        // Keep the established testing reset; remove the accidental typo alias.
+        // The canonical command remains admin-only (permission level 2).
         registerNamed(dispatcher, "cyberresetall");
-        registerNamed(dispatcher, "cyberresetal");
     }
 
     private static void registerNamed(CommandDispatcher<CommandSourceStack> dispatcher,
