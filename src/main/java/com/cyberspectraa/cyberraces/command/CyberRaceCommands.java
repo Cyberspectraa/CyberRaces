@@ -78,13 +78,6 @@ public final class CyberRaceCommands {
                                     EntityArgument.getPlayer(context, "player"),
                                     StringArgumentType.getString(context, "race")
                                 )))))
-                    .then(Commands.literal("clear")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.argument("player", EntityArgument.player())
-                            .executes(context -> resetCharacter(
-                                context.getSource(),
-                                EntityArgument.getPlayer(context, "player")
-                            ))))
                     .then(Commands.literal("compat")
                         .executes(context -> compat(context.getSource())))
                 )
