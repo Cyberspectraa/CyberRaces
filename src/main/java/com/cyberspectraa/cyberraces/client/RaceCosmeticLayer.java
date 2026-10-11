@@ -102,7 +102,8 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         int packedLight,
         T entity,
         Race race,
-        CharacterAppearance appearance
+        CharacterAppearance appearance,
+        String evolutionId
     ) {
         /*
          * Players already use a recoloured base skin through the player-skin
