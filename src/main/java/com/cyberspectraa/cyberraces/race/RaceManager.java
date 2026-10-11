@@ -83,6 +83,8 @@ public final class RaceManager {
             : new CompoundTag();
 
         root.putString(RACE_KEY, race.id());
+        // A new race starts a new personal evolution journey.
+        root.remove(RaceEvolutionJourney.KEY);
         root.remove(EVOLUTION_KEY);
         root.putBoolean(EVOLUTION_CHOSEN_KEY, false);
         persistent.put(ROOT_KEY, root);
