@@ -25,10 +25,14 @@ public record SubmitRaceEvolutionPacket(String evolutionId) {
         ServerPlayer player = context.getSender();
 
         if (player != null) {
-            RaceEvolution.byId(packet.evolutionId())
-                .ifPresent(evolution ->
-                    RaceEvolutionManager.complete(player, evolution)
-                );
+            if (packet.evolutionId().isBlank()) {
+                RaceEvolutionManager.decline(player);
+            } else {
+                RaceEvolution.byId(packet.evolutionId())
+                    .ifPresent(evolution ->
+                        RaceEvolutionManager.complete(player, evolution)
+                    );
+            }
         }
 
         context.setPacketHandled(true);
