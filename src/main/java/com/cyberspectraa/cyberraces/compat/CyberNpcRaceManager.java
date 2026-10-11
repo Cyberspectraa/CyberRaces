@@ -169,10 +169,10 @@ public final class CyberNpcRaceManager {
 
         Race race = getRace(entity).orElse(null);
         // Legacy migration: formerly, Undead could spawn as a Wild NPC.
-        // Reassign these residents to a normal humanoid base race without
+        // Reassign these residents to a randomly selected permitted base race without
         // touching their identity, class, inventory or Cyber Level.
         if (race == Race.UNDEAD) {
-            race = Race.HUMAN;
+            race = randomRace(entity);
             CompoundTag persistent = entity.getPersistentData();
             CompoundTag root = persistent.getCompound(ROOT_KEY);
             root.putString(RACE_KEY, race.id());
