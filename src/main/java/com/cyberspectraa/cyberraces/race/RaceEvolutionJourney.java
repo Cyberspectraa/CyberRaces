@@ -96,7 +96,7 @@ public final class RaceEvolutionJourney {
             tag.putIntArray("Context",c);
             save(p,tag);
         }
-        tryEvolve(p);
+        // Maturity is evaluated at the next successful bed rest.
     }
     private static int environment(ServerPlayer p) {
         if(p.level().dimension()==Level.NETHER)return NETHER;
@@ -147,31 +147,30 @@ public final class RaceEvolutionJourney {
             default -> WILDS;
         };
     }
-    public static void tryEvolve(ServerPlayer p) {
-        if(!ready(p))return;
-        Race race=RaceManager.getRace(p).orElse(null);
-        if(race==null)return;
-        int[] a=scores(data(p)),c=contexts(data(p));
-        RaceEvolution chosen=null;
-        int best=Integer.MIN_VALUE;
-        for(RaceEvolution e:RaceEvolution.choicesFor(race)){
-            int habitat=climate(e);
-            // Playstyle dominates; ordinary surface travel is only a weak
-            // tie-breaker. Rare habitats have a capped situational bonus.
-            int contextBonus=habitat==WILDS
-                    ? Math.min(c[WILDS],12)*2
-                    : Math.min(c[habitat],20)*4;
-            int value=a[alignment(e)]*5+contextBonus;
-            if(value>best){best=value;chosen=e;}
+    /**
+     * Return a context-aware, non-binding recommendation. This is never
+     * applied automatically. The player may decline and keep gathering new
+     * affinities before sleeping again.
+     */
+    public static RaceEvolution recommendation(ServerPlayer p) {
+        if (!ready(p)) return null;
+        Race race = RaceManager.getRace(p).orElse(null);
+        if (race == null) return null;
+        int[] activity = scores(data(p));
+        int[] contexts = contexts(data(p));
+        RaceEvolution candidate = null;
+        int highestScore = Integer.MIN_VALUE;
+        for (RaceEvolution option : RaceEvolution.choicesFor(race)) {
+            int habitat = climate(option);
+            int bonus = habitat == WILDS
+                    ? Math.min(contexts[WILDS], 12) * 2
+                    : Math.min(contexts[habitat], 20) * 4;
+            int score = activity[alignment(option)] * 5 + bonus;
+            if (score > highestScore) {
+                highestScore = score;
+                candidate = option;
+            }
         }
-        if(chosen==null || !RaceManager.setEvolution(p,chosen))return;
-        CharacterSyncService.broadcast(p);
-        p.serverLevel().sendParticles(ParticleTypes.END_ROD,p.getX(),p.getY()+1,p.getZ(),
-                70,0.7,0.9,0.7,0.045);
-        p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BEACON_ACTIVATE,
-                SoundSource.PLAYERS,0.85F,1.15F);
-        p.sendSystemMessage(Component.literal("Your experiences awaken a new lineage: ")
-                .withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(chosen.displayName()).withStyle(ChatFormatting.YELLOW)));
+        return candidate;
     }
 }
