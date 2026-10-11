@@ -8,9 +8,9 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record OpenRaceEvolutionPacket(String baseRaceId) {
+public record OpenRaceEvolutionPacket(String proposedEvolutionId) {
     public static void encode(OpenRaceEvolutionPacket packet, FriendlyByteBuf buffer) {
-        buffer.writeUtf(packet.baseRaceId(), 32);
+        buffer.writeUtf(packet.proposedEvolutionId(), 32);
     }
 
     public static OpenRaceEvolutionPacket decode(FriendlyByteBuf buffer) {
@@ -25,7 +25,7 @@ public record OpenRaceEvolutionPacket(String baseRaceId) {
 
         DistExecutor.unsafeRunWhenOn(
             Dist.CLIENT,
-            () -> () -> ClientPacketHandlers.openRaceEvolution(packet.baseRaceId())
+            () -> () -> ClientPacketHandlers.openRaceEvolution(packet.proposedEvolutionId())
         );
 
         context.setPacketHandled(true);
