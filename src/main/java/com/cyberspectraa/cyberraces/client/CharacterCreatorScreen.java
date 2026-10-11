@@ -495,6 +495,9 @@ public final class CharacterCreatorScreen extends Screen {
             case AASIMAR -> new String[] {"Celestial", "Celestial", "Celestial"};
             case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
             case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
+            case SLIME -> new String[] {"Gel body", "Gel body", "Gel body"};
+            case ARACHNID -> new String[] {"Silk-blooded", "Silk-blooded", "Silk-blooded"};
+            case UNDEAD -> new String[] {"Undying form", "Undying form", "Undying form"};
         };
         return BeastVariantTextures.isBeastfolk(currentRace())
             ? labels[0]
