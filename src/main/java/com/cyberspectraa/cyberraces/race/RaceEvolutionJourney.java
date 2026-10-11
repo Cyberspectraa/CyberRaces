@@ -13,6 +13,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import java.util.Arrays;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.biome.Biome;
 
 /** Persistent racial affinities; Level 30 alone cannot cause evolution. */
 public final class RaceEvolutionJourney {
@@ -20,7 +22,11 @@ public final class RaceEvolutionJourney {
     public static final int TOTAL_REQUIRED = 80;
     public static final int DOMINANT_REQUIRED = 28;
     private static final int BATTLE=0, MYSTIC=1, WANDERER=2, GUARDIAN=3;
-    private static final int WILDS=0, WATER=1, NETHER=2, STORM=3, SKY=4, DEPTHS=5, NIGHT=6;
+    private static final int WILDS=0, WATER=1, NETHER=2, STORM=3, SKY=4, DEPTHS=5, NIGHT=6,
+            COLD=7, FOREST=8, END=9, DAY=10;
+    private static final String[] CLIMATES={"Wilderness","Water","Nether","Storms","Sky",
+            "Underground","Night","Cold","Forest","End","Daylight"};
+    private static final int ENVIRONMENT_COUNT=CLIMATES.length;
     private RaceEvolutionJourney() {}
 
     private static CompoundTag data(ServerPlayer p) {
@@ -42,7 +48,8 @@ public final class RaceEvolutionJourney {
     }
     private static int[] contexts(CompoundTag tag) {
         int[] a=tag.getIntArray("Context");
-        return a.length==7?a:new int[7];
+        // Migrate earlier seven-environment histories without erasing data.
+        return Arrays.copyOf(a, ENVIRONMENT_COUNT);
     }
     private static void add(ServerPlayer p,int affinity,int amount,String key,int cooldown) {
         if(p==null || RaceManager.getRace(p).isEmpty()
@@ -71,42 +78,79 @@ public final class RaceEvolutionJourney {
     public static void magic(ServerPlayer p) {
         add(p,MYSTIC,3,"Magic",90);
     }
-    /** One sample per five seconds; only new chunks count. */
+    /** Samples exploration without awarding progress for AFK/standing still. */
     public static void tick(ServerPlayer p) {
-        if(p==null || RaceManager.getRace(p).isEmpty()
+        if (p==null || RaceManager.getRace(p).isEmpty()
                 || RaceManager.getEvolution(p).isPresent())return;
         CompoundTag tag=data(p);
         BlockPos pos=p.blockPosition();
+        int environment=environment(p);
         long cell=ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4)
                 ^ (((long)p.level().dimension().location().hashCode())<<32);
         long[] seen=tag.getLongArray("SeenChunks");
-        boolean known=false;
-        for(long x:seen)if(x==cell){known=true;break;}
-        if(!known) {
-            long[] newSeen=seen.length<256?Arrays.copyOf(seen,seen.length+1)
+        boolean visited=false;
+        for(long x:seen)if(x==cell){visited=true;break;}
+        boolean changed=false;
+        if(!visited) {
+            long[] next=seen.length<256?Arrays.copyOf(seen,seen.length+1)
                     :Arrays.copyOfRange(seen,1,seen.length);
-            newSeen[newSeen.length-1]=cell;
-            tag.putLongArray("SeenChunks",newSeen);
+            next[next.length-1]=cell;
+            tag.putLongArray("SeenChunks",next);
             int[] a=scores(tag);
             a[WANDERER]=Math.min(300,a[WANDERER]+3);
             tag.putIntArray("Affinity",a);
-            int[] c=contexts(tag);
-            int env=environment(p);
-            c[env]=Math.min(300,c[env]+1);
-            tag.putIntArray("Context",c);
-            save(p,tag);
+            changed=true;
         }
-        // Maturity is evaluated at the next successful bed rest.
+
+        // Earn biome/context familiarity while actively travelling, even if
+        // a player explores inside previously visited chunks. One contextual
+        // sample per 30 seconds; no gain from standing AFK.
+        long now=p.serverLevel().getGameTime();
+        double dx=p.getX()-tag.getDouble("LastEnvX");
+        double dz=p.getZ()-tag.getDouble("LastEnvZ");
+        String dimension=p.level().dimension().location().toString();
+        boolean dimensionChanged=!dimension.equals(tag.getString("LastEnvDimension"));
+        if((!tag.contains("LastEnvTime") || now-tag.getLong("LastEnvTime")>=600L)
+                && (dimensionChanged || dx*dx+dz*dz>=144D)) {
+            int[] c=contexts(tag);
+            c[environment]=Math.min(120,c[environment]+(visited?2:3));
+            tag.putIntArray("Context",c);
+            tag.putLong("LastEnvTime",now);
+            tag.putDouble("LastEnvX",p.getX());
+            tag.putDouble("LastEnvZ",p.getZ());
+            tag.putString("LastEnvDimension",dimension);
+            changed=true;
+        }
+
+        if(changed)save(p,tag);
+        if(ready(p) && !tag.getBoolean("EvolutionReadyNotified")) {
+            tag.putBoolean("EvolutionReadyNotified",true);
+            save(p,tag);
+            p.sendSystemMessage(Component.literal(
+                    "Your racial essence is ready to awaken. Rest in a bed to glimpse your evolution.")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
     }
+
     private static int environment(ServerPlayer p) {
-        if(p.level().dimension()==Level.NETHER)return NETHER;
+        Level level=p.level();
+        BlockPos pos=p.blockPosition();
+        if(level.dimension()==Level.NETHER)return NETHER;
+        if(level.dimension()==Level.END)return END;
         if(p.isInWaterOrBubble())return WATER;
-        if(p.level().isThundering() && p.level().canSeeSky(p.blockPosition()))return STORM;
-        if(p.getY()>135 && p.level().canSeeSky(p.blockPosition()))return SKY;
+        if(level.isThundering() && level.canSeeSky(pos))return STORM;
+        Holder<Biome> biome=level.getBiome(pos);
+        if(biome.value().getBaseTemperature()<0.2F)return COLD;
+        if(biome.unwrapKey().map(key -> key.location().getPath().contains("forest")
+                || key.location().getPath().contains("grove")
+                || key.location().getPath().contains("jungle")).orElse(false))return FOREST;
+        if(p.getY()>135 && level.canSeeSky(pos))return SKY;
         if(p.getY()<35)return DEPTHS;
-        if(p.level().isNight() && p.level().canSeeSky(p.blockPosition()))return NIGHT;
+        if(level.isNight() && level.canSeeSky(pos))return NIGHT;
+        if(level.isDay() && level.canSeeSky(pos))return DAY;
         return WILDS;
     }
+
     public static boolean ready(ServerPlayer p) {
         if(p==null || RaceManager.getRace(p).isEmpty()
                 || RaceManager.getEvolution(p).isPresent()
@@ -117,41 +161,65 @@ public final class RaceEvolutionJourney {
     }
     public static Component status(ServerPlayer p) {
         int[] a=scores(data(p));
-        return Component.literal("Racial growth: Level "
+        int[] c=contexts(data(p));
+        int total=Arrays.stream(a).sum();
+        int maxContext=0;
+        for(int i=1;i<c.length;i++)if(c[i]>c[maxContext])maxContext=i;
+        RaceEvolution proposed=recommendation(p);
+        return Component.literal("Racial growth: Lv "
                 +ProgressionManager.getLevel(p)+"/"+RaceEvolution.REQUIRED_LEVEL
-                +" | Activity "+Arrays.stream(a).sum()+"/"+TOTAL_REQUIRED
-                +" | Battle "+a[0]+" Mystic "+a[1]+" Explore "+a[2]+" Guardian "+a[3]
-                +" (dominant "+DOMINANT_REQUIRED+" required)")
+                +" | Activity "+total+"/"+TOTAL_REQUIRED
+                +" | Battle "+a[0]+", Mystic "+a[1]+", Explore "+a[2]+", Guardian "+a[3]
+                +" | Favoured environment: "+CLIMATES[maxContext]+" ("+c[maxContext]+")"
+                +(proposed==null?" | Not ready yet":" | Sleep for an evolution offer: "+proposed.displayName()))
                 .withStyle(ChatFormatting.AQUA);
     }
+
+    /** Affinities are selected deliberately; no branch is a dead enum case. */
     private static int alignment(RaceEvolution e) {
         return switch(e) {
-            case PARAGON,WARBORN,HOBGOBLIN,EMBERBLOOD,THORNFAE,
-                 LYNXKIN,LIONKIN,WOLFKIN,RAPTOR,ASHBORN,
-                 MAGMA_SLIME,ACID_SLIME,VENOMFANG,HUNTSMAN,DREAD_KNIGHT -> BATTLE;
-            case AWAKENED,HIGH_ELF,RUNEBORN,SPIRITBLOOD,GLIMMERFAE,
-                 ANTHOUSA,SPIRIT_FOX,SERAPHIC,FALLEN,STORMBLOOD,
-                 CRYSTAL_SLIME,VOID_SLIME,WEBWEAVER,LICHBOUND,PLAGUEBORN -> MYSTIC;
-            case WOOD_ELF,MOON_ELF,LIGHTFOOT,GLOOMRUNNER,SKYBORN,
-                 SYLPH,NAIAD,HOUNDKIN,SWIFTFOX,TRICKSTER,
-                 NIGHTWING,STORMWING,SCROUNGER,FORTUNE_TOUCHED,
-                 FROST_SLIME,CAVE_STALKER,WRAITH -> WANDERER;
+            case PARAGON, WARBORN, HOBGOBLIN, ASHBORN, EMBERBLOOD,
+                 THORNFAE, LYNXKIN, LIONKIN, WOLFKIN, RAPTOR,
+                 MAGMA_SLIME, ACID_SLIME, VENOMFANG, HUNTSMAN, DREAD_KNIGHT,
+                 EMBERFORGED, TEMPEST_NYMPH -> BATTLE;
+            case AWAKENED, HIGH_ELF, RUNEBORN, SPIRITBLOOD, GLIMMERFAE,
+                 ANTHOUSA, SPIRIT_FOX, SERAPHIC, FALLEN, STORMBLOOD,
+                 CRYSTAL_SLIME, VOID_SLIME, WEBWEAVER, LICHBOUND, PLAGUEBORN,
+                 STARSEEKER, WHISPERFOOT, EMBERFOX -> MYSTIC;
+            case WAYFARER, WOOD_ELF, MOON_ELF, LIGHTFOOT, STORMCHASER,
+                 GLOOMRUNNER, SCROUNGER, UMBRAL, RIFTWALKER, SKYBORN,
+                 SYLPH, NAIAD, PANTHERKIN, HOUNDKIN, SWIFTFOX, TRICKSTER,
+                 NIGHTWING, STORMWING, FROST_SLIME, CAVE_STALKER, WRAITH,
+                 CLOUDLEAPER, FROSTHOUND, TIDEWING -> WANDERER;
             default -> GUARDIAN;
         };
     }
+
+    /** Environmental identity breaks playstyle ties; overlaps are intentional
+     * only when affinities differ. All paths have a reachable combination. */
     private static int climate(RaceEvolution e) {
         return switch(e) {
-            case ASHBORN,EMBERBLOOD,MAGMA_SLIME -> NETHER;
-            case STORMBLOOD,STORMWING,GLIMMERFAE -> STORM;
-            case SKYBORN,SYLPH,RAPTOR -> SKY;
-            case FROSTBLOOD,NAIAD,FROST_SLIME -> WATER;
-            case DEEPFORGED,MOUNTAINBORN,OREAD,RUNEBORN,
-                 METAL_SLIME,CAVE_STALKER -> DEPTHS;
-            case MOON_ELF,UMBRAL,NIGHTWING,PANTHERKIN,FALLEN,
-                 VOID_SLIME,WRAITH,LICHBOUND -> NIGHT;
+            case ASHBORN, EMBERBLOOD, MAGMA_SLIME, EMBERFORGED,
+                 RIFTWALKER, EMBERFOX, PLAGUEBORN -> NETHER;
+            case STORMBLOOD, STORMWING, GLIMMERFAE, STORMCHASER,
+                 TEMPEST_NYMPH -> STORM;
+            case SKYBORN, SYLPH, RAPTOR, LIGHTFOOT, STARSEEKER,
+                 CLOUDLEAPER, MOUNTAINBORN -> SKY;
+            case FROSTBLOOD, FROST_SLIME, FROSTHOUND -> COLD;
+            case NAIAD, DEWDROP, TIDEWING -> WATER;
+            case DEEPFORGED, RUNEBORN, OREAD, METAL_SLIME,
+                 CAVE_STALKER, CAVEWRIGHT, EARTHSCALE, DREAD_KNIGHT -> DEPTHS;
+            case MOON_ELF, UMBRAL, NIGHTWING, PANTHERKIN,
+                 FALLEN, VOID_SLIME, WRAITH, LICHBOUND,
+                 GLOOMRUNNER, WHISPERFOOT, VENOMFANG -> NIGHT;
+            case WOOD_ELF, THORNFAE, DRYAD, ANTHOUSA, HOUNDKIN,
+                 WOLFKIN, LIONKIN, SCROUNGER, WEBWEAVER,
+                 BROODMOTHER, FORTUNE_TOUCHED -> FOREST;
+            case DAWNBRINGER -> DAY;
             default -> WILDS;
         };
     }
+
     /**
      * Return a context-aware, non-binding recommendation. This is never
      * applied automatically. The player may decline and keep gathering new
