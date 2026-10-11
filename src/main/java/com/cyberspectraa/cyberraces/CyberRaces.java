@@ -15,6 +15,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 
 @Mod(CyberRaces.MOD_ID)
@@ -34,6 +35,10 @@ public final class CyberRaces {
         MinecraftForge.EVENT_BUS.register(CharacterCreationEvents.class);
         MinecraftForge.EVENT_BUS.register(CyberNpcRaceEvents.class);
         MinecraftForge.EVENT_BUS.register(ProgressionEvents.class);
+        if (ModList.get().isLoaded("irons_spellbooks")) {
+            MinecraftForge.EVENT_BUS.register(
+                    com.cyberspectraa.cyberraces.event.RaceEvolutionSpellEvents.class);
+        }
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
         LOGGER.info("CyberRaces loaded");
