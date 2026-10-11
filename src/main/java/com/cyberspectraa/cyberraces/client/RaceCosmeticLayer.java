@@ -120,6 +120,7 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 entity,
                 race,
                 appearance,
+                evolutionId,
                 getTextureLocation(entity)
             );
 
