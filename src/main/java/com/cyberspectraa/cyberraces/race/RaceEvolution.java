@@ -114,7 +114,44 @@ public enum RaceEvolution {
     NIGHTWING("nightwing", "Nightwing", "A quiet birdfolk lineage adapted for darkness, scouting and controlled flight.", Race.BIRDFOLK,
         s(1,1.05,1.03,1.03,1.05,0,0,0.25,1,1), "wing_burst_nightwing"),
     STORMWING("stormwing", "Stormwing", "A high-altitude birdfolk lineage empowered by storms and exceptional aerial mobility.", Race.BIRDFOLK,
-        s(2,1.07,1.05,1.05,1.08,0.02,0.5,0,1,1), "wing_burst_storm");
+        s(2,1.07,1.05,1.05,1.08,0.02,0.5,0,1,1), "wing_burst_storm"),
+
+    MAGMA_SLIME("magma_slime", "Magma Slime", "A molten gel body grown through heat, battle and the Nether.", Race.SLIME,
+        s(4,0.99,1.02,1.00,1.05,0.10,2.0,0,1.02,0.45), "elastic_magma"),
+    METAL_SLIME("metal_slime", "Metal Slime", "An exceptionally dense silver slime that shrugs off heavy blows.", Race.SLIME,
+        s(8,0.87,0.95,0.95,1.12,0.22,5.0,0,0.96,1.15), "elastic_metal"),
+    ACID_SLIME("acid_slime", "Acid Slime", "Corrosive emerald gel specialised in dissolving enemies.", Race.SLIME,
+        s(1,1.06,1.05,1.05,1.02,0,0,0,1.00,1.20), "elastic_acid"),
+    CRYSTAL_SLIME("crystal_slime", "Crystal Slime", "Prismatic living crystal that stores and amplifies magic.", Race.SLIME,
+        s(1,1.04,1.18,1.14,1.20,0.02,1.5,0,1.00,1.05), "elastic_crystal"),
+    FROST_SLIME("frost_slime", "Frost Slime", "Cool blue gel able to chill pursuing enemies.", Race.SLIME,
+        s(3,1.02,1.04,1.04,1.10,0.07,1.0,0,1.00,1.25), "elastic_frost"),
+    VOID_SLIME("void_slime", "Void Slime", "Dark iridescent slime attuned to shadow and mysterious arcana.", Race.SLIME,
+        s(0,1.10,1.20,1.16,1.17,0,0,0,0.98,1.15), "elastic_void"),
+    ROYAL_SLIME("royal_slime", "Royal Slime", "A regal golden slime with superior regeneration and protection.", Race.SLIME,
+        s(5,1.04,1.12,1.12,1.16,0.12,2.0,1.0,1.08,0.95), "elastic_royal"),
+
+    WEBWEAVER("webweaver", "Webweaver", "A calculating arachnid skilled at weaving thick restraining webs.", Race.ARACHNID,
+        s(1,1.04,1.05,1.05,1.05,0,0,0,1,1), "web_binding"),
+    VENOMFANG("venomfang", "Venomfang", "An aggressive arachnid whose webbing carries venom.", Race.ARACHNID,
+        s(2,1.08,1,1,1.02,0.03,0,0,1,1), "web_venom"),
+    CAVE_STALKER("cave_stalker", "Cave Stalker", "A silent hunter evolved for dark underground tunnels.", Race.ARACHNID,
+        s(3,1.07,1.01,1.01,1.10,0.05,1.0,0,0.97,1), "web_cave"),
+    BROODMOTHER("broodmother", "Broodmother", "A durable guardian whose silk shields nearby allies.", Race.ARACHNID,
+        s(6,0.97,1.08,1.08,1.15,0.12,2.5,0,1.07,1), "web_brood"),
+    HUNTSMAN("huntsman", "Huntsman", "A swift arachnid built for hunting and pursuit.", Race.ARACHNID,
+        s(1,1.12,1,1,1.02,0,0,0,1,1), "web_hunt"),
+
+    REVENANT("revenant", "Revenant", "An undead survivor whose stubborn life force refuses to fade.", Race.UNDEAD,
+        s(6,0.99,1,1,1.14,0.15,2.0,0,1.02,1.15), "grave_revenant"),
+    LICHBOUND("lichbound", "Lichbound", "A spell-focused undead sustained by lingering arcane power.", Race.UNDEAD,
+        s(0,0.99,1.24,1.18,1.18,0,0,0,1,1.25), "grave_lich"),
+    DREAD_KNIGHT("dread_knight", "Dread Knight", "A heavy, battle-hardened undead champion.", Race.UNDEAD,
+        s(7,0.93,0.96,0.96,1.11,0.18,3.5,0,1.06,1.15), "grave_knight"),
+    WRAITH("wraith", "Wraith", "A fast and shadowy undead with ghostly mobility.", Race.UNDEAD,
+        s(0,1.13,1.14,1.14,1.18,0,0,0,0.97,1.20), "grave_wraith"),
+    PLAGUEBORN("plagueborn", "Plagueborn", "An undead form that spreads decay and survives poison.", Race.UNDEAD,
+        s(4,0.98,1.04,1.04,1.14,0.10,1.5,0,1.01,1.25), "grave_plague");
 
     public static final int REQUIRED_LEVEL = 30;
 
