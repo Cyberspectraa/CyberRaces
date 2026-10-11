@@ -51,6 +51,26 @@ public final class RacialPassiveEvents {
 
         updateFoxSneakSpeed(player);
 
+        // Arachnids climb when deliberately sneaking into a wall. No free
+        // flight or automatic hovering, and no forced climb while standing.
+        if (race == Race.ARACHNID
+                && player.isShiftKeyDown()
+                && player.horizontalCollision
+                && !player.isPassenger()
+                && !player.isInWaterOrBubble()) {
+            var motion = player.getDeltaMovement();
+            player.setDeltaMovement(motion.x, Math.max(motion.y, 0.16D), motion.z);
+            player.fallDistance = 0.0F;
+            player.hurtMarked = true;
+        }
+
+        // The undead ignore poison and hunger debuffs, but still need to
+        // eat normally; hunger consumption is already tuned by Race.
+        if (race == Race.UNDEAD && player.tickCount % 20 == 0) {
+            player.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
+            player.removeEffect(net.minecraft.world.effect.MobEffects.HUNGER);
+        }
+
         if (race == Race.DOGFOLK) {
             DogfolkScentAbility.tick(player);
         } else {
@@ -184,7 +204,9 @@ public final class RacialPassiveEvents {
         Race targetRace = resolveRace(target).orElse(null);
 
         if (event.getSource().is(DamageTypeTags.IS_FALL)) {
-            if (targetRace == Race.CATFOLK) {
+            if (targetRace == Race.SLIME) {
+                event.setAmount(event.getAmount() * 0.20F);
+            } else if (targetRace == Race.CATFOLK) {
                 event.setAmount(event.getAmount() * 0.40F);
             } else if (targetRace == Race.HALFLING) {
                 event.setAmount(event.getAmount() * 0.65F);
