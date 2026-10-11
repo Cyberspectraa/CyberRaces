@@ -200,6 +200,7 @@ public final class RaceManager {
         if (persistent.contains(ROOT_KEY)) {
             CompoundTag root = persistent.getCompound(ROOT_KEY);
             root.remove(RACE_KEY);
+            root.remove(RaceEvolutionJourney.KEY);
             root.remove(EVOLUTION_KEY);
             root.remove(EVOLUTION_CHOSEN_KEY);
 
