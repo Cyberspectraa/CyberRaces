@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.45** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.46** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -35,7 +35,29 @@ Use the normal in-game creator for player selection; admin resets are intended f
 - **Arachnid:** a quick humanoid spider-kin. Sneaking into a wall allows climbing (no forced hovering); **V** activates a web snare against nearby enemies in front of the player. Evolution choices emphasize underground stealth, poisonous webs, pursuit, protective silk or binding strength.
 - **Undead:** a slower, sturdy revenant-like humanoid with lower hunger consumption, resistance to magical effects and increased fire vulnerability. Poison and Hunger status effects are cleared, and **V** activates Grave Resilience for healing and temporary damage resistance. Evolution choices include spectral speed, magical lich affinity, heavy knight defence and plague power.
 
-The three new race IDs are `slime`, `arachnid` and `undead`. All are available during first-join character creation, work with the persistent race/evolution data format and are eligible for CyberNpc Wild NPC assignment. CyberNpc racial combat AI for these races is implemented in CyberRaces with independent cooldowns; CyberNpc itself does not need rebuilding.
+The three new race IDs are `slime`, `arachnid` and `undead`. All are available during first-join character creation and work with the persistent race/evolution data format. **Undead is player-only**: Slime and Arachnid, but not Undead, can be assigned to Wild NPCs. CyberNpc racial combat AI for eligible races is implemented in CyberRaces with independent cooldowns; CyberNpc itself does not need rebuilding.
+
+## Biome-weighted natural Wild NPC races (0.3.2-alpha.46)
+
+With CyberNpc **0.44.40+**, natural Wild NPC expeditions select one **base race** appropriate to the surrounding biome and dimension, using their shared pack ID to keep the same-biome group consistent. Examples:
+
+| Natural environment | Favored races |
+| --- | --- |
+| Plains | Human, Halfling, Aasimar |
+| Flower forests/meadows | Fairy, Nymph, Halfling |
+| Forests | Elf, Fairy, Nymph, Foxfolk |
+| Taiga | Dogfolk, Foxfolk |
+| Cold/snowy biomes | Dogfolk, Foxfolk, Dwarf |
+| Mountains/peaks | Dwarf, Dragonborn, Birdfolk |
+| Savanna/badlands | Orc, Goblin, Dragonborn |
+| Jungle | Catfolk, Arachnid |
+| Swamp | Slime, Nymph, Goblin |
+| Caves and deep underground | Goblin, Arachnid, Dwarf |
+| Rivers/coasts | Nymph, Human, Slime |
+| Nether (rare expedition spawns) | Tiefling, Dragonborn, Goblin (some Slime/Dwarf variants) |
+| End | **Never natural spawns** |
+
+The choice uses weighted habitat pools rather than a hard one-race-per-biome rule, and recognizes plausible modded biome registry names. **No Wild NPC receives Undead or any evolution**. Existing Wild NPC races remain unchanged; this affects only previously unassigned natural spawns. Spawn eggs and manual NPC creation keep the prior race selection rules. CyberNpc controls natural pack size, party cohesion and campfire placement; CyberRaces owns the base race/appearance and racial combat AI.
 
 ## Biome attunement (v0.3.2-alpha.45)
 
