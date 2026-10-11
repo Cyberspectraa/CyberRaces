@@ -73,7 +73,8 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 packedLight,
                 entity,
                 visual.race(),
-                visual.appearance()
+                visual.appearance(),
+                visual.evolutionId()
             );
 
             renderRace(
