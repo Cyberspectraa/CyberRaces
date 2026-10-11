@@ -395,9 +395,109 @@ public final class CyberNpcRaceManager {
         );
     }
 
+    // A pack is one cohesive expedition: its vanilla SpawnGroupData party ID
+    // seeds ONE race roll for all members, independent of the order in which
+    // Forge fires EntityJoinLevelEvent for those members.
+    private static final String NATURAL_SPAWN_TAG = "CyberNpcNaturalSpawn";
+    private static final String NATURAL_PACK_TAG = "CyberNpcNaturalPack";
+
     private static Race randomRace(LivingEntity entity) {
-        Race[] races = Race.wildNpcChoices();
-        return races[entity.getRandom().nextInt(races.length)];
+        if (!entity.getPersistentData().getBoolean(NATURAL_SPAWN_TAG)) {
+            Race[] races = Race.wildNpcChoices();
+            return races[entity.getRandom().nextInt(races.length)];
+        }
+        Race[] habitat = habitatRaces(entity);
+        net.minecraft.util.RandomSource random = entity.getRandom();
+        if (entity.getPersistentData().hasUUID(NATURAL_PACK_TAG)) {
+            java.util.UUID pack = entity.getPersistentData().getUUID(NATURAL_PACK_TAG);
+            random = net.minecraft.util.RandomSource.create(
+                pack.getMostSignificantBits() ^ pack.getLeastSignificantBits());
+        }
+        return habitat[random.nextInt(habitat.length)];
+    }
+
+    /**
+     * Weighted race pools for NATURAL Wild NPCs only; overworld landscape,
+     * cave height and Nether biome names pick the likely expedition culture.
+     * Arrays contain repeats as weights to keep this pure, portable, and
+     * compatible with extra modded biomes which share common suffixes.
+     * All choices are base races and NEVER include UNDEAD.
+     */
+    private static Race[] habitatRaces(LivingEntity entity) {
+        String biome = entity.level().getBiome(entity.blockPosition())
+            .unwrapKey().map(key -> key.location().getPath()).orElse("");
+        if (entity.level().dimension() == net.minecraft.world.level.Level.NETHER) {
+            if (matches(biome, "basalt", "delta")) {
+                return new Race[] {Race.DRAGONBORN, Race.DRAGONBORN,
+                    Race.DWARF, Race.TIEFLING, Race.TIEFLING, Race.SLIME};
+            }
+            if (matches(biome, "warped", "crimson", "forest")) {
+                return new Race[] {Race.TIEFLING, Race.TIEFLING,
+                    Race.TIEFLING, Race.DRAGONBORN, Race.GOBLIN, Race.SLIME};
+            }
+            return new Race[] {Race.TIEFLING, Race.TIEFLING,
+                Race.TIEFLING, Race.DRAGONBORN, Race.DRAGONBORN, Race.GOBLIN};
+        }
+        // Subterranean groups are explorers, not a random surface village.
+        if (entity.getY() < 40 || matches(biome, "deep_dark",
+                "dripstone_caves", "lush_caves", "underground")) {
+            return new Race[] {Race.GOBLIN, Race.GOBLIN, Race.ARACHNID,
+                Race.ARACHNID, Race.DWARF, Race.DWARF, Race.SLIME};
+        }
+        if (matches(biome, "swamp", "mangrove", "bog", "marsh")) {
+            return new Race[] {Race.SLIME, Race.SLIME, Race.SLIME,
+                Race.NYMPH, Race.GOBLIN, Race.ARACHNID};
+        }
+        if (matches(biome, "jungle", "rainforest", "bamboo")) {
+            return new Race[] {Race.CATFOLK, Race.CATFOLK,
+                Race.CATFOLK, Race.ARACHNID, Race.NYMPH, Race.FAIRY};
+        }
+        if (matches(biome, "river", "beach", "ocean", "coast", "shore")) {
+            return new Race[] {Race.NYMPH, Race.NYMPH, Race.HUMAN,
+                Race.SLIME, Race.HALFLING, Race.BIRDFOLK};
+        }
+        if (matches(biome, "snow", "frozen", "ice", "tundra",
+                "glacier", "cold")) {
+            return new Race[] {Race.DOGFOLK, Race.DOGFOLK,
+                Race.FOXFOLK, Race.DWARF, Race.DRAGONBORN, Race.BIRDFOLK};
+        }
+        if (matches(biome, "taiga", "spruce", "pine")) {
+            return new Race[] {Race.DOGFOLK, Race.DOGFOLK,
+                Race.FOXFOLK, Race.FOXFOLK, Race.ELF, Race.DWARF};
+        }
+        if (matches(biome, "peak", "mountain", "highland", "slope",
+                "windswept", "stony") || entity.getY() > 132) {
+            return new Race[] {Race.DWARF, Race.DWARF,
+                Race.DRAGONBORN, Race.DRAGONBORN, Race.BIRDFOLK, Race.BIRDFOLK};
+        }
+        if (matches(biome, "badlands", "mesa", "desert")) {
+            return new Race[] {Race.ORC, Race.ORC, Race.GOBLIN,
+                Race.DRAGONBORN, Race.TIEFLING, Race.HUMAN};
+        }
+        if (matches(biome, "savanna", "steppe", "grassland")) {
+            return new Race[] {Race.ORC, Race.ORC, Race.ORC,
+                Race.GOBLIN, Race.HUMAN, Race.CATFOLK};
+        }
+        if (matches(biome, "flower", "meadow", "cherry", "blossom")) {
+            return new Race[] {Race.FAIRY, Race.FAIRY, Race.NYMPH,
+                Race.HALFLING, Race.ELF, Race.AASIMAR};
+        }
+        if (matches(biome, "forest", "grove", "woods", "woodland",
+                "pale_garden")) {
+            return new Race[] {Race.ELF, Race.ELF, Race.FAIRY,
+                Race.NYMPH, Race.FOXFOLK, Race.ARACHNID};
+        }
+        // Plains, fields and unfamiliar modded biomes are intentionally more
+        // cosmopolitan; still favor humanoid expeditions over exotic species.
+        return new Race[] {Race.HUMAN, Race.HUMAN, Race.HALFLING,
+            Race.AASIMAR, Race.ORC, Race.ELF, Race.DOGFOLK};
+    }
+
+    private static boolean matches(String biome, String... parts) {
+        for (String part : parts) {
+            if (biome.contains(part)) return true;
+        }
+        return false;
     }
 
     private static CharacterAppearance randomAppearance(
