@@ -26,6 +26,8 @@ public final class CyberRaces {
         CyberRacesNetwork.init();
 
         MinecraftForge.EVENT_BUS.register(RaceEvents.class);
+        MinecraftForge.EVENT_BUS.register(
+                com.cyberspectraa.cyberraces.event.RaceEvolutionActivityEvents.class);
         MinecraftForge.EVENT_BUS.register(RacialPassiveEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyWingEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyHoverEvents.class);
