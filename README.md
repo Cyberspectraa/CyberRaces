@@ -1,12 +1,12 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.42** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.43** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
 ## Playable races
 
-There are **15 base races** in the current `Race` registry:
+There are **18 base races** in the current `Race` registry:
 
 | Race | Race | Race |
 | --- | --- | --- |
@@ -15,6 +15,7 @@ There are **15 base races** in the current `Race` registry:
 | Tiefling | Dragonborn | Fairy |
 | Nymph | Catfolk | Dogfolk |
 | Foxfolk | Aasimar | Birdfolk |
+| Slime | Arachnid | Undead |
 
 Each has its own data-defined mix of physical size, base health, movement and hunger modifiers, mana and regeneration, spell resistance, knockback resistance, armour bonuses and fire-damage sensitivity. Not every race receives an activated ability: many benefits are passive.
 
@@ -27,6 +28,14 @@ New players enter a temporary hidden/frozen hold while they choose a race and cu
 After the player completes race creation, **CyberClasses** can open its mandatory class selector. With **CyberNpc + CyberServer** and configured arrival locations, the complete character setup flows into the one-time cinematic arrival and Pope welcome. Returning characters with saved race data are migrated/recognised rather than forcibly replaying creation.
 
 Use the normal in-game creator for player selection; admin resets are intended for testing.
+
+## Additional races in 0.3.2-alpha.43
+
+- **Slime:** a humanoid player whose **entire 64×64 player skin** receives a procedurally generated glossy, translucent-looking gelatin treatment. Your original skin's eyes, facial details, clothing and UV layout remain visible under the tint; armour, movement and humanoid animations remain intact. The full-body slime skin follows the chosen evolution's colour: molten orange for Magma, silver for Metal, yellow-green for Acid, turquoise for Crystal, ice blue for Frost, violet for Void and gold for Royal. This is a pixel-processed skin composite, **not** physically translucent glass geometry. Wild NPCs receive the matching semi-transparent slime overlay through the CyberNpc-compatible humanoid model layer. Slimes take 80% less fall damage and use **V** for Elastic Leap. They are slightly more vulnerable to fire before a resistant evolution.
+- **Arachnid:** a quick humanoid spider-kin. Sneaking into a wall allows climbing (no forced hovering); **V** activates a web snare against nearby enemies in front of the player. Evolution choices emphasize underground stealth, poisonous webs, pursuit, protective silk or binding strength.
+- **Undead:** a slower, sturdy revenant-like humanoid with lower hunger consumption, resistance to magical effects and increased fire vulnerability. Poison and Hunger status effects are cleared, and **V** activates Grave Resilience for healing and temporary damage resistance. Evolution choices include spectral speed, magical lich affinity, heavy knight defence and plague power.
+
+The three new race IDs are `slime`, `arachnid` and `undead`. All are available during first-join character creation, work with the persistent race/evolution data format and are eligible for CyberNpc Wild NPC assignment. CyberNpc racial combat AI for these races is implemented in CyberRaces with independent cooldowns; CyberNpc itself does not need rebuilding.
 
 ## Racial abilities
 
@@ -43,6 +52,9 @@ Use the normal in-game creator for player selection; admin resets are intended f
 | Nymph | Nature Grace |
 | Aasimar | Radiance (requires **Iron's Spells 'n Spellbooks**) |
 | Birdfolk | Wing Burst |
+| Slime | Elastic Leap (bounce forward, reduce landing damage; evolution-specific bonuses) |
+| Arachnid | Web Snare (briefly slows targets ahead; Venomfang poisons) |
+| Undead | Grave Resilience (healing and temporary defence; evolution-specific buffs) |
 
 Other races have passive/statistical identities but **no V-key active ability yet**. The `RacialAbilityPacket` deliberately reports this, rather than silently creating an ability.
 
@@ -50,7 +62,7 @@ Racial effects for Wild CyberNpc entities are handled separately by CyberRaces' 
 
 ## Dynamic race evolution — Cyber Level 30
 
-The current `RaceEvolution` registry defines **47 evolution choices** across the 15 base races. Each race has multiple branches with different attribute modifiers and ability profiles. Examples:
+The current `RaceEvolution` registry defines **64 evolution choices** across the 18 base races. Each race has multiple branches with different attribute modifiers and ability profiles. Examples:
 
 - Human: Paragon, Awakened, Survivor.
 - Elf: High Elf, Wood Elf, Moon Elf.
@@ -61,6 +73,9 @@ The current `RaceEvolution` registry defines **47 evolution choices** across the
 - Foxfolk: Swiftfox, Trickster, Spirit Fox.
 - Aasimar: Seraphic, Fallen, Celestial Guardian.
 - Birdfolk: Raptor, Nightwing, Stormwing.
+- Slime: Magma Slime, Metal Slime, Acid Slime, Crystal Slime, Frost Slime, Void Slime, Royal Slime.
+- Arachnid: Webweaver, Venomfang, Cave Stalker, Broodmother, Huntsman.
+- Undead: Revenant, Lichbound, Dread Knight, Wraith, Plagueborn.
 
 **As of 0.3.2-alpha.42, race evolution is prompted after sleeping in a bed.** Your activity and environmental history still calculate a lineage recommendation, but reaching the level/affinity thresholds **does not evolve you automatically**. After a genuine sleep, you see your recommended lineage, its stats and ability profile, and can choose **Evolve** or **Not Yet**.
 
