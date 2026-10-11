@@ -6,6 +6,7 @@ import com.cyberspectraa.cyberraces.compat.IcarusCompat;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceEvolution;
+import com.cyberspectraa.cyberraces.race.RaceEvolutionJourney;
 import com.cyberspectraa.cyberraces.race.RaceEvolutionManager;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import com.mojang.brigadier.CommandDispatcher;
