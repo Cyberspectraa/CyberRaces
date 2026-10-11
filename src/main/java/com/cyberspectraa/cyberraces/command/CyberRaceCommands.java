@@ -83,6 +83,13 @@ public final class CyberRaceCommands {
                         .executes(context -> compat(context.getSource())))
                 )
                 .then(Commands.literal("evolution")
+                    .then(Commands.literal("progress")
+                        .executes(context -> {
+                            var player = context.getSource().getPlayerOrException();
+                            context.getSource().sendSuccess(
+                                    () -> RaceEvolutionJourney.status(player), false);
+                            return 1;
+                        }))
                     .then(Commands.literal("get")
                         .executes(context -> evolutionStatus(
                             context.getSource(),
