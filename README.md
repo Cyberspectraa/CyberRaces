@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.41** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.42** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -62,7 +62,9 @@ The current `RaceEvolution` registry defines **47 evolution choices** across the
 - Aasimar: Seraphic, Fallen, Celestial Guardian.
 - Birdfolk: Raptor, Nightwing, Stormwing.
 
-**As of 0.3.2-alpha.41, race evolution no longer automatically opens a choice screen at Level 30.** It follows persistent **player behaviour** and environmental history, then awakens a matching branch automatically after the requirements are met.
+**As of 0.3.2-alpha.42, race evolution is prompted after sleeping in a bed.** Your activity and environmental history still calculate a lineage recommendation, but reaching the level/affinity thresholds **does not evolve you automatically**. After a genuine sleep, you see your recommended lineage, its stats and ability profile, and can choose **Evolve** or **Not Yet**.
+
+**Not Yet / ESC** leaves your race unchanged and all earned affinity history intact. To reconsider, sleep again after gaining more experience; your next offer uses your current affinities and may change if your playstyle has changed. You cannot cycle freely through every race evolution on that screen, and the server validates accepted offers. Earlier saved evolutions are preserved.
 
 - Race evolution requires **Cyber Level 30**, at least **80 total activity points** and **28 points in a dominant affinity**. Activity can be accumulated **before** Level 30.
 - **Battle:** defeat monsters and bosses.
@@ -70,7 +72,7 @@ The current `RaceEvolution` registry defines **47 evolution choices** across the
 - **Wanderer:** explore previously unvisited chunks in multiple locations and dimensions (sampled every five seconds).
 - **Guardian:** survive incoming damage, recover health and overcome bosses.
 - **Situational history:** relevant water, Nether, storms, high altitude, underground exploration and night conditions influence which branch wins when playstyles are close.
-- Branches are selected **server-side** from the player's race-specific evolution roster. No client packet can choose a different unearned path. Existing selected evolutions are preserved through upgrades; changing/clearing a base race starts a new journey.
+- Branches are **recommended server-side** from the player's race-specific evolution roster. Acceptance is required; packets cannot request an unearned branch. Existing selected evolutions are preserved through upgrades; changing/clearing a base race starts a new journey.
 - Check progress using `/cyberraces evolution progress`. The system uses bounded scores and limited stored exploration history, avoiding per-tick scans.
 
 The 47 evolution/stat paths exist, but not every branch has a unique independent active skill. The situational weighting is a **first playable balancing pass**, intended for further in-pack tuning.
