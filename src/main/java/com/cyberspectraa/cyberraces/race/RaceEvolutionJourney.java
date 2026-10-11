@@ -155,7 +155,13 @@ public final class RaceEvolutionJourney {
         RaceEvolution chosen=null;
         int best=Integer.MIN_VALUE;
         for(RaceEvolution e:RaceEvolution.choicesFor(race)){
-            int value=a[alignment(e)]*5+c[climate(e)]*7;
+            int habitat=climate(e);
+            // Playstyle dominates; ordinary surface travel is only a weak
+            // tie-breaker. Rare habitats have a capped situational bonus.
+            int contextBonus=habitat==WILDS
+                    ? Math.min(c[WILDS],12)*2
+                    : Math.min(c[habitat],20)*4;
+            int value=a[alignment(e)]*5+contextBonus;
             if(value>best){best=value;chosen=e;}
         }
         if(chosen==null || !RaceManager.setEvolution(p,chosen))return;
