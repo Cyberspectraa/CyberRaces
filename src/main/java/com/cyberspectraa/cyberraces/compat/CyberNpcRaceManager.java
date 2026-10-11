@@ -168,8 +168,20 @@ public final class CyberNpcRaceManager {
         }
 
         Race race = getRace(entity).orElse(null);
-        boolean created = race == null;
+        // Legacy migration: formerly, Undead could spawn as a Wild NPC.
+        // Reassign these residents to a normal humanoid base race without
+        // touching their identity, class, inventory or Cyber Level.
+        if (race == Race.UNDEAD) {
+            race = Race.HUMAN;
+            CompoundTag persistent = entity.getPersistentData();
+            CompoundTag root = persistent.getCompound(ROOT_KEY);
+            root.putString(RACE_KEY, race.id());
+            root.remove(EVOLUTION_KEY);
+            root.put(APPEARANCE_KEY, randomAppearance(entity, race).save());
+            persistent.put(ROOT_KEY, root);
+        }
 
+        boolean created = race == null;
         if (created) {
             race = randomRace(entity);
 
@@ -232,15 +244,9 @@ public final class CyberNpcRaceManager {
             return;
         }
 
-        getRace(entity).ifPresent(race -> {
-            // Migrate older Wild NPCs back to their base race on load/reapply.
-        ensureEvolution(entity, race);
-            RaceAttributeApplier.apply(
-                entity,
-                race,
-                null
-            );
-        });
+        // Reuse the same migration path as initial spawn. This also catches
+        // already-loaded legacy Undead NPCs when attributes are reapplied.
+        ensureAssigned(entity);
     }
 
     /**
@@ -390,7 +396,7 @@ public final class CyberNpcRaceManager {
     }
 
     private static Race randomRace(LivingEntity entity) {
-        Race[] races = Race.values();
+        Race[] races = Race.wildNpcChoices();
         return races[entity.getRandom().nextInt(races.length)];
     }
 
