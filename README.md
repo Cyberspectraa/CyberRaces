@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.40** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.41** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -48,7 +48,7 @@ Other races have passive/statistical identities but **no V-key active ability ye
 
 Racial effects for Wild CyberNpc entities are handled separately by CyberRaces' NPC AI bridge. Implemented NPC behaviour includes appropriate dragon breath, fairy evasion, fox quickstep, orc war cry, nymph grace, catfolk pounce, aasimar radiance, birdfolk wing bursts, and utility/scavenging behaviour as applicable. The NPC implementation need not exactly mirror every player's V-key control.
 
-## Race evolution — Cyber Level 30
+## Dynamic race evolution — Cyber Level 30
 
 The current `RaceEvolution` registry defines **47 evolution choices** across the 15 base races. Each race has multiple branches with different attribute modifiers and ability profiles. Examples:
 
@@ -62,7 +62,18 @@ The current `RaceEvolution` registry defines **47 evolution choices** across the
 - Aasimar: Seraphic, Fallen, Celestial Guardian.
 - Birdfolk: Raptor, Nightwing, Stormwing.
 
-A dedicated evolution selection screen and server-side validation store the chosen branch. These are **defined evolution/stat paths**; not all branches have an entirely new independent skill implementation yet.
+**As of 0.3.2-alpha.41, race evolution no longer automatically opens a choice screen at Level 30.** It follows persistent **player behaviour** and environmental history, then awakens a matching branch automatically after the requirements are met.
+
+- Race evolution requires **Cyber Level 30**, at least **80 total activity points** and **28 points in a dominant affinity**. Activity can be accumulated **before** Level 30.
+- **Battle:** defeat monsters and bosses.
+- **Mystic:** cast Iron's spells when installed, use magical implements/potions, or defeat enemies with magic-related weapons.
+- **Wanderer:** explore previously unvisited chunks in multiple locations and dimensions (sampled every five seconds).
+- **Guardian:** survive incoming damage, recover health and overcome bosses.
+- **Situational history:** relevant water, Nether, storms, high altitude, underground exploration and night conditions influence which branch wins when playstyles are close.
+- Branches are selected **server-side** from the player's race-specific evolution roster. No client packet can choose a different unearned path. Existing selected evolutions are preserved through upgrades; changing/clearing a base race starts a new journey.
+- Check progress using `/cyberraces evolution progress`. The system uses bounded scores and limited stored exploration history, avoiding per-tick scans.
+
+The 47 evolution/stat paths exist, but not every branch has a unique independent active skill. The situational weighting is a **first playable balancing pass**, intended for further in-pack tuning.
 
 ## Cyber Level progression
 
@@ -71,7 +82,7 @@ The persistent Cyber Level system is distinct from vanilla XP:
 - Starts at Level 1 and has a **maximum level of 1,000**.
 - Tracks total Cyber XP with a scaling XP-per-level requirement.
 - Grants experience through eligible gameplay activities; other mods can grant Cyber XP through their compatibility bridges.
-- Gates **class advancements at Level 20** (managed by CyberClasses) and **race evolution at Level 30**.
+- Gates eligibility for **advanced Class Books from CyberClasses** and **earned racial evolution starting at Level 30**.
 - CyberServer can assign starting Cyber Levels to naturally generated Wild NPCs and adjust natural class/evolution policy.
 
 ## Current commands
@@ -83,6 +94,7 @@ Player-facing commands:
 /cyberraces race info <race>
 /cyberraces race get <player>
 /cyberraces evolution get
+/cyberraces evolution progress
 /cyberraces character status
 /cyberraces level status
 ```
