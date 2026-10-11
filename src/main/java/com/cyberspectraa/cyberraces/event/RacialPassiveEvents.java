@@ -50,6 +50,7 @@ public final class RacialPassiveEvents {
         Race race = RaceManager.getRace(player).orElse(null);
 
         updateFoxSneakSpeed(player);
+        BiomeAttunementService.tickPlayer(player);
         EvolutionTalentEvents.tick(player);
 
         // Arachnids climb when deliberately sneaking into a wall. No free
@@ -116,6 +117,8 @@ public final class RacialPassiveEvents {
         OrcWarCryAbility.cleanup(player);
         FairyHoverAbility.disable(player);
         com.cyberspectraa.cyberraces.ability.NewRaceAbilities.cleanup(player);
+        BiomeAttunementService.clear(player);
+        EvolutionTalentEvents.clearOwned(player);
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);
