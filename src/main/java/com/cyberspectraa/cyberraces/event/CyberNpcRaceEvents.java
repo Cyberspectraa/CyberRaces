@@ -6,6 +6,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,6 +39,22 @@ public final class CyberNpcRaceEvents {
                 CyberNpcRaceManager.clearIfNotWild(entity);
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void onWildNpcTick(LivingEvent.LivingTickEvent event) {
+        if (!(event.getEntity().level() instanceof ServerLevel)
+                || event.getEntity().tickCount % 20 != 0
+                || !CyberNpcRaceManager.isWildCyberNpc(event.getEntity())) return;
+        BiomeAttunementService.tickWildNpc(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof LivingEntity living
+                && CyberNpcRaceManager.isWildCyberNpc(living)) {
+            BiomeAttunementService.clear(living);
+        }
     }
 
     @SubscribeEvent
