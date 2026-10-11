@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.command;
 
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
+import com.cyberspectraa.cyberraces.event.BiomeAttunementService;
 import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.compat.IcarusCompat;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
@@ -82,6 +83,20 @@ public final class CyberRaceCommands {
                     .then(Commands.literal("compat")
                         .executes(context -> compat(context.getSource())))
                 )
+                .then(Commands.literal("biome")
+                    .then(Commands.literal("status")
+                        .executes(context -> {
+                            var player = context.getSource().getPlayerOrException();
+                            context.getSource().sendSuccess(
+                                () -> BiomeAttunementService.status(player), false);
+                            return 1;
+                        }))
+                    .executes(context -> {
+                        var player = context.getSource().getPlayerOrException();
+                        context.getSource().sendSuccess(
+                            () -> BiomeAttunementService.status(player), false);
+                        return 1;
+                    }))
                 .then(Commands.literal("evolution")
                     .then(Commands.literal("progress")
                         .executes(context -> {
