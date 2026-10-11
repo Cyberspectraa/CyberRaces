@@ -25,7 +25,10 @@ public enum Race {
     DOGFOLK("dogfolk", "Dogfolk", 1.02f, 22.0, 1.04, 1.05, 0.95, 1.00, 1.00, 0.08, 0.0, 1.00, FlightType.NONE),
     FOXFOLK("foxfolk", "Foxfolk", 0.96f, 18.0, 1.06, 1.00, 1.10, 1.05, 1.00, 0.00, 0.0, 1.00, FlightType.NONE),
     AASIMAR("aasimar", "Aasimar", 1.00f, 20.0, 1.00, 1.00, 1.10, 1.08, 1.10, 0.00, 0.0, 1.00, FlightType.NONE),
-    BIRDFOLK("birdfolk", "Birdfolk", 1.00f, 18.0, 1.06, 1.05, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.ICARUS_NATURAL);
+    BIRDFOLK("birdfolk", "Birdfolk", 1.00f, 18.0, 1.06, 1.05, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.ICARUS_NATURAL),
+    SLIME("slime", "Slime", 0.95f, 20.0, 1.02, 1.00, 0.95, 1.03, 1.05, 0.08, 0.0, 1.30, FlightType.NONE),
+    ARACHNID("arachnid", "Arachnid", 1.00f, 20.0, 1.07, 1.03, 1.00, 1.00, 1.00, 0.02, 0.0, 1.00, FlightType.NONE),
+    UNDEAD("undead", "Undead", 1.00f, 22.0, 0.97, 0.85, 1.08, 1.05, 1.12, 0.08, 1.0, 1.20, FlightType.NONE);
 
     private final String id;
     private final String displayName;
