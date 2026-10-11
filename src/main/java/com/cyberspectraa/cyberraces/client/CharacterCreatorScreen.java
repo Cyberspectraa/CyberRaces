@@ -589,6 +589,18 @@ public final class CharacterCreatorScreen extends Screen {
                 "Winged aerial species with lower health and high mobility.",
                 "Icarus feathered wings; V: Wing Burst. 65% less fall damage."
             };
+            case SLIME -> new String[] {
+                "Gelatinous humanoid with an all-over slime skin.",
+                "80% less fall damage. V: Elastic Leap."
+            };
+            case ARACHNID -> new String[] {
+                "Swift silk-blooded hunter with a wall-climbing instinct.",
+                "Sneak by a wall to climb. V: Web Snare."
+            };
+            case UNDEAD -> new String[] {
+                "Tough revenant with lower hunger and a weakness to fire.",
+                "Resistant to poison. V: Grave Resilience."
+            };
         };
     }
 
