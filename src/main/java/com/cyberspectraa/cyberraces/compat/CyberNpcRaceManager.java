@@ -131,37 +131,15 @@ public final class CyberNpcRaceManager {
         return Race.byId(root.getString(RACE_KEY));
     }
 
-    public static Optional<RaceEvolution> getEvolution(
-        LivingEntity entity
-    ) {
-        if (entity == null) {
-            return Optional.empty();
-        }
-
-        CompoundTag persistent = entity.getPersistentData();
-
-        if (!persistent.contains(ROOT_KEY)) {
-            return Optional.empty();
-        }
-
-        CompoundTag root = persistent.getCompound(ROOT_KEY);
-        Race race = getRace(entity).orElse(null);
-
-        if (race == null || !root.contains(EVOLUTION_KEY)) {
-            return Optional.empty();
-        }
-
-        RaceEvolution evolution =
-            RaceEvolution.byId(
-                root.getString(EVOLUTION_KEY)
-            ).orElse(null);
-
-        if (evolution == null
-                || evolution.baseRace() != race) {
-            return Optional.empty();
-        }
-
-        return Optional.of(evolution);
+    /**
+     * Wild NPCs keep only their original BASE race, regardless of their Cyber
+     * Level or server progression policy. Players retain normal evolutions.
+     *
+     * This public API deliberately never exposes stale NPC evolution NBT,
+     * including NPCs from worlds created before this change.
+     */
+    public static Optional<RaceEvolution> getEvolution(LivingEntity entity) {
+        return Optional.empty();
     }
 
     public static CharacterAppearance getAppearance(LivingEntity entity) {
@@ -205,6 +183,7 @@ public final class CyberNpcRaceManager {
             persistent.put(ROOT_KEY, root);
         }
 
+        // Migrate older Wild NPCs back to their base race on load/reapply.
         ensureEvolution(entity, race);
 
         /*
@@ -216,7 +195,7 @@ public final class CyberNpcRaceManager {
             RaceAttributeApplier.apply(
                 entity,
                 race,
-                getEvolution(entity).orElse(null)
+                null
             );
             return created;
         }
@@ -243,7 +222,7 @@ public final class CyberNpcRaceManager {
         RaceAttributeApplier.apply(
             entity,
             race,
-            getEvolution(entity).orElse(null)
+            null
         );
         return created;
     }
@@ -254,49 +233,32 @@ public final class CyberNpcRaceManager {
         }
 
         getRace(entity).ifPresent(race -> {
-            ensureEvolution(entity, race);
+            // Migrate older Wild NPCs back to their base race on load/reapply.
+        ensureEvolution(entity, race);
             RaceAttributeApplier.apply(
                 entity,
                 race,
-                getEvolution(entity).orElse(null)
+                null
             );
         });
     }
 
-    public static boolean ensureEvolution(
-        LivingEntity entity,
-        Race race
-    ) {
-        if (entity == null
-                || race == null
-                || entity.getPersistentData().getBoolean(
-                    EVOLUTION_LOCK_TAG
-                )
-                || ProgressionManager.getLevel(entity)
-                    < RaceEvolution.REQUIRED_LEVEL) {
+    /**
+     * Legacy migration and compatibility entry point. Called by the regular
+     * NPC load path AND by optional integrations that previously requested a
+     * random high-level evolution. Never grants an evolution.
+     *
+     * Return true only if an old saved evolution was removed.
+     */
+    public static boolean ensureEvolution(LivingEntity entity, Race race) {
+        if (entity == null || race == null || !isWildCyberNpc(entity)) {
             return false;
         }
-
-        if (getEvolution(entity).isPresent()) {
-            return false;
-        }
-
-        RaceEvolution evolution =
-            RaceEvolution.randomFor(
-                race,
-                entity.getRandom()
-            ).orElse(null);
-
-        if (evolution == null) {
-            return false;
-        }
-
         CompoundTag persistent = entity.getPersistentData();
-        CompoundTag root = persistent.contains(ROOT_KEY)
-            ? persistent.getCompound(ROOT_KEY)
-            : new CompoundTag();
-
-        root.putString(EVOLUTION_KEY, evolution.id());
+        if (!persistent.contains(ROOT_KEY)) return false;
+        CompoundTag root = persistent.getCompound(ROOT_KEY);
+        if (!root.contains(EVOLUTION_KEY)) return false;
+        root.remove(EVOLUTION_KEY);
         persistent.put(ROOT_KEY, root);
         return true;
     }
@@ -383,9 +345,7 @@ public final class CyberNpcRaceManager {
             entity.getUUID(),
             true,
             race.id(),
-            getEvolution(entity)
-                .map(evolution -> evolution.id())
-                .orElse(""),
+            "", // NPCs are restricted to base race visuals at every level.
             appearance.featureStyle(),
             appearance.featureColor(),
             appearance.earHeight(),
