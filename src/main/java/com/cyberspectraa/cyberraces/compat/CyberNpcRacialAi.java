@@ -38,6 +38,9 @@ public final class CyberNpcRacialAi {
     private static final String CAT_READY = "CatPounceReady";
     private static final String AASIMAR_READY = "AasimarRadianceReady";
     private static final String BIRDFOLK_READY = "BirdfolkWingBurstReady";
+    private static final String SLIME_READY = "SlimeLeapReady";
+    private static final String ARACHNID_READY = "ArachnidWebReady";
+    private static final String UNDEAD_READY = "UndeadSoulReady";
 
     private static Class<?> cachedCollectClass;
     private static Method cachedCollectMethod;
@@ -84,6 +87,9 @@ public final class CyberNpcRacialAi {
             case CATFOLK -> tryCatPounce(level, mob, target, distanceSqr, lineOfSight);
             case AASIMAR -> tryAasimarRadiance(level, mob, target, distanceSqr, lineOfSight);
             case BIRDFOLK -> tryBirdfolkWingBurst(level, mob, target, distanceSqr);
+            case SLIME -> trySlimeLeap(level, mob, target, distanceSqr, lineOfSight);
+            case ARACHNID -> tryArachnidWeb(level, mob, target, distanceSqr, lineOfSight);
+            case UNDEAD -> tryUndeadSoul(level, mob, distanceSqr);
             default -> {
                 // These races already receive their passive CyberRaces
                 // attributes/effects. They do not need forced active AI here.
@@ -151,6 +157,44 @@ public final class CyberNpcRacialAi {
         mob.getNavigation().moveTo(loot, 1.02D);
         mob.getLookControl().setLookAt(loot, 25.0F, 20.0F);
         return true;
+    }
+
+    private static void trySlimeLeap(ServerLevel level, PathfinderMob mob,
+            LivingEntity target, double distanceSqr, boolean sight) {
+        if (!sight || distanceSqr > 49D || distanceSqr < 4D
+                || !mob.onGround() || !isReady(mob, SLIME_READY)) return;
+        Vec3 direction = target.position().subtract(mob.position()).normalize();
+        mob.setDeltaMovement(mob.getDeltaMovement().add(
+                direction.x * 0.46D, 0.58D, direction.z * 0.46D));
+        mob.hurtMarked = true;
+        level.sendParticles(ParticleTypes.ITEM_SLIME,
+                mob.getX(), mob.getY()+0.3D, mob.getZ(),
+                12, 0.4D, 0.25D, 0.4D, 0.03D);
+        setCooldown(mob, SLIME_READY, 12 * 20);
+    }
+
+    private static void tryArachnidWeb(ServerLevel level, PathfinderMob mob,
+            LivingEntity target, double distanceSqr, boolean sight) {
+        if (!sight || distanceSqr > 64D || !isReady(mob, ARACHNID_READY)) return;
+        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 72, 1));
+        RaceEvolution path=CyberNpcRaceManager.getEvolution(mob).orElse(null);
+        if(path==RaceEvolution.VENOMFANG)
+            target.addEffect(new MobEffectInstance(MobEffects.POISON, 65, 0));
+        level.sendParticles(ParticleTypes.CLOUD, target.getX(),
+                target.getY()+0.8D, target.getZ(), 12, 0.4D, 0.6D, 0.4D, 0.03D);
+        setCooldown(mob, ARACHNID_READY, 17 * 20);
+    }
+
+    private static void tryUndeadSoul(ServerLevel level, PathfinderMob mob,
+            double distanceSqr) {
+        if (distanceSqr > 100D || mob.getHealth() > mob.getMaxHealth()*0.6F
+                || !isReady(mob, UNDEAD_READY)) return;
+        mob.heal(3.0F);
+        mob.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE,100,0));
+        level.sendParticles(ParticleTypes.SOUL,
+                mob.getX(), mob.getY()+1.0D, mob.getZ(),
+                12, 0.5D, 0.6D, 0.5D, 0.03D);
+        setCooldown(mob, UNDEAD_READY, 22 * 20);
     }
 
     private static void tryDragonBreath(
