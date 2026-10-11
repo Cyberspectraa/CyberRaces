@@ -153,7 +153,9 @@ public final class BiomeAttunementService {
             return;
         }
 
-        long now = entity.level().getGameTime();
+        // Entity tick count records ACTUAL lived time: sleeping skips world time,
+        // but cannot skip the 60-second attunement requirement.
+        long now = entity.tickCount;
         if (existing == null || now < existing.since) {
             STATES.put(uuid, new State(dimension, biome, race, evolution, now, false));
             return;
@@ -329,7 +331,7 @@ public final class BiomeAttunementService {
         State state = STATES.get(player.getUUID());
         int left = state == null || !state.active
                 ? state == null ? 60 : (int)Math.max(0L, (DWELL_TICKS
-                  - (player.level().getGameTime()-state.since)+19L)/20L) : 0;
+                  - (player.tickCount-state.since)+19L)/20L) : 0;
         String line = state != null && state.active
                 ? "Attuned to "+home.biome.description+": "+giftDescription(home.gift,evolution!=null)
                 : "Favored biome: "+home.biome.description+" | Attunement requires 60 seconds in the SAME biome"
