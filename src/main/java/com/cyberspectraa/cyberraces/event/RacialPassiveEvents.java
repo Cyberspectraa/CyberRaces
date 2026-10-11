@@ -94,6 +94,7 @@ public final class RacialPassiveEvents {
         GoblinScavengerSenseAbility.cleanup(player);
         OrcWarCryAbility.cleanup(player);
         FairyHoverAbility.disable(player);
+        com.cyberspectraa.cyberraces.ability.NewRaceAbilities.cleanup(player);
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);
