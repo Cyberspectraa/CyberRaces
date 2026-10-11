@@ -403,7 +403,7 @@ public final class CyberNpcRaceManager {
             case DOGFOLK -> 9;
             case FOXFOLK -> 2;
             case BIRDFOLK -> 16;
-            case HUMAN, DWARF, NYMPH, AASIMAR -> 1;
+            case HUMAN, DWARF, NYMPH, AASIMAR, SLIME, ARACHNID, UNDEAD -> 1;
             default -> 3;
         };
 
