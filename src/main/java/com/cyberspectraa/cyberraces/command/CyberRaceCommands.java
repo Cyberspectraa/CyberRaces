@@ -224,6 +224,9 @@ public final class CyberRaceCommands {
             case FOXFOLK -> "+20% crouch speed; V activates Quickstep";
             case AASIMAR -> "celestial spell resistance; V casts no-mana Radiant Bolt";
             case BIRDFOLK -> "Icarus feathered wings, 65% less fall damage; V activates Wing Burst";
+            case SLIME -> "gel body, 80% less fall damage; V activates Elastic Leap";
+            case ARACHNID -> "sneak against walls to climb; V activates Web Snare";
+            case UNDEAD -> "poison and hunger immunity; V activates Grave Resilience";
         };
     }
 
