@@ -2,173 +2,97 @@ package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.SubmitRaceEvolutionPacket;
-import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import com.cyberspectraa.cyberraces.race.RaceEvolutionStats;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-
 import java.util.List;
 
+/** A server-chosen offer after sleeping, not a free evolution selector. */
 public final class RaceEvolutionScreen extends Screen {
-    private final Race baseRace;
-    private final RaceEvolution[] choices;
+    private final RaceEvolution proposed;
+    private boolean answered;
 
-    private int evolutionIndex;
-    private Button evolutionButton;
-
-    public RaceEvolutionScreen(String baseRaceId) {
-        super(Component.literal("Choose Race Evolution"));
-        this.baseRace = Race.byId(baseRaceId).orElse(Race.HUMAN);
-        this.choices = RaceEvolution.choicesFor(this.baseRace);
+    public RaceEvolutionScreen(String proposedId) {
+        super(Component.literal("A New Lineage Stirs"));
+        this.proposed = RaceEvolution.byId(proposedId).orElse(null);
     }
 
     @Override
     protected void init() {
-        if (choices.length == 0) {
+        if (proposed == null) {
             onClose();
             return;
         }
-
-        int centerX = width / 2;
-        int top = Math.max(18, height / 2 - 122);
-
-        addRenderableWidget(
-            Button.builder(Component.literal("<"), button -> changeEvolution(-1))
-                .bounds(centerX - 150, top + 45, 28, 20)
-                .build()
-        );
-
-        evolutionButton = addRenderableWidget(
-            Button.builder(
-                    Component.literal(currentEvolution().displayName()),
-                    button -> changeEvolution(1)
-                )
-                .bounds(centerX - 116, top + 45, 232, 20)
-                .build()
-        );
-
-        addRenderableWidget(
-            Button.builder(Component.literal(">"), button -> changeEvolution(1))
-                .bounds(centerX + 122, top + 45, 28, 20)
-                .build()
-        );
-
-        addRenderableWidget(
-            Button.builder(Component.literal("Choose Evolution"), button -> submit())
-                .bounds(centerX - 80, top + 205, 160, 22)
-                .build()
-        );
+        int x = width / 2;
+        int y = Math.max(16, height / 2 - 122);
+        addRenderableWidget(Button.builder(Component.literal("Evolve"), b -> submit(true))
+                .bounds(x - 149, y + 207, 140, 22).build());
+        addRenderableWidget(Button.builder(Component.literal("Not Yet"), b -> submit(false))
+                .bounds(x + 9, y + 207, 140, 22).build());
     }
 
     @Override
-    public void render(
-        GuiGraphics graphics,
-        int mouseX,
-        int mouseY,
-        float partialTick
-    ) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
-
-        if (choices.length == 0) {
+        if (proposed == null) {
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
-
-        int centerX = width / 2;
-        int top = Math.max(18, height / 2 - 122);
-        RaceEvolution evolution = currentEvolution();
-
-        graphics.drawCenteredString(font, title, centerX, top, 0xFFFFFF);
-        graphics.drawCenteredString(
-            font,
-            Component.literal(baseRace.displayName() + " — Cyber Level 30 Evolution"),
-            centerX,
-            top + 18,
-            0xA7E3D3
-        );
+        int x = width / 2;
+        int y = Math.max(16, height / 2 - 122);
+        graphics.drawCenteredString(font, title, x, y, 0xF7DBA1);
+        graphics.drawCenteredString(font,
+                Component.literal("Your journey points toward " + proposed.displayName()),
+                x, y + 24, 0xA7E3D3);
 
         List<FormattedCharSequence> description =
-            font.split(Component.literal(evolution.description()), 310);
-
-        int textY = top + 80;
+                font.split(Component.literal(proposed.description()), 302);
+        int textY = y + 61;
         for (FormattedCharSequence line : description) {
-            graphics.drawCenteredString(font, line, centerX, textY, 0xE5E5E5);
+            graphics.drawCenteredString(font, line, x, textY, 0xE5E5E5);
             textY += 11;
         }
 
-        RaceEvolutionStats stats = evolution.stats();
-
-        graphics.drawCenteredString(
-            font,
-            Component.literal("Physical: " + physicalSummary(stats)),
-            centerX,
-            top + 130,
-            0xA7C8E3
-        );
-
-        graphics.drawCenteredString(
-            font,
-            Component.literal("Arcane: " + arcaneSummary(stats)),
-            centerX,
-            top + 145,
-            0xC6A7E3
-        );
-
-        graphics.drawCenteredString(
-            font,
-            Component.literal("Evolution ability profile: " + prettyProfile(evolution.abilityProfile())),
-            centerX,
-            top + 160,
-            0xE6C66B
-        );
-
-        graphics.drawCenteredString(
-            font,
-            Component.literal("Race Ascension unlocks later at Cyber Level 60"),
-            centerX,
-            top + 180,
-            0xBDBDBD
-        );
-
+        RaceEvolutionStats stats = proposed.stats();
+        graphics.drawCenteredString(font,
+                Component.literal("Physical: " + physicalSummary(stats)),
+                x, y + 128, 0xA7C8E3);
+        graphics.drawCenteredString(font,
+                Component.literal("Arcane: " + arcaneSummary(stats)),
+                x, y + 143, 0xC6A7E3);
+        graphics.drawCenteredString(font,
+                Component.literal("Ability affinity: " + prettyProfile(proposed.abilityProfile())),
+                x, y + 158, 0xE6C66B);
+        graphics.drawCenteredString(font,
+                Component.literal("Decline to keep growing, then sleep again for another offer."),
+                x, y + 183, 0xBDBDBD);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    @Override
-    public boolean shouldCloseOnEsc() {
-        return true;
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
-    private void changeEvolution(int direction) {
-        evolutionIndex = Math.floorMod(
-            evolutionIndex + direction,
-            choices.length
-        );
-
-        if (evolutionButton != null) {
-            evolutionButton.setMessage(
-                Component.literal(currentEvolution().displayName())
-            );
-        }
-    }
-
-    private RaceEvolution currentEvolution() {
-        return choices[evolutionIndex];
-    }
-
-    private void submit() {
+    private void submit(boolean accept) {
+        if (answered) return;
+        answered = true;
         CyberRacesNetwork.sendToServer(
-            new SubmitRaceEvolutionPacket(currentEvolution().id())
-        );
+                new SubmitRaceEvolutionPacket(accept ? proposed.id() : ""));
+        if (!accept) Minecraft.getInstance().setScreen(null);
     }
+
+    @Override
+    public void onClose() {
+        if (!answered) submit(false);
+        super.onClose();
+    }
+
+    @Override
+    public boolean shouldCloseOnEsc() { return true; }
+
+    @Override
+    public boolean isPauseScreen() { return false; }
 
     private static String physicalSummary(RaceEvolutionStats stats) {
         StringBuilder builder = new StringBuilder();
