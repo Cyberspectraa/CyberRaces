@@ -18,11 +18,11 @@ public final class ClientPacketHandlers {
         }
     }
 
-    public static void openRaceEvolution(String baseRaceId) {
+    public static void openRaceEvolution(String proposedEvolutionId) {
         Minecraft minecraft = Minecraft.getInstance();
 
         if (!(minecraft.screen instanceof RaceEvolutionScreen)) {
-            minecraft.setScreen(new RaceEvolutionScreen(baseRaceId));
+            minecraft.setScreen(new RaceEvolutionScreen(proposedEvolutionId));
         }
     }
 
