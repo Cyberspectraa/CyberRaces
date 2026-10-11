@@ -451,7 +451,10 @@ public final class CharacterCreatorScreen extends Screen {
         return race != Race.HUMAN
             && race != Race.DWARF
             && race != Race.NYMPH
-            && race != Race.AASIMAR;
+            && race != Race.AASIMAR
+            && race != Race.SLIME
+            && race != Race.ARACHNID
+            && race != Race.UNDEAD;
     }
 
     private boolean hasFeatureColour(Race race) {
