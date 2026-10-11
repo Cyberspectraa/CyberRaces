@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.44** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.45** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -36,6 +36,19 @@ Use the normal in-game creator for player selection; admin resets are intended f
 - **Undead:** a slower, sturdy revenant-like humanoid with lower hunger consumption, resistance to magical effects and increased fire vulnerability. Poison and Hunger status effects are cleared, and **V** activates Grave Resilience for healing and temporary damage resistance. Evolution choices include spectral speed, magical lich affinity, heavy knight defence and plague power.
 
 The three new race IDs are `slime`, `arachnid` and `undead`. All are available during first-join character creation, work with the persistent race/evolution data format and are eligible for CyberNpc Wild NPC assignment. CyberNpc racial combat AI for these races is implemented in CyberRaces with independent cooldowns; CyberNpc itself does not need rebuilding.
+
+## Biome attunement (v0.3.2-alpha.45)
+
+Players and Wild NPCs gain a **small, temporary racial homeland bonus** after spending **60 continuous seconds in a single favored biome**. The server tracks the actual biome ID and dimension: crossing into any other biome immediately clears the buff and restarts the timer, even when the next biome belongs to the same type. **No buff is permanent**, and a character cannot gain multiple biome bonuses at once.
+
+- Base races receive weaker buffs appropriate to their origin: for example, Elves in woodlands, Dwarves in mountains, Slimes in swamps, Arachnids in caves and player-only Undead in soul/deep-dark biomes.
+- Accepted evolutions replace that starting homeland with a more distinctive environment, e.g. Magma Slime in the Nether, Winterfang in frozen biomes, Tideglimmer along rivers and Skyclaw in mountains. All 79 evolutions have a biome affinity, with their named lore reflected in the matching habitat.
+- Depending on the race and evolution, the active bonus grants **+5.5%/+10% movement speed**, **+1/+2 armour**, **+0.75/+1.5 attack damage**, or **+0.5/+1 Luck with modest periodic recovery** (base/evolved respectively).
+- Bonuses use separate temporary attribute modifiers and are removed when leaving the biome, changing race, logging out or unloading an NPC. They do not overwrite normal potion effects or persist on saved characters.
+- Existing evolution-specific passives (such as Nether fire protection, river water-breathing, or underground mining speed) only activate **after the corresponding biome attunement**; short effects applied by this system are tracked and removed when the attunement ends.
+- The `/cyberraces biome status` command shows your favored biome, active bonus or time remaining. Compatible modded biomes can match by their registry name (forests, taigas, rivers, jungles, caves, etc.).
+
+The biome system rewards **staying in a place**, while the pre-evolution playstyle-history system still rewards **travel and discovery**. It doesn't change the Level 30 requirement or the choice offered after sleeping.
 
 ## Racial abilities
 
@@ -74,7 +87,7 @@ The current `RaceEvolution` registry defines **79 evolution choices** across the
 - Aasimar: Seraphic, Fallen, Celestial Guardian.
 - Birdfolk: Raptor, Nightwing, Stormwing.
 - Slime: Magma Slime, Metal Slime, Acid Slime, Crystal Slime, Frost Slime, Void Slime, Royal Slime.
-- Arachnid: Webweaver, Venomfang, Cave Stalker, Broodmother, Huntsman.
+- Arachnid: Webweaver, Venomfang, Cave Stalker, Brood Sovereign, Silk Reaver.
 - Undead: Revenant, Lichbound, Dread Knight, Wraith, Plagueborn.
 
 ### Additional original-race branches (v0.3.2-alpha.44)
@@ -83,21 +96,21 @@ All fifteen earlier playable races now have an additional class-independent line
 
 | Base race | New evolution | Situational specialty |
 | --- | --- | --- |
-| Human | Wayfarer | Travel and sprinting in the open |
-| Elf | Starseeker | Starry skies, night vision and arcane potential |
-| Dwarf | Emberforged | Nether heat and fire resistance |
-| Halfling | Whisperfoot | Stealthy night movement |
-| Orc | Stormchaser | Storm-weather mobility |
-| Goblin | Cavewright | Faster underground mining |
-| Tiefling | Riftwalker | Nether travel and heat resistance |
-| Dragonborn | Earthscale | Greater armour and underground resilience |
-| Fairy | Dewdrop | Water affinity and breathing underwater |
-| Nymph | Tempest Nymph | Fighting and moving through storms |
-| Catfolk | Cloudleaper | Air mobility and gentler descents |
-| Dogfolk | Frosthound | Pursuit through cold climates |
-| Foxfolk | Emberfox | Fire-resistant travel |
-| Aasimar | Dawnbringer | Restorative energy in daylight |
-| Birdfolk | Tidewing | Fast swimming and coastal exploration |
+| Human | Horizonbound | Travel and sprinting in the open |
+| Elf | Astralweaver | Starry skies, night vision and arcane potential |
+| Dwarf | Cinderthane | Nether heat and fire resistance |
+| Halfling | Nightwhisper | Stealthy night movement |
+| Orc | Thundermaw | Storm-weather mobility |
+| Goblin | Deepdelver | Faster underground mining |
+| Tiefling | Netherstrider | Nether travel and heat resistance |
+| Dragonborn | Obsidianhide | Greater armour and underground resilience |
+| Fairy | Tideglimmer | Water affinity and breathing underwater |
+| Nymph | Stormsinger | Fighting and moving through storms |
+| Catfolk | Skyclaw | Air mobility and gentler descents |
+| Dogfolk | Winterfang | Pursuit through cold climates |
+| Foxfolk | Cinderfox | Fire-resistant travel |
+| Aasimar | Sunward Archon | Restorative energy in daylight |
+| Birdfolk | Tidecrest | Fast swimming and coastal exploration |
 
 Each new evolution has **permanent stat modifiers and a lightweight, situational passive** that checks its environment on the server. These passives expire when leaving their relevant conditions. Previously saved evolution IDs and character appearance data remain valid.
 
@@ -127,7 +140,7 @@ The persistent Cyber Level system is distinct from vanilla XP:
 - Tracks total Cyber XP with a scaling XP-per-level requirement.
 - Grants experience through eligible gameplay activities; other mods can grant Cyber XP through their compatibility bridges.
 - Gates eligibility for **advanced Class Books from CyberClasses** and **earned racial evolution starting at Level 30**.
-- CyberServer can assign starting Cyber Levels to naturally generated Wild NPCs and adjust natural class/evolution policy.
+- CyberServer can assign starting Cyber Levels and natural class policy for Wild NPCs. It cannot override the base-race-only or Undead-exclusion rules.
 
 ## Current commands
 
@@ -160,7 +173,7 @@ Admin commands (permission level 2, examples):
 ## Integrations and limits
 
 - **CyberClasses:** separate player classes and Level 20 class progression.
-- **CyberNpc:** Wild NPCs receive **base races only**, including the three new ones. They keep racial appearance, baseline stats and base racial combat/utility AI but can **never randomly evolve at Level 30 or later**. Older evolved Wild NPCs are migrated back to their base race when loaded, keeping their race, class, level, inventory and identity.
+- **CyberNpc:** Wild NPCs receive **17 permitted base races**; **Undead/Reborn is playable by players only**, never assigned to Wild NPCs. They keep racial appearance, baseline stats and base racial combat/utility AI but can **never randomly evolve at Level 30 or later**. Older evolved Wild NPCs are migrated back to their base race when loaded. Older Undead Wild NPCs are rerolled to an allowed base race, retaining their identity, class, level and inventory.
 - **CyberQuest:** optional character/race/evolution prerequisite checks and Cyber XP awards.
 - **CyberServer:** first-arrival sequencing and Wild NPC Cyber Level/class progression policy. Any old `evolvedraces` setting is overridden by CyberRaces' base-race-only NPC rule.
 - **Pehkui:** entity scaling; **Iron's Spells 'n Spellbooks:** optional racial mana/spell calculations and selected abilities; **Icarus/Curios and other wing mods:** optional flight and wing rendering paths.
