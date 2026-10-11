@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.46** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.47** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -31,7 +31,7 @@ Use the normal in-game creator for player selection; admin resets are intended f
 
 ## Additional races in 0.3.2-alpha.43
 
-- **Slime:** a humanoid player whose **entire 64×64 player skin** receives a procedurally generated glossy, translucent-looking gelatin treatment. Your original skin's eyes, facial details, clothing and UV layout remain visible under the tint; armour, movement and humanoid animations remain intact. The full-body slime skin follows the chosen evolution's colour: molten orange for Magma, silver for Metal, yellow-green for Acid, turquoise for Crystal, ice blue for Frost, violet for Void and gold for Royal. This is a pixel-processed skin composite, **not** physically translucent glass geometry. Wild NPCs receive the matching semi-transparent slime overlay through the CyberNpc-compatible humanoid model layer. Slimes take 80% less fall damage and use **V** for Elastic Leap. They are slightly more vulnerable to fire before a resistant evolution.
+- **Slime:** a humanoid player whose **entire 64×64 player skin** receives a procedurally generated glossy, translucent-looking gelatin treatment. Your original skin's eyes, facial details, clothing and UV layout remain visible under the tint; armour, movement and humanoid animations remain intact. The full-body slime skin follows the chosen evolution's colour: molten orange for Magma, silver for Metal, yellow-green for Acid, turquoise for Crystal, ice blue for Frost, violet for Void and gold for Royal. This is a pixel-processed skin composite, **not** physically translucent glass geometry. With CyberNpc 0.44.44+, Slime NPCs use the same composited skin approach instead of rendering an additional translucent humanoid: female slim arms and bow poses remain aligned. Earlier CyberNpc releases retain the previous semi-transparent overlay as a compatibility fallback. Slimes take 80% less fall damage and use **V** for Elastic Leap. They are slightly more vulnerable to fire before a resistant evolution.
 - **Arachnid:** a quick humanoid spider-kin. Sneaking into a wall allows climbing (no forced hovering); **V** activates a web snare against nearby enemies in front of the player. Evolution choices emphasize underground stealth, poisonous webs, pursuit, protective silk or binding strength.
 - **Undead:** a slower, sturdy revenant-like humanoid with lower hunger consumption, resistance to magical effects and increased fire vulnerability. Poison and Hunger status effects are cleared, and **V** activates Grave Resilience for healing and temporary damage resistance. Evolution choices include spectral speed, magical lich affinity, heavy knight defence and plague power.
 

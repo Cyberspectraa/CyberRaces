@@ -17,6 +17,9 @@ import java.util.UUID;
 public final class RaceSkinOverlayManager {
     private static final Map<UUID, CacheEntry> CACHE = new HashMap<>();
     private static final Map<UUID, CacheEntry> NPC_OVERLAY_CACHE = new HashMap<>();
+    // Slime NPCs on a compatible CyberNpc renderer use one tinted base texture,
+    // avoiding a second translucent copy of the animated slim arms.
+    private static final Map<UUID, CacheEntry> NPC_SLIME_BASE_CACHE = new HashMap<>();
     private static final Map<UUID, ResourceLocation> ORIGINAL_SKINS = new HashMap<>();
 
     private RaceSkinOverlayManager() {
@@ -64,6 +67,64 @@ public final class RaceSkinOverlayManager {
         }
 
         return originalSkin;
+    }
+
+    /**
+     * Optional client-only CyberNpc renderer hook. Composite the Slime colour
+     * into the *existing* 64x64 NPC skin instead of duplicating the animated
+     * humanoid model with a transparent overlay. This keeps slim female arms
+     * and bow draw poses in precisely the same geometry/depth pass.
+     *
+     * Old CyberNpc versions do not call this method and retain the legacy
+     * overlay, so neither mod gains a mandatory dependency on the other.
+     */
+    public static ResourceLocation getNpcSlimeBaseTexture(
+        LivingEntity entity,
+        ResourceLocation sourceTexture
+    ) {
+        if (entity == null || sourceTexture == null) {
+            return sourceTexture;
+        }
+
+        ClientCharacterState.VisualCharacter visual =
+            ClientCharacterState.resolve(entity.getUUID()).orElse(null);
+        if (visual == null || visual.race() != Race.SLIME) {
+            invalidateNpcSlimeBase(entity.getUUID());
+            return sourceTexture;
+        }
+
+        String lineage = visual.evolutionId();
+        CacheKey key = new CacheKey(sourceTexture, 0, 0, 0, lineage);
+        CacheEntry cached = NPC_SLIME_BASE_CACHE.get(entity.getUUID());
+        if (cached != null && cached.key().equals(key)) {
+            return cached.texture();
+        }
+
+        invalidateNpcSlimeBase(entity.getUUID());
+
+        ResourceLocation composed = generateSlime(
+            entity.getUUID(), sourceTexture, lineage, false
+        );
+        if (composed == null) {
+            return sourceTexture;
+        }
+
+        NPC_SLIME_BASE_CACHE.put(entity.getUUID(), new CacheEntry(key, composed));
+        return composed;
+    }
+
+    /**
+     * A true result means the renderer has actually selected the composite
+     * texture this frame. If an old renderer or a failed texture generation
+     * leaves the base unchanged, the old translucent layer remains available.
+     */
+    public static boolean isNpcSlimeBaseApplied(
+        LivingEntity entity,
+        ResourceLocation currentlyRenderedTexture
+    ) {
+        CacheEntry entry = entity == null ? null :
+            NPC_SLIME_BASE_CACHE.get(entity.getUUID());
+        return entry != null && entry.texture().equals(currentlyRenderedTexture);
     }
 
     public static ResourceLocation getNpcOverlay(
@@ -132,6 +193,14 @@ public final class RaceSkinOverlayManager {
         }
 
         invalidateNpc(playerId);
+        invalidateNpcSlimeBase(playerId);
+    }
+
+    private static void invalidateNpcSlimeBase(UUID entityId) {
+        CacheEntry entry = NPC_SLIME_BASE_CACHE.remove(entityId);
+        if (entry != null) {
+            Minecraft.getInstance().getTextureManager().release(entry.texture());
+        }
     }
 
     private static void invalidateNpc(UUID entityId) {
@@ -153,9 +222,13 @@ public final class RaceSkinOverlayManager {
         for (CacheEntry entry : NPC_OVERLAY_CACHE.values()) {
             minecraft.getTextureManager().release(entry.texture());
         }
+        for (CacheEntry entry : NPC_SLIME_BASE_CACHE.values()) {
+            minecraft.getTextureManager().release(entry.texture());
+        }
 
         CACHE.clear();
         NPC_OVERLAY_CACHE.clear();
+        NPC_SLIME_BASE_CACHE.clear();
         ORIGINAL_SKINS.clear();
     }
 

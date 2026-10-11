@@ -115,6 +115,16 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             return;
         }
 
+        // A compatible CyberNpc renderer already draws the Slime as a
+        // single tinted skin pass. Don't draw overlapping translucent arms
+        // again: crossing arms during bow draw caused depth/alpha artifacts
+        // on the female slim model. Older NPC renderers still use the overlay.
+        if (race == Race.SLIME
+                && RaceSkinOverlayManager.isNpcSlimeBaseApplied(
+                    entity, getTextureLocation(entity))) {
+            return;
+        }
+
         ResourceLocation overlay =
             RaceSkinOverlayManager.getNpcOverlay(
                 entity,
