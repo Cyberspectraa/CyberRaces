@@ -1,55 +1,112 @@
 # CyberRaces
 
-CyberRaces is the race and character-creation system for the Season 2 Forge 1.20.1 modpack.
+**Current version: 0.3.2-alpha.40** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
-Initial race roster:
+CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
-- Human
-- Elf
-- Dwarf
-- Halfling
-- Orc
-- Goblin
-- Tiefling
-- Dragonborn
-- Fairy
+## Playable races
 
-## Integrations
+There are **15 base races** in the current `Race` registry:
 
-- **Pehkui** — physical race scale.
-- **Iron's Spells 'n Spellbooks** — optional race-specific mana, regeneration and spell resistance.
-- **Curios + Icarus** — Fairy's permanent Zanza's Wings and flight.
-- **CyberServer** — soft first-join handshake so character creation finishes before the one-time church arrival sequence.
+| Race | Race | Race |
+| --- | --- | --- |
+| Human | Elf | Dwarf |
+| Halfling | Orc | Goblin |
+| Tiefling | Dragonborn | Fairy |
+| Nymph | Catfolk | Dogfolk |
+| Foxfolk | Aasimar | Birdfolk |
 
-CyberRaces deliberately keeps race separate from class. An Orc Mage, Fairy Berserker, Dwarf Cleric, etc. remain valid combinations.
+Each has its own data-defined mix of physical size, base health, movement and hunger modifiers, mana and regeneration, spell resistance, knockback resistance, armour bonuses and fire-damage sensitivity. Not every race receives an activated ability: many benefits are passive.
+
+**Pehkui** supplies physical player/NPC scaling where compatible. Various feature models/skins provide race-specific cosmetics, including beastfolk features and optional wings.
 
 ## Character creation
 
-New players are placed into a temporary hidden/frozen creation hold instead of visibly entering the world.
+New players enter a temporary hidden/frozen hold while they choose a race and customise supported features. The creator contains a player preview and controls for eye appearance, eye/feature colour, relevant variant styles, ears, wing choices and body/skin colour handling where supported.
 
-The creator currently stores:
+After the player completes race creation, **CyberClasses** can open its mandatory class selector. With **CyberNpc + CyberServer** and configured arrival locations, the complete character setup flows into the one-time cinematic arrival and Pope welcome. Returning characters with saved race data are migrated/recognised rather than forcibly replaying creation.
 
-- Race
-- Eye style
-- Eye colour
-- Race-feature variant
+Use the normal in-game creator for player selection; admin resets are intended for testing.
 
-Once confirmed, CyberRaces marks the character as ready. CyberServer can then perform the player's actual one-time arrival/summoning sequence.
+## Racial abilities
 
-Existing players from older CyberRaces builds who already have a race are migrated as completed characters automatically.
+**V** is the default key for the racial ability. Abilities are handled server-side and may have cooldowns, eligibility conditions or a toggle.
 
-## Asset policy
+| Base race | Implemented active ability |
+| --- | --- |
+| Dragonborn | Dragon Breath (requires **Iron's Spells 'n Spellbooks** integration; available from level 10) |
+| Fairy | Toggleable hover |
+| Dogfolk | Scent / nearby tracking |
+| Foxfolk | Quickstep |
+| Orc | War Cry |
+| Goblin | Scavenger Sense |
+| Nymph | Nature Grace |
+| Aasimar | Radiance (requires **Iron's Spells 'n Spellbooks**) |
+| Birdfolk | Wing Burst |
 
-CyberRaces uses Minecraft 1.20.1's own built-in resources where possible instead of copying them into the mod. The reference repository used while locating vanilla resources is:
+Other races have passive/statistical identities but **no V-key active ability yet**. The `RacialAbilityPacket` deliberately reports this, rather than silently creating an ability.
 
-https://github.com/InventivetalentDev/minecraft-assets/tree/1.20.1/assets
+Racial effects for Wild CyberNpc entities are handled separately by CyberRaces' NPC AI bridge. Implemented NPC behaviour includes appropriate dragon breath, fairy evasion, fox quickstep, orc war cry, nymph grace, catfolk pounce, aasimar radiance, birdfolk wing bursts, and utility/scavenging behaviour as applicable. The NPC implementation need not exactly mirror every player's V-key control.
 
-Race-specific models/textures belong to CyberRaces itself.
+## Race evolution — Cyber Level 30
 
-## Admin/testing commands
+The current `RaceEvolution` registry defines **47 evolution choices** across the 15 base races. Each race has multiple branches with different attribute modifiers and ability profiles. Examples:
 
-- `/cyberraces race get <player>`
-- `/cyberraces race set <player> <race>`
-- `/cyberraces race clear <player>`
+- Human: Paragon, Awakened, Survivor.
+- Elf: High Elf, Wood Elf, Moon Elf.
+- Dragonborn: Emberblood, Frostblood, Stormblood, Skyborn.
+- Fairy: Sylph, Glimmerfae, Thornfae.
+- Nymph: Dryad, Naiad, Oread, Anthousa.
+- Dogfolk: Houndkin, Wolfkin, Mastiffkin.
+- Foxfolk: Swiftfox, Trickster, Spirit Fox.
+- Aasimar: Seraphic, Fallen, Celestial Guardian.
+- Birdfolk: Raptor, Nightwing, Stormwing.
 
-See `docs/RACE_BALANCE.md` and `docs/RACE_COSMETICS.md`.
+A dedicated evolution selection screen and server-side validation store the chosen branch. These are **defined evolution/stat paths**; not all branches have an entirely new independent skill implementation yet.
+
+## Cyber Level progression
+
+The persistent Cyber Level system is distinct from vanilla XP:
+
+- Starts at Level 1 and has a **maximum level of 1,000**.
+- Tracks total Cyber XP with a scaling XP-per-level requirement.
+- Grants experience through eligible gameplay activities; other mods can grant Cyber XP through their compatibility bridges.
+- Gates **class advancements at Level 20** (managed by CyberClasses) and **race evolution at Level 30**.
+- CyberServer can assign starting Cyber Levels to naturally generated Wild NPCs and adjust natural class/evolution policy.
+
+## Current commands
+
+Player-facing commands:
+
+```mcfunction
+/cyberraces race list
+/cyberraces race info <race>
+/cyberraces race get <player>
+/cyberraces evolution get
+/cyberraces character status
+/cyberraces level status
+```
+
+Admin commands (permission level 2, examples):
+
+```mcfunction
+/cyberraces race set <player> <race>
+/cyberraces evolution set <player> <evolution>
+/cyberraces evolution reset <player>
+/cyberraces character reset <player>
+/cyberraces level addxp <player> <amount>
+/cyberraces level setlevel <player> <level>
+/cyberresetall [player]
+```
+
+`/cyberresetall` is a **testing reset**, clearing CyberRaces character/progression data and invoking optional class/intro resets when those mods are present. Do not use it on a player whose progression should be kept. The older `/cyberlevel` command root and typo `/cyberresetal` alias are no longer current. Use `/cyberraces level ...` and `/cyberresetall`.
+
+## Integrations and limits
+
+- **CyberClasses:** separate player classes and Level 20 class progression.
+- **CyberNpc:** assigned Wild NPC races/evolutions, NPC racial combat/utility behaviour and scaling-aware appearance.
+- **CyberQuest:** optional character/race/evolution prerequisite checks and Cyber XP awards.
+- **CyberServer:** first-arrival sequencing and world-owned Wild NPC progression policy.
+- **Pehkui:** entity scaling; **Iron's Spells 'n Spellbooks:** optional racial mana/spell calculations and selected abilities; **Icarus/Curios and other wing mods:** optional flight and wing rendering paths.
+
+The source contains additional tuning and design notes under `docs/RACE_BALANCE.md` and `docs/RACE_COSMETICS.md`. Those and the current Java code are the source of truth for detailed balance; all races/abilities still need gameplay validation in the full modpack.
