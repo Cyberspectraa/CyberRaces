@@ -521,6 +521,9 @@ public final class CharacterCreatorScreen extends Screen {
             case FOXFOLK -> "Vanilla Fox ears/tail with Red or Snow coat variants.";
             case AASIMAR -> "Celestial heritage; evolved paths can awaken visible light or fallen wings.";
             case BIRDFOLK -> "Permanent Icarus feathered wings with 16 selectable feather colours.";
+            case SLIME -> "Your entire player skin gains a translucent gelatin sheen.";
+            case ARACHNID -> "Humanoid arachnid with wall-scaling instinct and web binding.";
+            case UNDEAD -> "An immortal-looking humanoid sustained by lingering soul energy.";
         };
     }
 
