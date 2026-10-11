@@ -212,7 +212,7 @@ public final class RaceEvolutionJourney {
             case MOON_ELF, UMBRAL, NIGHTWING, PANTHERKIN,
                  FALLEN, VOID_SLIME, WRAITH, LICHBOUND,
                  GLOOMRUNNER, WHISPERFOOT, VENOMFANG -> NIGHT;
-            case WOOD_ELF, THORNFAE, DRYAD, ANTHOUSA, HOUNDKIN,
+            case WOOD_ELF, THORNFAE, DRYAD, ANTHOUSA, TRICKSTER, HOUNDKIN,
                  WOLFKIN, LIONKIN, SCROUNGER, WEBWEAVER,
                  BROODMOTHER, FORTUNE_TOUCHED -> FOREST;
             case DAWNBRINGER -> DAY;
