@@ -151,7 +151,40 @@ public enum RaceEvolution {
     WRAITH("wraith", "Wraith", "A fast and shadowy undead with ghostly mobility.", Race.UNDEAD,
         s(0,1.13,1.14,1.14,1.18,0,0,0,0.97,1.20), "grave_wraith"),
     PLAGUEBORN("plagueborn", "Plagueborn", "An undead form that spreads decay and survives poison.", Race.UNDEAD,
-        s(4,0.98,1.04,1.04,1.14,0.10,1.5,0,1.01,1.25), "grave_plague");
+        s(4,0.98,1.04,1.04,1.14,0.10,1.5,0,1.01,1.25), "grave_plague"),
+    // Additional, playstyle-focused branches for the fifteen original races.
+    // Old evolution IDs and ordinal order are retained for world compatibility.
+    WAYFARER("wayfarer", "Wayfarer", "An adaptable human who thrives through long journeys and discoveries.", Race.HUMAN,
+        s(1,1.08,1.02,1.02,1.02,0,0,0.5,1,1), "wayfarer"),
+    STARSEEKER("starseeker", "Starseeker", "An elf attuned to night skies, constellations and ancient arcane currents.", Race.ELF,
+        s(1,1.04,1.13,1.13,1.12,0,0,0,1,1), "starseeker"),
+    EMBERFORGED("emberforged", "Emberforged", "A dwarf tempered by heat and dangerous volcanic stone.", Race.DWARF,
+        s(4,0.98,1,1,1.07,0.08,2.0,0,1.02,0.65), "emberforged"),
+    WHISPERFOOT("whisperfoot", "Whisperfoot", "A subtle halfling who learns to vanish into shadow and move quietly.", Race.HALFLING,
+        s(1,1.07,1.07,1.07,1.05,0,0,0.3,0.99,1), "whisperfoot"),
+    STORMCHASER("stormchaser", "Stormchaser", "An orc tempered by fierce storms and long expeditions.", Race.ORC,
+        s(2,1.08,1.04,1.04,1.04,0.05,0,0,1,1), "stormchaser"),
+    CAVEWRIGHT("cavewright", "Cavewright", "A goblin engineer hardened by life in twisting underground caverns.", Race.GOBLIN,
+        s(2,1.01,1.03,1.03,1.08,0.06,1.0,0.5,1,1), "cavewright"),
+    RIFTWALKER("riftwalker", "Riftwalker", "A tiefling traveller shaped by the Nether's unpredictable passages.", Race.TIEFLING,
+        s(1,1.09,1.08,1.08,1.05,0,0,0,1,0.8), "riftwalker"),
+    EARTHSCALE("earthscale", "Earthscale", "A dragonborn whose scales become as hard as the bedrock below.", Race.DRAGONBORN,
+        s(6,0.94,1.00,1.00,1.10,0.14,3.0,0,1.03,1), "dragon_breath_earth"),
+    DEWDROP("dewdrop", "Dewdrop", "A fairy whose magic gathers in cool rivers and sheltered pools.", Race.FAIRY,
+        s(2,1.04,1.08,1.09,1.09,0.03,0,0,1,1), "fairy_hover_dewdrop"),
+    TEMPEST_NYMPH("tempest_nymph", "Tempest Nymph", "A fierce nymph awakened by lightning, wind and wild weather.", Race.NYMPH,
+        s(1,1.10,1.10,1.10,1.08,0,0,0,1,1), "nature_grace_tempest"),
+    CLOUDLEAPER("cloudleaper", "Cloudleaper", "A catfolk acrobat accustomed to soaring heights and impossible leaps.", Race.CATFOLK,
+        s(1,1.09,1,1,1,0,0,0,1,1), "catfolk_cloudleaper"),
+    FROSTHOUND("frosthound", "Frosthound", "A dogfolk tracker at home in snow, frost and cold wilderness.", Race.DOGFOLK,
+        s(3,1.05,1,1,1.05,0.04,0.5,0,1,1), "scent_frosthound"),
+    EMBERFOX("emberfox", "Emberfox", "A foxfolk adapted to blazing heat and ash-covered journeys.", Race.FOXFOLK,
+        s(1,1.07,1.08,1.07,1.08,0,0,0,1,0.6), "quickstep_emberfox"),
+    DAWNBRINGER("dawnbringer", "Dawnbringer", "An aasimar who channels protective daylight into their body.", Race.AASIMAR,
+        s(2,1.01,1.10,1.10,1.12,0,1.0,0,1,1), "aasimar_dawnbringer"),
+    TIDEWING("tidewing", "Tidewing", "A birdfolk whose wings and balance suit rain, surf and sea journeys.", Race.BIRDFOLK,
+        s(1,1.06,1.02,1.02,1.05,0,0,0,1,1), "wing_burst_tide");
+
 
     public static final int REQUIRED_LEVEL = 30;
 
