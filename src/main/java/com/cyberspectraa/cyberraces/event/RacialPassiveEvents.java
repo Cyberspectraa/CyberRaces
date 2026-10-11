@@ -50,6 +50,7 @@ public final class RacialPassiveEvents {
         Race race = RaceManager.getRace(player).orElse(null);
 
         updateFoxSneakSpeed(player);
+        EvolutionTalentEvents.tick(player);
 
         // Arachnids climb when deliberately sneaking into a wall. No free
         // flight or automatic hovering, and no forced climb while standing.
