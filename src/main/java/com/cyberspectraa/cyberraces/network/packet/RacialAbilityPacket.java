@@ -6,6 +6,7 @@ import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.FoxfolkQuickstepAbility;
 import com.cyberspectraa.cyberraces.ability.GoblinScavengerSenseAbility;
 import com.cyberspectraa.cyberraces.ability.OrcWarCryAbility;
+import com.cyberspectraa.cyberraces.ability.NewRaceAbilities;
 import com.cyberspectraa.cyberraces.ability.NymphNatureGraceAbility;
 import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
 import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
@@ -105,6 +106,9 @@ public record RacialAbilityPacket(
 
             case BIRDFOLK ->
                 BirdfolkWingBurstAbility.tryActivate(player);
+
+            case SLIME, ARACHNID, UNDEAD ->
+                NewRaceAbilities.activate(player);
 
             default ->
                 player.displayClientMessage(
