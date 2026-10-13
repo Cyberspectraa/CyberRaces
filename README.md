@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.49** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.50** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,43 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Acquired Undead and zombie-villager-style cure (0.3.2-alpha.50)
+
+**Player Zombification:** When CyberNpc is installed, every successful
+hit from a vanilla Zombie or CyberNpc Zombie has a 1% chance to apply
+CyberNpc's existing `cybernpc:zombification` effect for 120 seconds.
+Administrators may also apply that same effect to test the mechanic.
+If the effect runs out, the player becomes **Undead**. Its inherited race
+remains saved in the original `CyberRaces.Race` key; an acquired flag,
+`AcquiredUndead`, temporarily changes the effective race for attributes,
+V-key ability, cosmetics and sync. Example: Elf -> Undead Elf -> Elf.
+Original appearance, Cyber Level, class, inventory and existing stored
+evolution data are kept; no player or Zombie entity is replaced.
+
+**Curing:** Exactly like a Zombie Villager's ordinary cure inputs, apply
+**Weakness** and then use a **regular Golden Apple** on the affected player
+(right-click them in multiplayer); for a solo player, **eat the apple**
+while Weakness is active. A transformed Undead begins a randomized
+**3-5 minute** curing countdown. The time remaining persists through
+logout/death/restarts, pausing while the character is offline. Brief
+smoke particles appear during curing, followed by vanilla Happy Villager
+particles and cure sounds; the original ancestry and its stats/abilities
+are restored at completion. A player treated while *still infected* is
+cured immediately before turning Undead, preventing transformation.
+Creative players giving an apple do not expend one; surviving players
+consume the apple normally. Only the basic Golden Apple is accepted.
+
+Older players whose saved base race was directly set to Undead lack a
+recorded original ancestry; they return to Human if successfully cured.
+Admins can use the existing race-set command to give them another origin.
+The existing CyberNpc Wild NPC zombification/conversion behavior and
+spawn policies are unchanged. CyberRaces still works without CyberNpc;
+player infection simply will not occur until CyberNpc is present.
+
+No evolution mechanics have been re-enabled; races and save IDs remain
+backwards compatible. Only **CyberRaces.jar** needs replacement (both
+client and server) for this update.
 
 ## Race overhaul groundwork (0.3.2-alpha.49)
 

@@ -155,7 +155,8 @@ public final class CyberRaceCommands {
     private static int get(CommandSourceStack source, ServerPlayer player) {
         RaceManager.getRace(player).ifPresentOrElse(
             race -> source.sendSuccess(
-                () -> Component.literal(player.getGameProfile().getName() + " is a " + race.displayName() + "."),
+                () -> Component.literal(player.getGameProfile().getName()
+                        + " is a " + RaceManager.getEffectiveDisplayName(player) + "."),
                 false
             ),
             () -> source.sendSuccess(

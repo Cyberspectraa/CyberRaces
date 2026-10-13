@@ -2,6 +2,7 @@ package com.cyberspectraa.cyberraces.race;
 
 import com.cyberspectraa.cyberraces.compat.FairyWingCompat;
 import com.cyberspectraa.cyberraces.compat.NaturalWingCompat;
+import com.cyberspectraa.cyberraces.character.CharacterSyncService;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -12,6 +13,8 @@ public final class RaceManager {
     private static final String RACE_KEY = "Race";
     private static final String EVOLUTION_KEY = "Evolution";
     private static final String EVOLUTION_CHOSEN_KEY = "EvolutionChosen";
+    public static final String UNDEAD_AFFLICTION_KEY = "AcquiredUndead";
+    public static final String UNDEAD_CURE_REMAINING_KEY = "UndeadCureRemaining";
 
     // Temporarily suspend evolution mechanics; never erase previously saved IDs.
     public static final boolean EVOLUTIONS_ENABLED = false;
@@ -19,13 +22,53 @@ public final class RaceManager {
     private RaceManager() {
     }
 
-    public static Optional<Race> getRace(ServerPlayer player) {
+    /** The character's permanent ancestry, unaffected by infections. */
+    public static Optional<Race> getBaseRace(ServerPlayer player) {
+        if (player == null) return Optional.empty();
         CompoundTag root = player.getPersistentData().getCompound(ROOT_KEY);
-        if (!root.contains(RACE_KEY)) {
-            return Optional.empty();
-        }
-
         return Race.byId(root.getString(RACE_KEY));
+    }
+
+    /** The acquired Undead form overlays, rather than replaces, saved ancestry. */
+    public static boolean isAcquiredUndead(ServerPlayer player) {
+        return player != null
+            && getBaseRace(player).filter(race -> race != Race.UNDEAD).isPresent()
+            && player.getPersistentData().getCompound(ROOT_KEY)
+                .getBoolean(UNDEAD_AFFLICTION_KEY);
+    }
+
+    /** Effective race for attributes, V-key abilities, HUD and sync. */
+    public static Optional<Race> getRace(ServerPlayer player) {
+        Optional<Race> base = getBaseRace(player);
+        return isAcquiredUndead(player) ? Optional.of(Race.UNDEAD) : base;
+    }
+
+    public static int undeadCureRemaining(ServerPlayer player) {
+        return player == null ? 0 : Math.max(0, player.getPersistentData()
+            .getCompound(ROOT_KEY).getInt(UNDEAD_CURE_REMAINING_KEY));
+    }
+
+    public static void setUndeadCureRemaining(ServerPlayer player, int ticks) {
+        if (player == null) return;
+        CompoundTag root = player.getPersistentData().getCompound(ROOT_KEY);
+        if (ticks > 0) root.putInt(UNDEAD_CURE_REMAINING_KEY, ticks);
+        else root.remove(UNDEAD_CURE_REMAINING_KEY);
+        player.getPersistentData().put(ROOT_KEY, root);
+    }
+
+    public static void setAcquiredUndead(ServerPlayer player, boolean active) {
+        if (player == null || getBaseRace(player).filter(r -> r != Race.UNDEAD).isEmpty()) {
+            return;
+        }
+        CompoundTag root = player.getPersistentData().getCompound(ROOT_KEY);
+        if (active) root.putBoolean(UNDEAD_AFFLICTION_KEY, true);
+        else {
+            root.remove(UNDEAD_AFFLICTION_KEY);
+            root.remove(UNDEAD_CURE_REMAINING_KEY);
+        }
+        player.getPersistentData().put(ROOT_KEY, root);
+        reapply(player);
+        CharacterSyncService.broadcast(player);
     }
 
     public static boolean hasRace(ServerPlayer player) {
@@ -64,6 +107,10 @@ public final class RaceManager {
     public static String getEffectiveDisplayName(
         ServerPlayer player
     ) {
+        if (isAcquiredUndead(player)) {
+            return "Undead " + getBaseRace(player)
+                .map(Race::displayName).orElse("Unknown");
+        }
         return getEvolution(player)
             .map(RaceEvolution::displayName)
             .orElseGet(() ->
@@ -86,6 +133,8 @@ public final class RaceManager {
             : new CompoundTag();
 
         root.putString(RACE_KEY, race.id());
+        root.remove(UNDEAD_AFFLICTION_KEY);
+        root.remove(UNDEAD_CURE_REMAINING_KEY);
         // A new race starts a new personal evolution journey.
         root.remove(RaceEvolutionJourney.KEY);
         root.remove(EVOLUTION_KEY);
@@ -203,6 +252,8 @@ public final class RaceManager {
         if (persistent.contains(ROOT_KEY)) {
             CompoundTag root = persistent.getCompound(ROOT_KEY);
             root.remove(RACE_KEY);
+            root.remove(UNDEAD_AFFLICTION_KEY);
+            root.remove(UNDEAD_CURE_REMAINING_KEY);
             root.remove(RaceEvolutionJourney.KEY);
             root.remove(EVOLUTION_KEY);
             root.remove(EVOLUTION_CHOSEN_KEY);
