@@ -16,6 +16,8 @@ import net.minecraft.util.Mth;
 import java.util.List;
 
 public final class CharacterCreatorScreen extends Screen {
+    private static final Race[] STARTING_RACES = Race.startingChoices();
+
     private static final String[] BIRD_WING_NAMES = {
         "White", "Orange", "Magenta", "Light Blue",
         "Yellow", "Lime", "Pink", "Gray",
@@ -396,7 +398,7 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private void changeRace(int direction) {
-        raceIndex = Math.floorMod(raceIndex + direction, Race.startingChoices().length);
+        raceIndex = Math.floorMod(raceIndex + direction, STARTING_RACES.length);
         featureStyle = 0;
         featureColor = CharacterAppearance.AUTO_COLOR;
         earHeight = 0;
@@ -605,7 +607,7 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     Race currentRace() {
-        return Race.startingChoices()[raceIndex];
+        return STARTING_RACES[raceIndex];
     }
 
     CharacterAppearance currentAppearance() {
