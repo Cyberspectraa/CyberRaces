@@ -21,13 +21,13 @@ public enum Race {
     DRAGONBORN("dragonborn", "Dragonborn", 1.07f, 22.0, 0.98, 1.10, 1.05, 1.00, 1.05, 0.10, 2.0, 0.85, FlightType.NONE),
     FAIRY("fairy", "Fairy", 0.50f, 14.0, 1.10, 0.90, 1.30, 1.20, 0.95, -0.10, 0.0, 1.00, FlightType.ICARUS_NATURAL),
     NYMPH("nymph", "Nymph", 1.00f, 18.0, 1.04, 1.00, 1.20, 1.15, 1.05, 0.00, 0.0, 1.00, FlightType.NONE),
-    CATFOLK("catfolk", "Tabaxi (Catfolk)", 0.96f, 20.0, 1.08, 1.00, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.NONE),
-    DOGFOLK("dogfolk", "Dogfolk (Shifter)", 1.02f, 22.0, 1.04, 1.05, 0.95, 1.00, 1.00, 0.08, 0.0, 1.00, FlightType.NONE),
-    FOXFOLK("foxfolk", "Foxfolk (Shifter)", 0.96f, 18.0, 1.06, 1.00, 1.10, 1.05, 1.00, 0.00, 0.0, 1.00, FlightType.NONE),
+    CATFOLK("catfolk", "Catfolk", 0.96f, 20.0, 1.08, 1.00, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.NONE),
+    DOGFOLK("dogfolk", "Dogfolk", 1.02f, 22.0, 1.04, 1.05, 0.95, 1.00, 1.00, 0.08, 0.0, 1.00, FlightType.NONE),
+    FOXFOLK("foxfolk", "Foxfolk", 0.96f, 18.0, 1.06, 1.00, 1.10, 1.05, 1.00, 0.00, 0.0, 1.00, FlightType.NONE),
     AASIMAR("aasimar", "Aasimar", 1.00f, 20.0, 1.00, 1.00, 1.10, 1.08, 1.10, 0.00, 0.0, 1.00, FlightType.NONE),
-    BIRDFOLK("birdfolk", "Aarakocra (Birdfolk)", 1.00f, 18.0, 1.06, 1.05, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.ICARUS_NATURAL),
-    SLIME("slime", "Slime (Plasmoid)", 0.95f, 20.0, 1.02, 1.00, 0.95, 1.03, 1.05, 0.08, 0.0, 1.30, FlightType.NONE),
-    ARACHNID("arachnid", "Arachnid (Driderkin)", 1.00f, 20.0, 1.07, 1.03, 1.00, 1.00, 1.00, 0.02, 0.0, 1.00, FlightType.NONE),
+    BIRDFOLK("birdfolk", "Birdfolk", 1.00f, 18.0, 1.06, 1.05, 1.00, 1.00, 1.00, 0.00, 0.0, 1.00, FlightType.ICARUS_NATURAL),
+    SLIME("slime", "Slime", 0.95f, 20.0, 1.02, 1.00, 0.95, 1.03, 1.05, 0.08, 0.0, 1.30, FlightType.NONE),
+    ARACHNID("arachnid", "Arachnid", 1.00f, 20.0, 1.07, 1.03, 1.00, 1.00, 1.00, 0.02, 0.0, 1.00, FlightType.NONE),
     UNDEAD("undead", "Undead (Reborn)", 1.00f, 22.0, 0.97, 0.85, 1.08, 1.05, 1.12, 0.08, 1.0, 1.20, FlightType.NONE);
 
     private final String id;
@@ -92,10 +92,14 @@ public enum Race {
      * Every player option remains available, but the Reborn/Undead lineage
      * belongs only to players. The canonical race IDs are never renamed.
      */
-    public boolean allowedForWildNpc() { return this != UNDEAD; }
+    public boolean allowedForWildNpc() {
+        return selectableAtCreation();
+    }
 
     /** Ordinary first-character selection, not acquired conditions. */
-    public boolean selectableAtCreation() { return this != UNDEAD; }
+    public boolean selectableAtCreation() {
+        return this != UNDEAD && this != HALFLING && this != AASIMAR;
+    }
 
     public static Race[] startingChoices() {
         return Arrays.stream(values())

@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.51** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.52** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,46 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Race overhaul, first gameplay and visuals pass (0.3.2-alpha.52)
+
+- **15 ordinary starting races**. Halfling and Aasimar are retired from
+  new character creation and new natural Wild NPC assignments. Their
+  registry IDs and existing player/NPC saves remain readable; no saved
+  data are deleted. Undead is still acquired by zombification.
+- Display names are **Catfolk, Dogfolk, Foxfolk, Birdfolk, Slime,
+  Arachnid** (no borrowed species/subtitle suffixes). Race IDs do not change.
+- Orc exposed skin gains a moss-green complexion. Dragonborn skin
+  matches the chosen horn/tail colour (default muted teal), and Nymph
+  skin has a subtle nature-green tint. This composes selectively onto
+  source player skin pixels and preserves clothing, like Undead skin.
+- Dragonborn's long disjointed tail has been replaced with a shorter,
+  connected six-piece taper with restrained swaying. Catfolk ears are
+  wider, pointed and more feline. These geometry changes need in-game
+  visual verification at different GUI scales/player poses.
+- **Dwarves:** 7% chance to add a modest random low-level valid
+  enchantment to a newly crafted, enchantable piece of equipment.
+- **Nymphs:** slowly regain one health while in water/rain every five
+  seconds, in addition to their existing nature ability.
+- **Slimes:** no fall damage, 8% stronger jumps, a soft automatic
+  rebound after longer falls (sneak prevents it), and vanilla slime
+  droplets when running, jumping and landing. The sprint-particle
+  client mixin replaces ordinary block dust for player and Wild NPC
+  Slimes. Elastic Leap V ability is removed for players.
+- **Fairies:** small End Rod sparkles while actively hovering.
+- **Arachnids:** automatic spider-like wall climbing (sneak to brake),
+  and V now fires a visible cobweb-item projectile. On impact, it
+  gives a struck living target five seconds of strong Slowness and
+  produces a short web/cloud burst; it does not place permanent webs.
+- Goblin Scavenger Sense, Dogfolk Scent and Tiefling active ability
+  designs are awaiting a focused follow-up decision, rather than
+  adding unrequested mechanics. Race journal integration is also a
+  separate CyberQuest build.
+- All previous evolution suspensions, Undead zombification and cure
+  data, and race IDs remain intact.
+
+Only CyberRaces needs replacing for this version, client and server.
+Minecraft 1.20.1, Forge 47.4.10.
 
 ## Complete acquired Undead presentation and behaviour (0.3.2-alpha.51)
 

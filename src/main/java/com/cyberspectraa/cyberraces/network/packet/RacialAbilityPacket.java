@@ -107,7 +107,7 @@ public record RacialAbilityPacket(
             case BIRDFOLK ->
                 BirdfolkWingBurstAbility.tryActivate(player);
 
-            case SLIME, ARACHNID, UNDEAD ->
+            case ARACHNID, UNDEAD ->
                 NewRaceAbilities.activate(player);
 
             default ->

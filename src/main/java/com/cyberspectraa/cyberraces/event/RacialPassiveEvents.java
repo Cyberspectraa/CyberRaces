@@ -66,6 +66,13 @@ public final class RacialPassiveEvents {
             player.hurtMarked = true;
         }
 
+        // Nymphs recover gradually in natural water or rainfall.
+        if (race == Race.NYMPH && player.tickCount % 100 == 0
+                && player.isInWaterRainOrBubble()
+                && player.getHealth() < player.getMaxHealth()) {
+            player.heal(1.0F);
+        }
+
         // The undead ignore poison and hunger debuffs, but still need to
         // eat normally; hunger consumption is already tuned by Race.
         if (race == Race.UNDEAD && player.tickCount % 20 == 0) {

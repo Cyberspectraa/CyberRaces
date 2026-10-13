@@ -40,16 +40,28 @@ public final class BeastfolkModels {
             "right_ear",
             CubeListBuilder.create()
                 .texOffs(0, 10)
-                .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 1.0F, 2.0F),
-            PartPose.offset(-2.0F, -8.0F, 0.0F)
+                .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+            PartPose.offset(-2.4F, -8.0F, -0.25F)
         );
 
         PartDefinition leftEar = root.addOrReplaceChild(
             "left_ear",
             CubeListBuilder.create()
                 .texOffs(6, 10)
-                .addBox(-0.5F, -1.0F, -1.0F, 1.0F, 1.0F, 2.0F),
-            PartPose.offset(2.0F, -8.0F, 0.0F)
+                .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+            PartPose.offset(2.4F, -8.0F, -0.25F)
+        );
+
+        // Two-pixel wide ear bases with narrow pointed tips, not rods.
+        rightEar.addOrReplaceChild(
+            "tip", CubeListBuilder.create().texOffs(2, 10)
+                    .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+            PartPose.offset(-0.3F, -2.0F, 0.0F)
+        );
+        leftEar.addOrReplaceChild(
+            "tip", CubeListBuilder.create().texOffs(8, 10)
+                    .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+            PartPose.offset(0.3F, -2.0F, 0.0F)
         );
 
         /*

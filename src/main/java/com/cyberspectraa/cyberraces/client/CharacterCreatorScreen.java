@@ -541,7 +541,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DWARF -> new String[] {
                 "Tough and resistant; slightly slower.",
-                "+15% mining speed underground."
+                "+15% mining underground; crafted gear may become enchanted."
             };
             case HALFLING -> new String[] {
                 "Small and nimble.",
@@ -568,8 +568,8 @@ public final class CharacterCreatorScreen extends Screen {
                 "V: Toggle 3-4 block Hover. Icarus wings remain full flight."
             };
             case NYMPH -> new String[] {
-                "Nature spirit: magical, graceful, slightly fragile.",
-                "+20% mana, +15% mana regen. V: Nature's Grace."
+                "Nature spirit: green-toned and magical, slightly fragile.",
+                "Heals slowly in rain/water. V: Nature's Grace."
             };
             case CATFOLK -> new String[] {
                 "Fast and agile.",
@@ -585,7 +585,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case AASIMAR -> new String[] {
                 "Celestial and naturally resistant to magic.",
-                "V: no-mana Radiant Bolt (Iron's Spells required)."
+                "Legacy race, unavailable to new characters."
             };
             case BIRDFOLK -> new String[] {
                 "Winged aerial species with lower health and high mobility.",
@@ -593,15 +593,15 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case SLIME -> new String[] {
                 "Gelatinous humanoid with an all-over slime skin.",
-                "80% less fall damage. V: Elastic Leap."
+                "No fall damage, bouncy landings and slime running droplets."
             };
             case ARACHNID -> new String[] {
                 "Swift silk-blooded hunter with a wall-climbing instinct.",
-                "Sneak by a wall to climb. V: Web Snare."
+                "Climb walls like a spider. V: shoot a cobweb projectile."
             };
             case UNDEAD -> new String[] {
                 "Tough revenant with lower hunger and a weakness to fire.",
-                "Resistant to poison. V: Grave Resilience."
+                "Poison-resistant. Cure with Weakness and a golden apple."
             };
         };
     }

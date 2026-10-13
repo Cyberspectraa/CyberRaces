@@ -35,7 +35,9 @@ public final class RaceSkinOverlayManager {
     ) {
         rememberOriginal(player.getUUID(), originalSkin);
 
-        if (!undead && (!supports(race)
+        boolean racialTint = race == Race.ORC || race == Race.DRAGONBORN
+                || race == Race.NYMPH;
+        if (!undead && !racialTint && (!supports(race)
                 || (race != Race.SLIME && !appearance.hasBodyRecolour()))) {
             invalidate(player.getUUID());
             return originalSkin;
@@ -46,7 +48,9 @@ public final class RaceSkinOverlayManager {
             appearance.bodySourceColor(),
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
-            undead ? "acquired_undead" : (race == Race.SLIME ? evolutionId : "")
+            undead ? "acquired_undead" : racialTint
+                ? "tone_" + race.id() + "_" + appearance.featureColor()
+                : (race == Race.SLIME ? evolutionId : "")
         );
 
         CacheEntry existing = CACHE.get(player.getUUID());
@@ -56,8 +60,18 @@ public final class RaceSkinOverlayManager {
 
         invalidate(player.getUUID());
 
-        ResourceLocation generated = undead
-            ? generateUndead(player.getUUID(), originalSkin, appearance)
+        int tone = switch (race) {
+            case ORC -> 0x6B9552;
+            case NYMPH -> 0x83B898;
+            case DRAGONBORN -> appearance.featureColor()
+                    == CharacterAppearance.AUTO_COLOR
+                    ? FeatureColourPalette.defaultRgb(race)
+                    : appearance.featureColor() & 0xFFFFFF;
+            default -> 0x668B52;
+        };
+        ResourceLocation generated = undead || racialTint
+            ? generateBodyTone(player.getUUID(), originalSkin, appearance,
+                    undead ? 0x668B52 : tone, undead ? "undead" : race.id())
             : race == Race.SLIME
                 ? generateSlime(player.getUUID(), originalSkin, evolutionId, false)
                 : generate(player, originalSkin, appearance);
@@ -320,8 +334,9 @@ public final class RaceSkinOverlayManager {
      * lower-face shade is used to select matching exposed-skin pixels across
      * the existing 64x64 skin; clothing, hair and eyes remain distinct.
      */
-    private static ResourceLocation generateUndead(
-        UUID entityId, ResourceLocation original, CharacterAppearance appearance
+    private static ResourceLocation generateBodyTone(
+        UUID entityId, ResourceLocation original,
+        CharacterAppearance appearance, int tone, String label
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -340,6 +355,9 @@ public final class RaceSkinOverlayManager {
                     }
                 }
                 int face = lowerFaceSkinColor(base);
+                int toneR = (tone >> 16) & 255;
+                int toneG = (tone >> 8) & 255;
+                int toneB = tone & 255;
                 int sr = (face >> 16) & 255;
                 int sg = (face >> 8) & 255;
                 int sb = face & 255;
@@ -369,19 +387,20 @@ public final class RaceSkinOverlayManager {
                                 luminance(r, g, b) / sourceLuma));
                         double strength = 0.82D * Math.max(
                                 0.16D, 1.0D - Math.sqrt(distanceSquared) / 110D);
-                        int zombieR = clamp((int) Math.round(102 * shade));
-                        int zombieG = clamp((int) Math.round(139 * shade));
-                        int zombieB = clamp((int) Math.round(82 * shade));
-                        int rr = clamp((int) Math.round(r * (1D-strength) + zombieR * strength));
-                        int gg = clamp((int) Math.round(g * (1D-strength) + zombieG * strength));
-                        int bb = clamp((int) Math.round(b * (1D-strength) + zombieB * strength));
+                        int targetR = clamp((int) Math.round(toneR * shade));
+                        int targetG = clamp((int) Math.round(toneG * shade));
+                        int targetB = clamp((int) Math.round(toneB * shade));
+                        int rr = clamp((int) Math.round(r * (1D-strength) + targetR * strength));
+                        int gg = clamp((int) Math.round(g * (1D-strength) + targetG * strength));
+                        int bb = clamp((int) Math.round(b * (1D-strength) + targetB * strength));
                         output.setPixelRGBA(x, y, abgr(alpha, rr, gg, bb));
                     }
                 }
 
                 DynamicTexture dynamic = new DynamicTexture(output);
                 ResourceLocation key = minecraft.getTextureManager().register(
-                        "cyberraces_undead_" + entityId.toString().replace("-", ""),
+                        "cyberraces_skin_tone_" + label + "_"
+                                + entityId.toString().replace("-", ""),
                         dynamic);
                 dynamic.upload();
                 return key;

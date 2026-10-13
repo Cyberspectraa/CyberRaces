@@ -74,6 +74,9 @@ public final class ClientForgeEvents {
                 continue;
             }
 
+            // Slimes now bounce naturally; V is no longer an ability.
+            if (race == Race.SLIME) continue;
+
             boolean toggleState = false;
 
             if (race == Race.FAIRY) {
