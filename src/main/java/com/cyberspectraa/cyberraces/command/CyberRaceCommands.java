@@ -98,41 +98,13 @@ public final class CyberRaceCommands {
                         return 1;
                     }))
                 .then(Commands.literal("evolution")
-                    .then(Commands.literal("progress")
-                        .executes(context -> {
-                            var player = context.getSource().getPlayerOrException();
-                            context.getSource().sendSuccess(
-                                    () -> RaceEvolutionJourney.status(player), false);
-                            return 1;
-                        }))
-                    .then(Commands.literal("get")
-                        .executes(context -> evolutionStatus(
-                            context.getSource(),
-                            context.getSource().getPlayerOrException()
-                        ))
-                        .then(Commands.argument("player", EntityArgument.player())
-                            .requires(source -> source.hasPermission(2))
-                            .executes(context -> evolutionStatus(
-                                context.getSource(),
-                                EntityArgument.getPlayer(context, "player")
-                            ))))
-                    .then(Commands.literal("set")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.argument("player", EntityArgument.player())
-                            .then(Commands.argument("evolution", StringArgumentType.word())
-                                .suggests(EVOLUTION_SUGGESTIONS)
-                                .executes(context -> setEvolution(
-                                    context.getSource(),
-                                    EntityArgument.getPlayer(context, "player"),
-                                    StringArgumentType.getString(context, "evolution")
-                                )))))
-                    .then(Commands.literal("reset")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.argument("player", EntityArgument.player())
-                            .executes(context -> resetEvolution(
-                                context.getSource(),
-                                EntityArgument.getPlayer(context, "player")
-                            ))))
+                    .executes(context -> {
+                        context.getSource().sendSuccess(
+                            () -> Component.literal(
+                                "Race evolutions are paused. Existing saved evolutions are preserved."
+                            ), false);
+                        return 1;
+                    })
                 )
                 .then(Commands.literal("character")
                     .then(Commands.literal("reset")
@@ -158,16 +130,17 @@ public final class CyberRaceCommands {
     }
 
     private static int list(CommandSourceStack source) {
-        String races = Arrays.stream(Race.values())
+        String races = Arrays.stream(Race.startingChoices())
             .map(Race::id)
             .collect(Collectors.joining(", "));
 
         source.sendSuccess(
             () -> Component.literal("CyberRaces: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(races).withStyle(ChatFormatting.YELLOW)),
+                .append(Component.literal(races).withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal(" | Acquired: undead").withStyle(ChatFormatting.GRAY)),
             false
         );
-        return Race.values().length;
+        return Race.startingChoices().length;
     }
 
     private static int getSelf(CommandSourceStack source) {
@@ -262,8 +235,9 @@ public final class CyberRaceCommands {
         }
 
         Race race = Race.byId(raceId).orElse(null);
-        if (race == null) {
-            source.sendFailure(Component.literal("Unknown race: " + raceId));
+        if (race == null || !race.selectableAtCreation()) {
+            source.sendFailure(Component.literal(
+                "This race cannot be chosen at character creation: " + raceId));
             return 0;
         }
 
