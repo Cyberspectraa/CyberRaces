@@ -553,11 +553,11 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case GOBLIN -> new String[] {
                 "Small and quick; more fragile.",
-                "+0.5 Luck. V: Scavenger Sense tracks nearby loot."
+                "+0.5 Luck. V: Treasure Instinct reveals nearby ores and caches."
             };
             case TIEFLING -> new String[] {
                 "Strong magic.",
-                "50% fire resistance with flame reaction."
+                "50% fire resistance. V: Infernal Surge empowers melee."
             };
             case DRAGONBORN -> new String[] {
                 "Armoured and resilient.",
@@ -577,7 +577,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DOGFOLK -> new String[] {
                 "Sturdy and loyal; slightly lower mana.",
-                "35% less sprint exhaustion. V: directional Scent tracking."
+                "35% less sprint exhaustion. V: Hunter's Nose reveals creatures."
             };
             case FOXFOLK -> new String[] {
                 "Quick and magical; lower health.",

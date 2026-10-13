@@ -200,21 +200,21 @@ public final class CyberRaceCommands {
         return switch (race) {
             case HUMAN -> "+5% Cyber XP gained";
             case ELF -> "bows reach full draw 15% sooner";
-            case DWARF -> "+15% underground mining speed";
+            case DWARF -> "+15% underground mining speed; chance to enchant crafted equipment";
             case HALFLING -> "+1 Luck and 35% less fall damage";
             case ORC -> "+20% damage below 35% health; V activates War Cry";
-            case GOBLIN -> "+0.5 Luck; V activates Scavenger Sense";
-            case TIEFLING -> "50% fire damage plus flame reaction";
+            case GOBLIN -> "+0.5 Luck; V activates Treasure Instinct";
+            case TIEFLING -> "50% less fire damage; V activates Infernal Surge";
             case DRAGONBORN -> "V: Level 10 Fire Breath, no mana, 18s cooldown";
             case FAIRY -> "Icarus wings; V toggles 3-4 block Hover";
             case NYMPH -> "+20% mana, +15% mana regen; V activates Nature's Grace";
             case CATFOLK -> "12% higher jump and 60% less fall damage";
-            case DOGFOLK -> "35% less sprint exhaustion; V activates directional Scent";
+            case DOGFOLK -> "35% less sprint exhaustion; V activates Hunter's Nose";
             case FOXFOLK -> "+20% crouch speed; V activates Quickstep";
             case AASIMAR -> "celestial spell resistance; V casts no-mana Radiant Bolt";
             case BIRDFOLK -> "Icarus feathered wings, 65% less fall damage; V activates Wing Burst";
-            case SLIME -> "gel body, 80% less fall damage; V activates Elastic Leap";
-            case ARACHNID -> "sneak against walls to climb; V activates Web Snare";
+            case SLIME -> "gel body, no fall damage, natural bouncing and slime droplets";
+            case ARACHNID -> "automatic spider wall climbing; V fires a cobweb projectile";
             case UNDEAD -> "poison and hunger immunity; V activates Grave Resilience";
         };
     }
