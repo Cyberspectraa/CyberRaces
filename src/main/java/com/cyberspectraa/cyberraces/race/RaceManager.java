@@ -13,6 +13,9 @@ public final class RaceManager {
     private static final String EVOLUTION_KEY = "Evolution";
     private static final String EVOLUTION_CHOSEN_KEY = "EvolutionChosen";
 
+    // Temporarily suspend evolution mechanics; never erase previously saved IDs.
+    public static final boolean EVOLUTIONS_ENABLED = false;
+
     private RaceManager() {
     }
 
@@ -32,7 +35,7 @@ public final class RaceManager {
     public static Optional<RaceEvolution> getEvolution(
         ServerPlayer player
     ) {
-        if (player == null) {
+        if (!EVOLUTIONS_ENABLED || player == null) {
             return Optional.empty();
         }
 
@@ -104,7 +107,7 @@ public final class RaceManager {
         ServerPlayer player,
         RaceEvolution evolution
     ) {
-        if (player == null || evolution == null) {
+        if (!EVOLUTIONS_ENABLED || player == null || evolution == null) {
             return false;
         }
 
@@ -134,7 +137,7 @@ public final class RaceManager {
         ServerPlayer player,
         RaceEvolution evolution
     ) {
-        if (player == null || evolution == null) {
+        if (!EVOLUTIONS_ENABLED || player == null || evolution == null) {
             return;
         }
 
