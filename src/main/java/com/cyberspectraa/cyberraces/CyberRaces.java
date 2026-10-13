@@ -10,6 +10,7 @@ import com.cyberspectraa.cyberraces.event.FairyWingEvents;
 import com.cyberspectraa.cyberraces.event.ProgressionEvents;
 import com.cyberspectraa.cyberraces.event.RaceEvents;
 import com.cyberspectraa.cyberraces.event.RacialPassiveEvents;
+import com.cyberspectraa.cyberraces.race.RaceManager;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,7 +36,7 @@ public final class CyberRaces {
         MinecraftForge.EVENT_BUS.register(CharacterCreationEvents.class);
         MinecraftForge.EVENT_BUS.register(CyberNpcRaceEvents.class);
         MinecraftForge.EVENT_BUS.register(ProgressionEvents.class);
-        if (ModList.get().isLoaded("irons_spellbooks")) {
+        if (RaceManager.EVOLUTIONS_ENABLED && ModList.get().isLoaded("irons_spellbooks")) {
             MinecraftForge.EVENT_BUS.register(
                     com.cyberspectraa.cyberraces.event.RaceEvolutionSpellEvents.class);
         }
