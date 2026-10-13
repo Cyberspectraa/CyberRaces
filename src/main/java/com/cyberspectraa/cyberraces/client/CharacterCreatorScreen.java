@@ -585,7 +585,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case AASIMAR -> new String[] {
                 "Celestial and naturally resistant to magic.",
-                "V: no-mana Radiant Bolt. Evolutions can become Seraphic, Fallen or Guardian."
+                "V: no-mana Radiant Bolt (Iron's Spells required)."
             };
             case BIRDFOLK -> new String[] {
                 "Winged aerial species with lower health and high mobility.",
