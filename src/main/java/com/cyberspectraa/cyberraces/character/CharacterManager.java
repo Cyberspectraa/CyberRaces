@@ -54,7 +54,9 @@ public final class CharacterManager {
         Race race,
         CharacterAppearance appearance
     ) {
-        if (isCharacterCreated(player)) {
+        if (isCharacterCreated(player)
+                || race == null
+                || !race.selectableAtCreation()) {
             return false;
         }
 
