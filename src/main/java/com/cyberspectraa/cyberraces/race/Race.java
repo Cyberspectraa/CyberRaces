@@ -94,6 +94,15 @@ public enum Race {
      */
     public boolean allowedForWildNpc() { return this != UNDEAD; }
 
+    /** Ordinary first-character selection, not acquired conditions. */
+    public boolean selectableAtCreation() { return this != UNDEAD; }
+
+    public static Race[] startingChoices() {
+        return Arrays.stream(values())
+            .filter(Race::selectableAtCreation)
+            .toArray(Race[]::new);
+    }
+
     public static Race[] wildNpcChoices() {
         return Arrays.stream(values()).filter(Race::allowedForWildNpc)
                 .toArray(Race[]::new);
