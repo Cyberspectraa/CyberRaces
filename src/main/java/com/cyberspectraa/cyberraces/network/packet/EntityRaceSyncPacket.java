@@ -83,6 +83,7 @@ public record EntityRaceSyncPacket(
             packet.entityId,
             packet.active,
             packet.raceId,
+            false, // Wild NPC packets retain their own base-race visuals.
             packet.evolutionId,
             packet.featureStyle,
             packet.featureColor,

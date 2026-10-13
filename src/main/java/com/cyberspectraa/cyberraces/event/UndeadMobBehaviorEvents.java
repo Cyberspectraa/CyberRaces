@@ -85,7 +85,9 @@ public final class UndeadMobBehaviorEvents {
                 || !player.getItemBySlot(EquipmentSlot.HEAD).isEmpty()
                 || !player.level().isDay()
                 || !player.level().canSeeSky(player.blockPosition())
-                || player.getBrightness() <= 0.5F) {
+                || player.level().getBrightness(
+                        net.minecraft.world.level.LightLayer.SKY,
+                        player.blockPosition()) < 12) {
             return;
         }
 
