@@ -26,10 +26,10 @@ public abstract class EntitySlimeSprintMixin {
         ci.cancel();
         if (entity.tickCount % 2 != 0) return;
         entity.level().addParticle(ParticleTypes.ITEM_SLIME,
-                entity.getX() + (entity.getRandom().nextDouble() - 0.5D) * entity.getBbWidth(),
+                entity.getX() + (entity.level().random.nextDouble() - 0.5D) * entity.getBbWidth(),
                 entity.getY() + 0.06D,
-                entity.getZ() + (entity.getRandom().nextDouble() - 0.5D) * entity.getBbWidth(),
-                (entity.getRandom().nextDouble() - 0.5D) * 0.04D, 0.015D,
-                (entity.getRandom().nextDouble() - 0.5D) * 0.04D);
+                entity.getZ() + (entity.level().random.nextDouble() - 0.5D) * entity.getBbWidth(),
+                (entity.level().random.nextDouble() - 0.5D) * 0.04D, 0.015D,
+                (entity.level().random.nextDouble() - 0.5D) * 0.04D);
     }
 }
