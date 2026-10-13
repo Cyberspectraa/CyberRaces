@@ -10,6 +10,7 @@ import com.cyberspectraa.cyberraces.event.FairyWingEvents;
 import com.cyberspectraa.cyberraces.event.ProgressionEvents;
 import com.cyberspectraa.cyberraces.event.RaceEvents;
 import com.cyberspectraa.cyberraces.event.RacialPassiveEvents;
+import com.cyberspectraa.cyberraces.event.UndeadMobBehaviorEvents;
 import com.cyberspectraa.cyberraces.event.UndeadInfectionEvents;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
@@ -33,6 +34,7 @@ public final class CyberRaces {
                 com.cyberspectraa.cyberraces.event.RaceEvolutionActivityEvents.class);
         MinecraftForge.EVENT_BUS.register(RacialPassiveEvents.class);
         MinecraftForge.EVENT_BUS.register(UndeadInfectionEvents.class);
+        MinecraftForge.EVENT_BUS.register(UndeadMobBehaviorEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyWingEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyHoverEvents.class);
         MinecraftForge.EVENT_BUS.register(CharacterCreationEvents.class);

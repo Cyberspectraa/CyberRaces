@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.50** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.51** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,42 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Complete acquired Undead presentation and behaviour (0.3.2-alpha.51)
+
+This update extends 0.3.2-alpha.50's infection and golden-apple cure
+without changing how players contract or remove the condition:
+
+- **Undead skin tone:** Player skins gain a muted moss-green complexion.
+  The client composites it from the original 64x64 skin, sampling the
+  lower face to identify likely exposed skin and retaining hair, eyes,
+  clothing, transparent layers and original texture layout. Custom
+  skinned body recolours are applied first. The exact result can vary
+  with third-party player skins that have unusual facial patterns.
+- **Original racial models stay visible:** The character sync packet
+  carries both the underlying race and an explicit Undead flag. Elf
+  ears, horns, tails, wing models and other base-race cosmetics can
+  remain visible, with exposed racial ears tinted green where applicable.
+  Underlying race, appearance and evolution save data are unchanged.
+- **Zombie traits:** Uncovered, non-creative Undead players burn in
+  direct daylight (rain, water and equipped helmets protect them).
+  Existing Undead fire weakness, poison/Hunger effect resistance,
+  base-race override and Grave Resilience ability continue to work.
+- **Undead neutrality:** Vanilla and modded mobs reporting
+  `MobType.UNDEAD` (including CyberNpc zombie replacements) cannot
+  acquire an Undead player as their target; any stale target is cleared,
+  and their attacks are defensively cancelled. This includes zombies,
+  husks, drowned, skeletons and other vanilla undead. Mods that do
+  not mark their undead mobs as `MobType.UNDEAD` may require a
+  dedicated compatibility adapter.
+- **Reversion:** The existing Weakness + normal Golden Apple cure
+  restores the original skin, racial features and normal mob targeting.
+  No alternate save data or new world data are required.
+
+CyberRaces' character sync packet changes; networking protocol `12`
+requires the updated JAR on **both client and server**. Install only
+`CyberRaces.jar` 0.3.2-alpha.51. CyberNpc 0.44.61 remains unchanged.
+Evolution mechanics are still suspended.
 
 ## Acquired Undead and zombie-villager-style cure (0.3.2-alpha.50)
 

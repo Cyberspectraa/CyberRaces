@@ -34,13 +34,15 @@ public final class CharacterSyncService {
 
     private static CharacterSyncPacket packetFor(ServerPlayer player) {
         boolean created = CharacterManager.isCharacterCreated(player);
-        Race race = RaceManager.getRace(player).orElse(Race.HUMAN);
+        // Always sync ancestry so original ears, horns and beast features survive.
+        Race race = RaceManager.getBaseRace(player).orElse(Race.HUMAN);
         CharacterAppearance appearance = CharacterManager.getAppearance(player);
 
         return new CharacterSyncPacket(
             player.getUUID(),
             created,
             race.id(),
+            RaceManager.isAcquiredUndead(player) || race == Race.UNDEAD,
             RaceManager.getEvolution(player)
                 .map(evolution -> evolution.id())
                 .orElse(""),

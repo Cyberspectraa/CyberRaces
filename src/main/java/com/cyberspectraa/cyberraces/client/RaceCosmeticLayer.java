@@ -84,7 +84,7 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 entity,
                 visual.race(),
                 visual.featureStyle(),
-                visual.featureColor(),
+                visual.undead() ? undeadFeatureTint(visual.race(), visual.featureColor()) : visual.featureColor(),
                 visual.earHeight(),
                 visual.earSpread(),
                 visual.earTilt(),
@@ -152,6 +152,14 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             1.0F,
             1.0F
         );
+    }
+
+    private static int undeadFeatureTint(Race race, int original) {
+        // Greenish ears still use the ancestral ear model and animation.
+        return switch (race) {
+            case ELF, HALFLING, ORC, GOBLIN, FAIRY -> 0x688653;
+            default -> original;
+        };
     }
 
     private void renderRace(

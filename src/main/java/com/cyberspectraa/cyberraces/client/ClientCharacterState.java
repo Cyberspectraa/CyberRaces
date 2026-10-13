@@ -23,6 +23,7 @@ public final class ClientCharacterState {
         UUID playerId,
         boolean created,
         String raceId,
+        boolean undead,
         String evolutionId,
         int featureStyle,
         int featureColor,
@@ -55,6 +56,7 @@ public final class ClientCharacterState {
                 playerId,
                 new VisualCharacter(
                     race,
+                    undead,
                     evolutionId == null ? "" : evolutionId,
                     appearance
                 )
@@ -62,6 +64,7 @@ public final class ClientCharacterState {
 
             if (previous == null
                 || previous.race() != race
+                || previous.undead() != undead
                 || !previous.evolutionId().equals(
                     evolutionId == null ? "" : evolutionId
                 )
@@ -77,7 +80,7 @@ public final class ClientCharacterState {
             && minecraft.player != null
             && player.getUUID().equals(minecraft.player.getUUID())) {
             return Optional.of(
-                new VisualCharacter(previewRace, "", previewAppearance)
+                new VisualCharacter(previewRace, false, "", previewAppearance)
             );
         }
 
@@ -127,6 +130,7 @@ public final class ClientCharacterState {
 
     public record VisualCharacter(
         Race race,
+        boolean undead,
         String evolutionId,
         CharacterAppearance appearance
     ) {

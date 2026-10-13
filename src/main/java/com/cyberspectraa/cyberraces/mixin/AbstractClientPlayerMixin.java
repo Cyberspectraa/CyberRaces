@@ -35,6 +35,7 @@ public abstract class AbstractClientPlayerMixin {
                     visual.race(),
                     visual.appearance(),
                     visual.evolutionId(),
+                    visual.undead(),
                     original
                 );
 

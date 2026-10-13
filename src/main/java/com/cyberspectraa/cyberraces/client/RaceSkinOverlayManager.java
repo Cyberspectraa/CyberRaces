@@ -30,11 +30,13 @@ public final class RaceSkinOverlayManager {
         Race race,
         CharacterAppearance appearance,
         String evolutionId,
+        boolean undead,
         ResourceLocation originalSkin
     ) {
         rememberOriginal(player.getUUID(), originalSkin);
 
-        if (!supports(race) || (race != Race.SLIME && !appearance.hasBodyRecolour())) {
+        if (!undead && (!supports(race)
+                || (race != Race.SLIME && !appearance.hasBodyRecolour()))) {
             invalidate(player.getUUID());
             return originalSkin;
         }
@@ -44,7 +46,7 @@ public final class RaceSkinOverlayManager {
             appearance.bodySourceColor(),
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
-            race == Race.SLIME ? evolutionId : ""
+            undead ? "acquired_undead" : (race == Race.SLIME ? evolutionId : "")
         );
 
         CacheEntry existing = CACHE.get(player.getUUID());
@@ -54,9 +56,11 @@ public final class RaceSkinOverlayManager {
 
         invalidate(player.getUUID());
 
-        ResourceLocation generated = race == Race.SLIME
-            ? generateSlime(player.getUUID(), originalSkin, evolutionId, false)
-            : generate(player, originalSkin, appearance);
+        ResourceLocation generated = undead
+            ? generateUndead(player.getUUID(), originalSkin, appearance)
+            : race == Race.SLIME
+                ? generateSlime(player.getUUID(), originalSkin, evolutionId, false)
+                : generate(player, originalSkin, appearance);
 
         if (generated != null) {
             CACHE.put(
@@ -309,6 +313,107 @@ public final class RaceSkinOverlayManager {
         } catch (RuntimeException exception) {
             return null;
         }
+    }
+
+    /**
+     * Zombie-coloured skin without tinting the entire outfit. The most common
+     * lower-face shade is used to select matching exposed-skin pixels across
+     * the existing 64x64 skin; clothing, hair and eyes remain distinct.
+     */
+    private static ResourceLocation generateUndead(
+        UUID entityId, ResourceLocation original, CharacterAppearance appearance
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        try {
+            AbstractTexture texture = minecraft.getTextureManager().getTexture(original);
+            texture.bind();
+            try (NativeImage skin = new NativeImage(64, 64, false);
+                 NativeImage base = new NativeImage(64, 64, true)) {
+                skin.downloadTexture(0, false);
+                if (appearance.hasBodyRecolour()) {
+                    buildRecolouredSkin(skin, base, appearance);
+                } else {
+                    for (int y = 0; y < 64; y++) {
+                        for (int x = 0; x < 64; x++) {
+                            base.setPixelRGBA(x, y, skin.getPixelRGBA(x, y));
+                        }
+                    }
+                }
+                int face = lowerFaceSkinColor(base);
+                int sr = (face >> 16) & 255;
+                int sg = (face >> 8) & 255;
+                int sb = face & 255;
+                double sourceLuma = Math.max(28.0D, luminance(sr, sg, sb));
+
+                NativeImage output = new NativeImage(64, 64, true);
+                for (int y = 0; y < 64; y++) {
+                    for (int x = 0; x < 64; x++) {
+                        int pixel = base.getPixelRGBA(x, y);
+                        int alpha = base.getLuminanceOrAlpha(x, y) & 255;
+                        if (alpha < 16) {
+                            output.setPixelRGBA(x, y, pixel);
+                            continue;
+                        }
+                        int r = base.getRedOrLuminance(x, y) & 255;
+                        int g = base.getGreenOrLuminance(x, y) & 255;
+                        int b = base.getBlueOrLuminance(x, y) & 255;
+                        int dr = r - sr, dg = g - sg, db = b - sb;
+                        int distanceSquared = dr * dr + dg * dg + db * db;
+
+                        if (distanceSquared > 88 * 88) {
+                            output.setPixelRGBA(x, y, pixel);
+                            continue;
+                        }
+
+                        double shade = Math.max(0.32D, Math.min(1.58D,
+                                luminance(r, g, b) / sourceLuma));
+                        double strength = 0.82D * Math.max(
+                                0.16D, 1.0D - Math.sqrt(distanceSquared) / 110D);
+                        int zombieR = clamp((int) Math.round(102 * shade));
+                        int zombieG = clamp((int) Math.round(139 * shade));
+                        int zombieB = clamp((int) Math.round(82 * shade));
+                        int rr = clamp((int) Math.round(r * (1D-strength) + zombieR * strength));
+                        int gg = clamp((int) Math.round(g * (1D-strength) + zombieG * strength));
+                        int bb = clamp((int) Math.round(b * (1D-strength) + zombieB * strength));
+                        output.setPixelRGBA(x, y, abgr(alpha, rr, gg, bb));
+                    }
+                }
+
+                DynamicTexture dynamic = new DynamicTexture(output);
+                ResourceLocation key = minecraft.getTextureManager().register(
+                        "cyberraces_undead_" + entityId.toString().replace("-", ""),
+                        dynamic);
+                dynamic.upload();
+                return key;
+            }
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
+    private static int lowerFaceSkinColor(NativeImage image) {
+        java.util.Map<Integer, Integer> counts = new java.util.HashMap<>();
+        java.util.Map<Integer, Integer> samples = new java.util.HashMap<>();
+        for (int y = 12; y <= 15; y++) {
+            for (int x = 10; x <= 13; x++) {
+                if ((image.getLuminanceOrAlpha(x, y) & 255) < 230) continue;
+                int r = image.getRedOrLuminance(x, y) & 255;
+                int g = image.getGreenOrLuminance(x, y) & 255;
+                int b = image.getBlueOrLuminance(x, y) & 255;
+                if (luminance(r, g, b) < 35.0D) continue;
+                int bucket = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+                counts.merge(bucket, 1, Integer::sum);
+                samples.put(bucket, (r << 16) | (g << 8) | b);
+            }
+        }
+        int bestKey = -1, bestCount = -1;
+        for (var entry : counts.entrySet()) {
+            if (entry.getValue() > bestCount) {
+                bestKey = entry.getKey();
+                bestCount = entry.getValue();
+            }
+        }
+        return bestKey < 0 ? 0xAD9478 : samples.get(bestKey);
     }
 
     private static int slimeTint(String id) {
