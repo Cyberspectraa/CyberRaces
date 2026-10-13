@@ -6,6 +6,7 @@ import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.RacialAbilityPacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -57,7 +58,12 @@ public final class ClientForgeEvents {
             return;
         }
 
-        while (ClientKeyMappings.RACIAL_ABILITY.consumeClick()) {
+        // The mapping exists only after RegisterKeyMappingsEvent; do not
+        // assume class loading and registration finish at the same time.
+        KeyMapping racialAbility = ClientKeyMappings.RACIAL_ABILITY;
+        if (racialAbility == null) return;
+
+        while (racialAbility.consumeClick()) {
             if (race == null) {
                 minecraft.player.displayClientMessage(
                     Component.literal(

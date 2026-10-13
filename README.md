@@ -1,8 +1,22 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.47** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.48** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
+
+## Crash fix: Forge keymapping initialization (0.3.2-alpha.48)
+
+Fixed a client mod-loading `ExceptionInInitializerError` whose root cause was
+`ConcurrentModificationException` inside Forge's `KeyMappingLookup.put`.
+The racial ability V keybinding is no longer constructed as a static field
+while Forge discovers event subscribers. It is created and registered during
+`RegisterKeyMappingsEvent`, and the tick handler skips key input until the
+mapping has been registered. The V key, Controls menu category, racial
+abilities, network packet and save data remain unchanged.
+
+Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
+0.3.2-alpha.48. This fixes the identified unsafe startup path but still
+requires an in-game launch test with the full modpack.
 
 ## Playable races
 

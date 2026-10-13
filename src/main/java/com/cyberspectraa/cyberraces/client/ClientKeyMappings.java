@@ -15,19 +15,24 @@ import org.lwjgl.glfw.GLFW;
     value = Dist.CLIENT
 )
 public final class ClientKeyMappings {
-    public static final KeyMapping RACIAL_ABILITY =
-        new KeyMapping(
-            "key.cyberraces.racial_ability",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_V,
-            "key.categories.cyberraces"
-        );
+    // Defer KeyMapping construction until Forge's registration phase.
+    // A static initializer here can mutate Forge's mapping lookup while
+    // another mod is registering keys, causing ConcurrentModificationException.
+    // Keep the public field for existing client callers.
+    public static volatile KeyMapping RACIAL_ABILITY;
 
     private ClientKeyMappings() {
     }
 
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
-        event.register(RACIAL_ABILITY);
+        KeyMapping ability = new KeyMapping(
+            "key.cyberraces.racial_ability",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            "key.categories.cyberraces"
+        );
+        event.register(ability);
+        RACIAL_ABILITY = ability;
     }
 }
