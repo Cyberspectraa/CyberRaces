@@ -34,7 +34,7 @@ public final class RaceEvolutionManager {
     }
 
     public static void tick(ServerPlayer player) {
-        if (player == null) return;
+        if (!RaceManager.EVOLUTIONS_ENABLED || player == null) return;
         if (player.tickCount % 100 == 0) RaceEvolutionJourney.tick(player);
 
         UUID id = player.getUUID();
@@ -58,7 +58,7 @@ public final class RaceEvolutionManager {
     }
 
     public static boolean eligible(ServerPlayer player) {
-        return RaceEvolutionJourney.ready(player);
+        return RaceManager.EVOLUTIONS_ENABLED && RaceEvolutionJourney.ready(player);
     }
 
     private static void offerAfterRest(ServerPlayer player) {
@@ -73,6 +73,11 @@ public final class RaceEvolutionManager {
     /** Useful for debugging; does not grant a free evolution choice. */
     public static void openSelection(ServerPlayer player) {
         if (player == null) return;
+        if (!RaceManager.EVOLUTIONS_ENABLED) {
+            player.sendSystemMessage(Component.literal(
+                "Racial evolutions are paused while base races are redesigned."));
+            return;
+        }
         player.sendSystemMessage(Component.literal(
                 "Once your racial affinities are ready, sleep in a bed to discover "
                 + "your recommended evolution. You may accept or wait.")
@@ -81,7 +86,7 @@ public final class RaceEvolutionManager {
 
     /** Called by the player's acceptance response, with strict server checks. */
     public static boolean complete(ServerPlayer player, RaceEvolution evolution) {
-        if (player == null || evolution == null) return false;
+        if (!RaceManager.EVOLUTIONS_ENABLED || player == null || evolution == null) return false;
         RaceEvolution pending = PENDING.get(player.getUUID());
         if (pending != evolution || !eligible(player)
                 || !RaceManager.setEvolution(player, evolution)) return false;
@@ -114,7 +119,7 @@ public final class RaceEvolutionManager {
     }
 
     public static void forceSet(ServerPlayer player, RaceEvolution evolution) {
-        if (player == null || evolution == null) return;
+        if (!RaceManager.EVOLUTIONS_ENABLED || player == null || evolution == null) return;
         RaceManager.forceSetEvolution(player, evolution);
         clearSession(player.getUUID());
         CharacterSyncService.broadcast(player);
@@ -122,7 +127,7 @@ public final class RaceEvolutionManager {
     }
 
     public static void reset(ServerPlayer player) {
-        if (player == null) return;
+        if (!RaceManager.EVOLUTIONS_ENABLED || player == null) return;
         clearSession(player.getUUID());
         RaceManager.clearEvolution(player);
         RaceEvolutionJourney.reset(player);
