@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.52** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.53** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,33 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Final base-race V abilities (0.3.2-alpha.53)
+
+The remaining three base-race abilities now have focused mechanics:
+
+- **Goblin / Treasure Instinct (V):** One server-side, bounded scan
+  of nearby ore and non-empty loot containers (14-block range), with
+  client-only golden/teal block outlines lasting 8 seconds; no block
+  mutation, exposed coordinates in chat, or repeated particle trails.
+  The 30-second cooldown is saved on the player's data. Nearest 16
+  ore blocks and 8 containers are shown to limit rendering.
+- **Dogfolk / Hunter's Nose (V):** Reveals up to 16 nearest living
+  creatures within 22 blocks as a private client-only glowing outline
+  through walls for 7 seconds, then clears them. Does not permanently
+  change their state or add a globally visible potion effect. 28-second
+  cooldown, saved with the character.
+- **Tiefling / Infernal Surge (V):** An eight-second melee window with
+  +25% outgoing melee damage and three seconds of fire on susceptible
+  victims; modest vanilla flame/sound on activation. 32-second cooldown.
+  No mana, Iron's Spells or extra item requirements.
+
+A compact per-player sensing packet enables the two private visual
+effects. Networking protocol **13** requires both client and server
+to install CyberRaces 0.3.2-alpha.53; CyberQuest's optional race guide
+is updated separately. Old race IDs, appearance, evolution suspension,
+Zombification and cure, Wild NPC compatibility and saved data remain
+unchanged. The old Goblin and Dogfolk ability cooldown keys are reused.
 
 ## Race overhaul, first gameplay and visuals pass (0.3.2-alpha.52)
 
@@ -48,10 +75,9 @@ requires an in-game launch test with the full modpack.
   and V now fires a visible cobweb-item projectile. On impact, it
   gives a struck living target five seconds of strong Slowness and
   produces a short web/cloud burst; it does not place permanent webs.
-- Goblin Scavenger Sense, Dogfolk Scent and Tiefling active ability
-  designs are awaiting a focused follow-up decision, rather than
-  adding unrequested mechanics. Race journal integration is also a
-  separate CyberQuest build.
+- Goblin Treasure Instinct, Dogfolk Hunter's Nose and Tiefling Infernal
+  Surge are implemented in 0.3.2-alpha.53. The race journal is in
+  CyberQuest 0.3.0-alpha.12.
 - All previous evolution suspensions, Undead zombification and cure
   data, and race IDs remain intact.
 

@@ -6,6 +6,7 @@ import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.FoxfolkQuickstepAbility;
 import com.cyberspectraa.cyberraces.ability.GoblinScavengerSenseAbility;
 import com.cyberspectraa.cyberraces.ability.OrcWarCryAbility;
+import com.cyberspectraa.cyberraces.ability.TieflingInfernalSurgeAbility;
 import com.cyberspectraa.cyberraces.ability.NewRaceAbilities;
 import com.cyberspectraa.cyberraces.ability.NymphNatureGraceAbility;
 import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
@@ -87,6 +88,9 @@ public record RacialAbilityPacket(
 
             case GOBLIN ->
                 GoblinScavengerSenseAbility.tryActivate(player);
+
+            case TIEFLING ->
+                TieflingInfernalSurgeAbility.tryActivate(player);
 
             case NYMPH ->
                 NymphNatureGraceAbility.tryActivate(player);

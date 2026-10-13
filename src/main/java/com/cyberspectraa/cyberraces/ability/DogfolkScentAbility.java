@@ -1,294 +1,65 @@
 package com.cyberspectraa.cyberraces.ability;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
+import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
+import com.cyberspectraa.cyberraces.network.packet.RaceSensePacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
+/**
+ * V: Hunter's Nose. Reveals nearby living creatures through walls for
+ * this Dogfolk client only; no potions, tracking trails or global glow.
+ */
 public final class DogfolkScentAbility {
-    public static final int ACTIVE_TICKS = 8 * 20;
-    public static final int COOLDOWN_TICKS = 24 * 20;
-    public static final double RADIUS = 24.0D;
+    public static final int ACTIVE_TICKS = 7 * 20;
+    public static final int COOLDOWN_TICKS = 28 * 20;
+    public static final double RADIUS = 22.0D;
+    private static final String READY_TICK_KEY = "DogfolkScentReadyTick";
 
-    private static final String READY_TICK_KEY =
-        "DogfolkScentReadyTick";
-
-    private static final Map<UUID, Long> ACTIVE_UNTIL =
-        new HashMap<>();
-
-    private DogfolkScentAbility() {
-    }
+    private DogfolkScentAbility() {}
 
     public static void tryActivate(ServerPlayer player) {
         long now = player.level().getGameTime();
-        long readyAt = getReadyTick(player);
-
-        if (readyAt > now) {
-            double seconds = (readyAt - now) / 20.0D;
-            player.displayClientMessage(
-                Component.literal(
-                    String.format(
-                        "Scent: %.1fs cooldown",
-                        seconds
-                    )
-                ),
-                true
-            );
+        CompoundTag root = player.getPersistentData()
+                .getCompound(CharacterManager.ROOT_KEY);
+        long ready = root.getLong(READY_TICK_KEY);
+        if (ready > now) {
+            player.displayClientMessage(Component.literal(
+                    "Hunter's Nose: " + ((ready - now + 19L) / 20L)
+                            + "s cooldown"), true);
             return;
         }
+        if (!(player.level() instanceof ServerLevel level)) return;
 
-        ACTIVE_UNTIL.put(
-            player.getUUID(),
-            now + ACTIVE_TICKS
-        );
+        List<Integer> targets = level.getEntitiesOfClass(
+                LivingEntity.class,
+                player.getBoundingBox().inflate(RADIUS),
+                entity -> entity != player && !(entity instanceof ArmorStand)
+                        && entity.isAlive() && entity.distanceToSqr(player)
+                        <= RADIUS * RADIUS
+        ).stream()
+                .sorted(Comparator.comparingDouble(player::distanceToSqr))
+                .limit(16)
+                .map(LivingEntity::getId)
+                .toList();
 
-        setReadyTick(
-            player,
-            now + COOLDOWN_TICKS
-        );
+        CyberRacesNetwork.sendToPlayer(player, RaceSensePacket.creatures(targets));
+        root.putLong(READY_TICK_KEY, now + COOLDOWN_TICKS);
+        player.getPersistentData().put(CharacterManager.ROOT_KEY, root);
 
-        player.displayClientMessage(
-            Component.literal(
-                "Scent active — follow the direction markers"
-            ),
-            true
-        );
-
-        scan(player);
+        player.displayClientMessage(Component.literal(
+                "Hunter's Nose: " + targets.size()
+                        + " nearby creatures revealed (7s)"), true);
     }
 
-    public static void tick(ServerPlayer player) {
-        Long until = ACTIVE_UNTIL.get(player.getUUID());
-        if (until == null) {
-            return;
-        }
-
-        long now = player.level().getGameTime();
-        if (now >= until) {
-            ACTIVE_UNTIL.remove(player.getUUID());
-            player.displayClientMessage(
-                Component.literal("Scent faded"),
-                true
-            );
-            return;
-        }
-
-        // Half-second refresh feels responsive without doing a continuous scan.
-        if (now % 10L == 0L) {
-            scan(player);
-        }
-    }
-
-    public static void cleanup(ServerPlayer player) {
-        ACTIVE_UNTIL.remove(player.getUUID());
-    }
-
-    private static void scan(ServerPlayer player) {
-        if (!(player.level() instanceof ServerLevel level)) {
-            return;
-        }
-
-        AABB area =
-            player.getBoundingBox().inflate(RADIUS);
-
-        ItemEntity item = nearest(
-            level.getEntitiesOfClass(
-                ItemEntity.class,
-                area,
-                Entity::isAlive
-            ),
-            player
-        );
-
-        Animal animal = nearest(
-            level.getEntitiesOfClass(
-                Animal.class,
-                area,
-                Entity::isAlive
-            ),
-            player
-        );
-
-        Monster hostile = nearest(
-            level.getEntitiesOfClass(
-                Monster.class,
-                area,
-                Entity::isAlive
-            ),
-            player
-        );
-
-        // No more particle trail from the player's face. A single private
-        // marker sits on the tracked target and the action bar does the real
-        // directional work.
-        if (item != null) {
-            markTarget(
-                level,
-                player,
-                item,
-                ParticleTypes.END_ROD
-            );
-        }
-
-        if (animal != null) {
-            markTarget(
-                level,
-                player,
-                animal,
-                ParticleTypes.COMPOSTER
-            );
-        }
-
-        if (hostile != null) {
-            markTarget(
-                level,
-                player,
-                hostile,
-                ParticleTypes.SMOKE
-            );
-        }
-
-        player.displayClientMessage(
-            Component.literal(
-                "Scent | "
-                    + targetLabel("Item", player, item)
-                    + " | "
-                    + targetLabel("Animal", player, animal)
-                    + " | "
-                    + targetLabel("Danger", player, hostile)
-            ),
-            true
-        );
-    }
-
-    private static <T extends Entity> T nearest(
-        List<T> entities,
-        ServerPlayer player
-    ) {
-        return entities.stream()
-            .min(
-                Comparator.comparingDouble(
-                    player::distanceToSqr
-                )
-            )
-            .orElse(null);
-    }
-
-    private static void markTarget(
-        ServerLevel level,
-        ServerPlayer player,
-        Entity target,
-        ParticleOptions particle
-    ) {
-        level.sendParticles(
-            player,
-            particle,
-            true,
-            target.getX(),
-            target.getY() + target.getBbHeight() * 0.72D,
-            target.getZ(),
-            1,
-            target.getBbWidth() * 0.08D,
-            target.getBbHeight() * 0.05D,
-            target.getBbWidth() * 0.08D,
-            0.0D
-        );
-    }
-
-    private static String targetLabel(
-        String label,
-        ServerPlayer player,
-        Entity entity
-    ) {
-        if (entity == null) {
-            return label + " --";
-        }
-
-        int blocks = (int) Math.round(
-            Math.sqrt(player.distanceToSqr(entity))
-        );
-
-        return label
-            + " "
-            + directionArrow(player, entity)
-            + " "
-            + blocks
-            + "m";
-    }
-
-    private static String directionArrow(
-        ServerPlayer player,
-        Entity target
-    ) {
-        double dx = target.getX() - player.getX();
-        double dz = target.getZ() - player.getZ();
-
-        float targetYaw =
-            (float) Math.toDegrees(Math.atan2(dz, dx)) - 90.0F;
-
-        float relative =
-            Mth.wrapDegrees(targetYaw - player.getYRot());
-
-        if (relative >= -22.5F && relative < 22.5F) {
-            return "↑";
-        }
-        if (relative >= 22.5F && relative < 67.5F) {
-            return "↗";
-        }
-        if (relative >= 67.5F && relative < 112.5F) {
-            return "→";
-        }
-        if (relative >= 112.5F && relative < 157.5F) {
-            return "↘";
-        }
-        if (relative >= 157.5F || relative < -157.5F) {
-            return "↓";
-        }
-        if (relative >= -157.5F && relative < -112.5F) {
-            return "↙";
-        }
-        if (relative >= -112.5F && relative < -67.5F) {
-            return "←";
-        }
-
-        return "↖";
-    }
-
-    private static long getReadyTick(ServerPlayer player) {
-        CompoundTag root =
-            player.getPersistentData().getCompound(
-                CharacterManager.ROOT_KEY
-            );
-
-        return root.getLong(READY_TICK_KEY);
-    }
-
-    private static void setReadyTick(
-        ServerPlayer player,
-        long readyTick
-    ) {
-        CompoundTag persistent = player.getPersistentData();
-        CompoundTag root =
-            persistent.contains(CharacterManager.ROOT_KEY)
-                ? persistent.getCompound(CharacterManager.ROOT_KEY)
-                : new CompoundTag();
-
-        root.putLong(READY_TICK_KEY, readyTick);
-        persistent.put(CharacterManager.ROOT_KEY, root);
-    }
+    // Legacy lifecycle hooks retained for RacialPassiveEvents compatibility.
+    public static void tick(ServerPlayer player) {}
+    public static void cleanup(ServerPlayer player) {}
 }

@@ -1,5 +1,6 @@
 package com.cyberspectraa.cyberraces;
 
+import com.cyberspectraa.cyberraces.ability.TieflingInfernalSurgeAbility;
 import com.cyberspectraa.cyberraces.command.CyberProgressionCommands;
 import com.cyberspectraa.cyberraces.command.CyberRaceCommands;
 import com.cyberspectraa.cyberraces.command.CyberResetAllCommands;
@@ -34,6 +35,7 @@ public final class CyberRaces {
         MinecraftForge.EVENT_BUS.register(
                 com.cyberspectraa.cyberraces.event.RaceEvolutionActivityEvents.class);
         MinecraftForge.EVENT_BUS.register(RacialPassiveEvents.class);
+        MinecraftForge.EVENT_BUS.register(TieflingInfernalSurgeAbility.class);
         MinecraftForge.EVENT_BUS.register(ArachnidWebEvents.class);
         MinecraftForge.EVENT_BUS.register(UndeadInfectionEvents.class);
         MinecraftForge.EVENT_BUS.register(UndeadMobBehaviorEvents.class);
