@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.48** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.49** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,30 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Race overhaul groundwork (0.3.2-alpha.49)
+
+**Normal character creation** now offers 17 starting races. Undead is no
+longer in the creator carousel and cannot be selected via the ordinary
+`/cyberraces race choose undead` command. Server-side character creation
+also checks eligibility: spoofed `SubmitCharacterPacket` messages cannot
+bypass the restriction. Existing Undead characters are preserved, and
+admin `/cyberraces race set` remains available for migration/testing.
+
+**Evolutions are temporarily suspended, not deleted.** Previously stored
+evolution IDs/affinity data remain in saved player NBT. Effective evolution
+bonuses, names, appearances and extra passive abilities no longer apply;
+sleep evolution offers and new evolution selection/setting are blocked. The
+`/cyberraces evolution` command simply reports that the system is paused.
+Cyber Level, CyberClasses progression, base-race stats and biome attunement
+remain active.
+
+**Undead conversion is the next separate milestone.** The existing
+`cybernpc:zombification` effect currently infects **Wild NPCs**, not
+players. This release does not yet change players into Undead on infection.
+A later revision must add player exposure, progress, preservation of
+original ancestry/appearance, and curing rules without breaking older
+saves. No existing race IDs or save keys were renamed.
 
 ## Playable races
 
