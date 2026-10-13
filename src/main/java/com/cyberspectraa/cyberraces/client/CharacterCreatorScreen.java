@@ -396,7 +396,7 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private void changeRace(int direction) {
-        raceIndex = Math.floorMod(raceIndex + direction, Race.values().length);
+        raceIndex = Math.floorMod(raceIndex + direction, Race.startingChoices().length);
         featureStyle = 0;
         featureColor = CharacterAppearance.AUTO_COLOR;
         earHeight = 0;
@@ -605,7 +605,7 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     Race currentRace() {
-        return Race.values()[raceIndex];
+        return Race.startingChoices()[raceIndex];
     }
 
     CharacterAppearance currentAppearance() {
