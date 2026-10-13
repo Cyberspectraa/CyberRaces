@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.53** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.54** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,27 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Vanilla Glowing effect for Hunter's Nose (0.3.2-alpha.54)
+
+Dogfolk **Hunter's Nose (V)** now uses Minecraft's actual
+`MobEffects.GLOWING` on up to 16 nearby living creatures for **7 seconds**
+within 22 blocks. Creatures display the vanilla bright silhouette through
+walls, not client-only setGlowingTag manipulation. The effect is applied
+on the authoritative server, syncs normally and can be seen by **all nearby
+players**, just like a regular Glowing potion effect. Potion particles and
+status icons are suppressed; the distinctive entity outline remains.
+An existing longer Glowing effect is preserved.
+
+Goblin Treasure Instinct still highlights ore and stocked containers
+using its gold/teal block-outline renderer, because Minecraft's vanilla
+Glowing **status effect cannot be applied to blocks**. Giving blocks a
+true vanilla entity-style outline would require a separate block-outline
+rendering implementation; this release does not create fake entities.
+
+The 28-second Dogfolk cooldown, saved characters, 7-second reveal duration,
+other racial abilities, network protocol 13 and CyberQuest compatibility
+are unchanged. Replace **CyberRaces.jar** on client and server.
 
 ## Final base-race V abilities (0.3.2-alpha.53)
 
