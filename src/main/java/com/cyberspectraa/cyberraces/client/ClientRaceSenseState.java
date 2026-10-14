@@ -4,11 +4,16 @@ import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.network.packet.RaceSensePacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +24,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,18 +130,38 @@ public final class ClientRaceSenseState {
         pose.pushPose();
         pose.translate(-camera.x, -camera.y, -camera.z);
 
-        // Client-only line boxes keep the display quiet and readable,
-        // even if valuable blocks are behind rock or enclosed in chests.
-        var buffers = mc.renderBuffers().bufferSource();
-        VertexConsumer lines = buffers.getBuffer(RenderType.lines());
-        RenderSystem.disableDepthTest();
+        /*
+         * RenderType.lines() re-enables depth testing when its batch is
+         * flushed, so calling disableDepthTest() before endBatch() didn't
+         * work: the ore boxes vanished behind stone.
+         *
+         * Draw the line vertices immediately with the same vanilla lines
+         * shader, without going through RenderType's depth-state setup.
+         * No depth testing means the outlines are visible through blocks.
+         * Keep both depth writes and rendering state restored afterwards.
+         */
+        BufferBuilder lines = Tesselator.getInstance().getBuilder();
+        lines.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         for (BlockPos pos : ORES)
             outline(pose, lines, pos, 1.00F, 0.81F, 0.18F);
         for (BlockPos pos : CONTAINERS)
             outline(pose, lines, pos, 0.20F, 0.86F, 0.85F);
-        buffers.endBatch(RenderType.lines());
-        RenderSystem.enableDepthTest();
-        pose.popPose();
+
+        try {
+            RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+            RenderSystem.lineWidth(2.5F);
+            BufferUploader.drawWithShader(lines.end());
+        } finally {
+            RenderSystem.lineWidth(1.0F);
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.disableBlend();
+            pose.popPose();
+        }
     }
 
     private static void outline(PoseStack pose, VertexConsumer lines, BlockPos pos,

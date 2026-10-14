@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.54** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.55** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,18 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Treasure Instinct renderer correction (0.3.2-alpha.55)
+
+The Goblin Treasure Instinct highlight now uses an immediate draw with
+Minecraft's standard line shader. Unlike the previous batched line render,
+the highlight is drawn while depth testing is disabled, allowing ore and
+stocked-container boxes to remain visible behind terrain. Gold and cyan
+colors, scan radius, limits, ability duration, and cooldown are unchanged.
+Render state is restored after drawing. No new world entities or packets.
+
+Only CyberRaces.jar requires replacement on both sides. In-game
+confirmation of behind-block visibility is still needed.
 
 ## Vanilla Glowing effect for Hunter's Nose (0.3.2-alpha.54)
 
