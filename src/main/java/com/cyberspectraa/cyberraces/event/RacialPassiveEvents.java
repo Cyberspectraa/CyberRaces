@@ -27,7 +27,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public final class RacialPassiveEvents {
@@ -36,6 +38,9 @@ public final class RacialPassiveEvents {
 
     private static final String HUMAN_XP_REMAINDER =
         "HumanXpRemainder";
+
+    // Only restore gravity when CyberRaces set the no-gravity flag.
+    private static final Set<UUID> ARACHNID_WALL_HOLD = new HashSet<>();
 
     private RacialPassiveEvents() {
     }
@@ -53,17 +58,39 @@ public final class RacialPassiveEvents {
         BiomeAttunementService.tickPlayer(player);
         EvolutionTalentEvents.tick(player);
 
-        // Spider climbing, similar to a ladder. Staying against a wall
-        // lifts the Arachnid even while crouched; sneaking is safe and
-        // does not interrupt ascent. Match client-side physics.
-        if (race == Race.ARACHNID && player.horizontalCollision
+        // Like a ladder: climb when against a wall and not crouching.
+        // When sneaking, remain at the same height, with no gravity.
+        // The nearby-block check retains contact after releasing W.
+        boolean arachnidOnWall = race == Race.ARACHNID
+                && (player.horizontalCollision
+                    || (player.isShiftKeyDown() && player.level()
+                        .getBlockCollisions(player, player.getBoundingBox()
+                            .inflate(0.09D, -0.12D, 0.09D))
+                        .iterator().hasNext()))
                 && !player.isPassenger() && !player.isInWaterOrBubble()
-                && !player.isFallFlying()) {
+                && !player.isFallFlying() && !player.getAbilities().flying
+                && !player.isSpectator();
+        boolean holdingPosition = arachnidOnWall && player.isShiftKeyDown();
+        if (holdingPosition) {
+            if (!player.isNoGravity()) {
+                player.setNoGravity(true);
+                ARACHNID_WALL_HOLD.add(player.getUUID());
+            }
             var motion = player.getDeltaMovement();
-            player.setDeltaMovement(
-                    motion.x, Math.max(motion.y, 0.20D), motion.z);
+            player.setDeltaMovement(motion.x, 0.0D, motion.z);
             player.fallDistance = 0.0F;
             player.hurtMarked = true;
+        } else {
+            if (ARACHNID_WALL_HOLD.remove(player.getUUID())) {
+                player.setNoGravity(false);
+            }
+            if (arachnidOnWall) {
+                var motion = player.getDeltaMovement();
+                player.setDeltaMovement(
+                        motion.x, Math.max(motion.y, 0.20D), motion.z);
+                player.fallDistance = 0.0F;
+                player.hurtMarked = true;
+            }
         }
 
         // Nymphs recover gradually in natural water or rainfall.
@@ -119,6 +146,9 @@ public final class RacialPassiveEvents {
             return;
         }
 
+        if (ARACHNID_WALL_HOLD.remove(player.getUUID())) {
+            player.setNoGravity(false);
+        }
         DogfolkScentAbility.cleanup(player);
         GoblinScavengerSenseAbility.cleanup(player);
         OrcWarCryAbility.cleanup(player);

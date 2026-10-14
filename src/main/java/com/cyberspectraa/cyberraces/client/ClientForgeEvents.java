@@ -7,6 +7,7 @@ import com.cyberspectraa.cyberraces.network.packet.RacialAbilityPacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -20,6 +21,8 @@ import net.minecraftforge.fml.common.Mod;
     value = Dist.CLIENT
 )
 public final class ClientForgeEvents {
+    private static LocalPlayer arachnidWallHoldPlayer;
+
     private ClientForgeEvents() {
     }
 
@@ -28,6 +31,13 @@ public final class ClientForgeEvents {
         // Cancelling the complete renderer hides held items, armor, race
         // cosmetics, and nameplates along with the body during creation.
         if (event.getEntity().isInvisible()) event.setCanceled(true);
+    }
+
+    private static void releaseArachnidHold() {
+        if (arachnidWallHoldPlayer != null) {
+            arachnidWallHoldPlayer.setNoGravity(false);
+            arachnidWallHoldPlayer = null;
+        }
     }
 
     @SubscribeEvent
@@ -39,8 +49,13 @@ public final class ClientForgeEvents {
         Minecraft minecraft = Minecraft.getInstance();
 
         if (minecraft.player == null) {
+            releaseArachnidHold();
             ClientAbilityState.disableFairyHover();
             return;
+        }
+        if (arachnidWallHoldPlayer != null
+                && arachnidWallHoldPlayer != minecraft.player) {
+            releaseArachnidHold();
         }
 
         Race race =
@@ -48,16 +63,33 @@ public final class ClientForgeEvents {
                 .map(ClientCharacterState.VisualCharacter::race)
                 .orElse(null);
 
-        if (race == Race.ARACHNID && minecraft.player.horizontalCollision
-                && !minecraft.player.isPassenger()
-                && !minecraft.player.isInWaterOrBubble()
-                && !minecraft.player.isFallFlying()) {
-            var motion = minecraft.player.getDeltaMovement();
-            // Like a ladder, crouching is allowed while climbing.
-            // Sneak should not force a downward slide or stop ascent.
-            minecraft.player.setDeltaMovement(
-                    motion.x, Math.max(motion.y, 0.20D), motion.z);
-            minecraft.player.fallDistance = 0.0F;
+        LocalPlayer player = minecraft.player;
+        boolean arachnidOnWall = race == Race.ARACHNID
+                && (player.horizontalCollision
+                    || (player.isShiftKeyDown() && player.level()
+                        .getBlockCollisions(player, player.getBoundingBox()
+                            .inflate(0.09D, -0.12D, 0.09D))
+                        .iterator().hasNext()))
+                && !player.isPassenger() && !player.isInWaterOrBubble()
+                && !player.isFallFlying() && !player.getAbilities().flying
+                && !player.isSpectator();
+        if (arachnidOnWall && player.isShiftKeyDown()) {
+            // A true ladder-style hold: no vertical velocity OR gravity.
+            if (!player.isNoGravity()) {
+                player.setNoGravity(true);
+                arachnidWallHoldPlayer = player;
+            }
+            var motion = player.getDeltaMovement();
+            player.setDeltaMovement(motion.x, 0.0D, motion.z);
+            player.fallDistance = 0.0F;
+        } else {
+            releaseArachnidHold();
+            if (arachnidOnWall) {
+                var motion = player.getDeltaMovement();
+                player.setDeltaMovement(
+                        motion.x, Math.max(motion.y, 0.20D), motion.z);
+                player.fallDistance = 0.0F;
+            }
         }
 
         if (race != Race.FAIRY) {

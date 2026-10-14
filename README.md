@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.58** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.59** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,24 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Arachnid ladder-like wall hold (0.3.2-alpha.59)
+
+Arachnid wall climbing now follows ladder-style controls:
+- Move into a wall without sneaking to climb upward.
+- Hold **Shift** to stay at your current height on the wall, without
+  moving up or slipping down, even when you release the forward key.
+- Release Shift to climb again; move away from the wall to fall normally.
+
+Both the server and the client temporarily suspend gravity and zero
+vertical velocity while the crouched wall hold is active. A short-range
+collision check keeps contact when movement stops. Gravity is restored
+when the hold ends, the race changes, or the player logs out. The
+no-gravity flag is only removed when CyberRaces originally enabled it.
+
+Slime is confirmed correct and unchanged. No changes to web projectiles,
+other races, saved world data, or networking. Replace only CyberRaces.jar
+on both client and server, then verify Shift holds your exact height.
 
 ## Slime picker and Arachnid crouch-climb polish (0.3.2-alpha.58)
 
