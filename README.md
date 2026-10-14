@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.56** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.57** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,38 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Base race visual and movement corrections (0.3.2-alpha.57)
+
+This fixes problems identified in game testing:
+
+- **Orc, Dragonborn and Nymph:** Their player skin tones no longer
+  recolour automatically. Like Goblin, players can open **Body Colour**
+  during race creation, sample a pixel from their original skin and
+  manually choose the replacement colour. Existing saved character
+  appearance values are preserved. Acquired Undead automatic
+  zombification skin tint is unchanged. Dragonborn horn/tail colours
+  continue using their separate feature-colour selection.
+- **Dragonborn:** Removed disconnected tail ridge/spikes and overlapped
+  all six tapering chain pieces. Reduced the angle offsets between
+  joints so the tail stays visually attached as it bends.
+- **Slime:** Server-side, stronger jumps, landing droplets, movement
+  slime particles and a natural short upward rebound after falls of
+  at least 3 blocks. Sneak to prevent rebound. No fall damage.
+  These particles do not depend on vanilla sprint-dust callbacks.
+  No V ability is added.
+- **Arachnid:** Climb automatically by pushing against a wall;
+  sneaking stops upward movement and permits controlled descent.
+  Server and local player apply matching climb velocity. V Web Shot
+  now places an actual Cobweb in an empty block at the projectile's
+  impact, with an 8-second cleanup, rather than only Slowness.
+  The projectile still slows creatures hit directly. Solid blocks and
+  existing builds are never overwritten by a web.
+
+Wild NPC race IDs, progression, evolution suspension, other abilities,
+the Goblin/Dogfolk/Tiefling tested mechanics, and network protocol
+remain unchanged. Replace only CyberRaces on client and server.
+The game needs a fresh visual and movement test.
 
 ## Complete through-wall treasure outlines (0.3.2-alpha.56)
 

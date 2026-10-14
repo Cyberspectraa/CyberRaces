@@ -53,15 +53,18 @@ public final class RacialPassiveEvents {
         BiomeAttunementService.tickPlayer(player);
         EvolutionTalentEvents.tick(player);
 
-        // Arachnids climb when deliberately sneaking into a wall. No free
-        // flight or automatic hovering, and no forced climb while standing.
-        if (race == Race.ARACHNID
-                && player.isShiftKeyDown()
-                && player.horizontalCollision
-                && !player.isPassenger()
-                && !player.isInWaterOrBubble()) {
+        // Spider climbing: touching a solid wall lifts the Arachnid
+        // automatically. Sneaking holds position/descends rather than
+        // climbing. Client movement mirrors this to avoid rubber-banding.
+        if (race == Race.ARACHNID && player.horizontalCollision
+                && !player.isPassenger() && !player.isInWaterOrBubble()
+                && !player.isFallFlying()) {
             var motion = player.getDeltaMovement();
-            player.setDeltaMovement(motion.x, Math.max(motion.y, 0.16D), motion.z);
+            player.setDeltaMovement(motion.x,
+                    player.isShiftKeyDown()
+                        ? Math.max(motion.y, -0.07D)
+                        : Math.max(motion.y, 0.20D),
+                    motion.z);
             player.fallDistance = 0.0F;
             player.hurtMarked = true;
         }
@@ -216,7 +219,7 @@ public final class RacialPassiveEvents {
 
         if (event.getSource().is(DamageTypeTags.IS_FALL)) {
             if (targetRace == Race.SLIME) {
-                event.setAmount(event.getAmount() * 0.20F);
+                event.setAmount(0.0F);
             } else if (targetRace == Race.CATFOLK) {
                 event.setAmount(event.getAmount() * 0.40F);
             } else if (targetRace == Race.HALFLING) {

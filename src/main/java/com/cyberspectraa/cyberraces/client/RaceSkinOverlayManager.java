@@ -35,9 +35,9 @@ public final class RaceSkinOverlayManager {
     ) {
         rememberOriginal(player.getUUID(), originalSkin);
 
-        boolean racialTint = race == Race.ORC || race == Race.DRAGONBORN
-                || race == Race.NYMPH;
-        if (!undead && !racialTint && (!supports(race)
+        // No automatic tint for Orc, Dragonborn, or Nymph. Players must
+        // select a source pixel and target colour as with Goblin.
+        if (!undead && (!supports(race)
                 || (race != Race.SLIME && !appearance.hasBodyRecolour()))) {
             invalidate(player.getUUID());
             return originalSkin;
@@ -48,8 +48,7 @@ public final class RaceSkinOverlayManager {
             appearance.bodySourceColor(),
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
-            undead ? "acquired_undead" : racialTint
-                ? "tone_" + race.id() + "_" + appearance.featureColor()
+            undead ? "acquired_undead"
                 : (race == Race.SLIME ? evolutionId : "")
         );
 
@@ -60,18 +59,9 @@ public final class RaceSkinOverlayManager {
 
         invalidate(player.getUUID());
 
-        int tone = switch (race) {
-            case ORC -> 0x6B9552;
-            case NYMPH -> 0x83B898;
-            case DRAGONBORN -> appearance.featureColor()
-                    == CharacterAppearance.AUTO_COLOR
-                    ? FeatureColourPalette.defaultRgb(race)
-                    : appearance.featureColor() & 0xFFFFFF;
-            default -> 0x668B52;
-        };
-        ResourceLocation generated = undead || racialTint
+        ResourceLocation generated = undead
             ? generateBodyTone(player.getUUID(), originalSkin, appearance,
-                    undead ? 0x668B52 : tone, undead ? "undead" : race.id())
+                    0x668B52, "undead")
             : race == Race.SLIME
                 ? generateSlime(player.getUUID(), originalSkin, evolutionId, false)
                 : generate(player, originalSkin, appearance);
@@ -252,6 +242,9 @@ public final class RaceSkinOverlayManager {
 
     public static boolean supports(Race race) {
         return race == Race.GOBLIN
+            || race == Race.ORC
+            || race == Race.DRAGONBORN
+            || race == Race.NYMPH
             || race == Race.TIEFLING
             || race == Race.CATFOLK
             || race == Race.DOGFOLK
@@ -262,6 +255,9 @@ public final class RaceSkinOverlayManager {
     public static int defaultTarget(Race race) {
         return switch (race) {
             case GOBLIN -> 0x6E9347;
+            case ORC -> 0x6B9552;
+            case DRAGONBORN -> FeatureColourPalette.defaultRgb(Race.DRAGONBORN);
+            case NYMPH -> 0x83B898;
             case TIEFLING -> 0xB84E5C;
             case CATFOLK -> 0xC49A6C;
             case DOGFOLK -> 0xA97852;

@@ -352,46 +352,43 @@ public final class RaceCosmeticModels {
     }
 
     private static void addDragonTail(PartDefinition root) {
-        // Shorter connected six-part taper. Tail emerges behind the belt
-        // rather than extending straight through the player's legs.
+        // One continuous tapered chain with deliberate overlapping joints.
+        // No detached ridge/spike geometry: every piece connects to the
+        // next throughout the restrained walking animation.
         PartDefinition base = root.addOrReplaceChild(
             "dragon_tail",
             CubeListBuilder.create().texOffs(0, 32)
                 .addBox(-1.45F, 0.0F, -1.25F, 2.9F, 3.0F, 2.5F),
-            PartPose.offsetAndRotation(0.0F, 8.4F, 2.2F, 0.82F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 8.5F, 2.4F, 0.62F, 0.0F, 0.0F)
         );
-        addDragonRidge(base, "ridge0", 0.76F, 0.0F, 0.15F);
 
         PartDefinition mid1 = base.addOrReplaceChild(
             "mid1", CubeListBuilder.create().texOffs(12, 32)
                 .addBox(-1.24F, 0.0F, -1.04F, 2.48F, 2.9F, 2.08F),
-            PartPose.offsetAndRotation(0.0F, 2.82F, 0.48F, 0.11F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 2.40F, 0.02F, 0.055F, 0.0F, 0.0F)
         );
-        addDragonRidge(mid1, "ridge1", 0.64F, 0.0F, 0.12F);
 
         PartDefinition mid2 = mid1.addOrReplaceChild(
             "mid2", CubeListBuilder.create().texOffs(24, 32)
                 .addBox(-0.99F, 0.0F, -0.83F, 1.98F, 2.7F, 1.66F),
-            PartPose.offsetAndRotation(0.0F, 2.72F, 0.30F, 0.07F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 2.30F, 0.01F, 0.04F, 0.0F, 0.0F)
         );
-        addDragonRidge(mid2, "ridge2", 0.52F, 0.0F, 0.10F);
 
         PartDefinition mid3 = mid2.addOrReplaceChild(
             "mid3", CubeListBuilder.create().texOffs(34, 32)
                 .addBox(-0.77F, 0.0F, -0.64F, 1.54F, 2.55F, 1.28F),
-            PartPose.offsetAndRotation(0.0F, 2.56F, 0.22F, 0.04F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 2.18F, 0.0F, 0.025F, 0.0F, 0.0F)
         );
-        addDragonRidge(mid3, "ridge3", 0.40F, 0.0F, 0.08F);
 
         PartDefinition lower = mid3.addOrReplaceChild(
             "lower", CubeListBuilder.create().texOffs(42, 32)
                 .addBox(-0.55F, 0.0F, -0.46F, 1.10F, 2.35F, 0.92F),
-            PartPose.offsetAndRotation(0.0F, 2.42F, 0.15F, -0.02F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 2.08F, 0.0F, -0.015F, 0.0F, 0.0F)
         );
         lower.addOrReplaceChild(
             "tip", CubeListBuilder.create().texOffs(48, 32)
                 .addBox(-0.31F, 0.0F, -0.27F, 0.62F, 2.1F, 0.54F),
-            PartPose.offsetAndRotation(0.0F, 2.18F, 0.12F, -0.04F, 0.0F, 0.0F)
+            PartPose.offsetAndRotation(0.0F, 1.90F, 0.0F, -0.025F, 0.0F, 0.0F)
         );
     }
 

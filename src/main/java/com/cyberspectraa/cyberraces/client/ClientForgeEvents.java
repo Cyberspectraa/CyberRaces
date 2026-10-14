@@ -48,6 +48,19 @@ public final class ClientForgeEvents {
                 .map(ClientCharacterState.VisualCharacter::race)
                 .orElse(null);
 
+        if (race == Race.ARACHNID && minecraft.player.horizontalCollision
+                && !minecraft.player.isPassenger()
+                && !minecraft.player.isInWaterOrBubble()
+                && !minecraft.player.isFallFlying()) {
+            var motion = minecraft.player.getDeltaMovement();
+            minecraft.player.setDeltaMovement(motion.x,
+                    minecraft.player.isShiftKeyDown()
+                        ? Math.max(motion.y, -0.07D)
+                        : Math.max(motion.y, 0.20D),
+                    motion.z);
+            minecraft.player.fallDistance = 0.0F;
+        }
+
         if (race != Race.FAIRY) {
             ClientAbilityState.disableFairyHover();
         } else if (ClientAbilityState.isFairyHoverEnabled()) {
