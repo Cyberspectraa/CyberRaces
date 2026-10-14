@@ -53,11 +53,10 @@ public final class ClientForgeEvents {
                 && !minecraft.player.isInWaterOrBubble()
                 && !minecraft.player.isFallFlying()) {
             var motion = minecraft.player.getDeltaMovement();
-            minecraft.player.setDeltaMovement(motion.x,
-                    minecraft.player.isShiftKeyDown()
-                        ? Math.max(motion.y, -0.07D)
-                        : Math.max(motion.y, 0.20D),
-                    motion.z);
+            // Like a ladder, crouching is allowed while climbing.
+            // Sneak should not force a downward slide or stop ascent.
+            minecraft.player.setDeltaMovement(
+                    motion.x, Math.max(motion.y, 0.20D), motion.z);
             minecraft.player.fallDistance = 0.0F;
         }
 

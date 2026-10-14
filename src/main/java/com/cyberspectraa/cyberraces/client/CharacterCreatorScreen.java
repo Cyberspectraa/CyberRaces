@@ -438,7 +438,10 @@ public final class CharacterCreatorScreen extends Screen {
         }
 
         if (bodyColourButton != null) {
-            boolean supportsBodyColour = RaceSkinOverlayManager.supports(race);
+            // Slimes already have the correct automatic gel tint. Only
+            // races with optional skin recolouring show this picker.
+            boolean supportsBodyColour =
+                race != Race.SLIME && RaceSkinOverlayManager.supports(race);
             bodyColourButton.active = supportsBodyColour;
             bodyColourButton.visible = supportsBodyColour;
             bodyColourButton.setMessage(Component.literal(

@@ -53,18 +53,15 @@ public final class RacialPassiveEvents {
         BiomeAttunementService.tickPlayer(player);
         EvolutionTalentEvents.tick(player);
 
-        // Spider climbing: touching a solid wall lifts the Arachnid
-        // automatically. Sneaking holds position/descends rather than
-        // climbing. Client movement mirrors this to avoid rubber-banding.
+        // Spider climbing, similar to a ladder. Staying against a wall
+        // lifts the Arachnid even while crouched; sneaking is safe and
+        // does not interrupt ascent. Match client-side physics.
         if (race == Race.ARACHNID && player.horizontalCollision
                 && !player.isPassenger() && !player.isInWaterOrBubble()
                 && !player.isFallFlying()) {
             var motion = player.getDeltaMovement();
-            player.setDeltaMovement(motion.x,
-                    player.isShiftKeyDown()
-                        ? Math.max(motion.y, -0.07D)
-                        : Math.max(motion.y, 0.20D),
-                    motion.z);
+            player.setDeltaMovement(
+                    motion.x, Math.max(motion.y, 0.20D), motion.z);
             player.fallDistance = 0.0F;
             player.hurtMarked = true;
         }

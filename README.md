@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.57** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.58** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,20 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Slime picker and Arachnid crouch-climb polish (0.3.2-alpha.58)
+
+- Slime Body Colour picker is hidden in character creation. Slime
+  skin continues to use automatic gel recolouring, unchanged.
+- Arachnids can now crouch while climbing a wall, as on a ladder.
+  Sneaking no longer prevents upward climbing or forces a downward
+  drift; local and server-side movement use the same velocity.
+- No changes to the confirmed Goblin, Dogfolk, Tiefling, Dragonborn
+  visuals, other race skins, Slime movement, web-shot behaviour, or
+  saved data. Networking protocol remains 13.
+
+Replace only CyberRaces.jar on client and server. Verify crouched
+wall-climbing and that Slime no longer has a Body Colour button.
 
 ## Base race visual and movement corrections (0.3.2-alpha.57)
 
