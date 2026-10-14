@@ -9,11 +9,10 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.joml.Matrix4f;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,6 +38,16 @@ public final class ClientRaceSenseState {
     private static long treasureEndsAt;
     private static long creaturesEndAt;
     private static String dimension = "";
+
+    // Eight box corners are connected by exactly twelve independently
+    // rendered strips. Each edge is a camera-facing quad, avoiding the
+    // special Minecraft line shader that dropped edges on some GPUs.
+    private static final int[][] BOX_EDGES = {
+        {0,1}, {1,2}, {2,3}, {3,0},
+        {4,5}, {5,6}, {6,7}, {7,4},
+        {0,4}, {1,5}, {2,6}, {3,7}
+    };
+    private static final double EDGE_HALF_WIDTH = 0.012D;
 
     private ClientRaceSenseState() {}
 
@@ -131,45 +140,80 @@ public final class ClientRaceSenseState {
         pose.translate(-camera.x, -camera.y, -camera.z);
 
         /*
-         * RenderType.lines() re-enables depth testing when its batch is
-         * flushed, so calling disableDepthTest() before endBatch() didn't
-         * work: the ore boxes vanished behind stone.
+         * The Minecraft lines shader expands line segments using their
+         * normals and gl_VertexID. In immediate mode that produced missing
+         * edges on some systems, despite successfully disabling depth.
          *
-         * Draw the line vertices immediately with the same vanilla lines
-         * shader, without going through RenderType's depth-state setup.
-         * No depth testing means the outlines are visible through blocks.
-         * Keep both depth writes and rendering state restored afterwards.
+         * Render all twelve edges as slender camera-facing QUADS using the
+         * ordinary position/color shader. This has no special line-normal
+         * requirements, and explicitly draws the entire outline through
+         * the wall. The renderer never writes to the depth buffer.
          */
-        BufferBuilder lines = Tesselator.getInstance().getBuilder();
-        lines.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         for (BlockPos pos : ORES)
-            outline(pose, lines, pos, 1.00F, 0.81F, 0.18F);
+            outline(pose, buffer, pos, camera, 1.00F, 0.81F, 0.18F);
         for (BlockPos pos : CONTAINERS)
-            outline(pose, lines, pos, 0.20F, 0.86F, 0.85F);
+            outline(pose, buffer, pos, camera, 0.20F, 0.86F, 0.85F);
 
         try {
-            RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
+            RenderSystem.disableCull();
             RenderSystem.disableDepthTest();
             RenderSystem.depthMask(false);
-            RenderSystem.lineWidth(2.5F);
-            BufferUploader.drawWithShader(lines.end());
+            BufferUploader.drawWithShader(buffer.end());
         } finally {
-            RenderSystem.lineWidth(1.0F);
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
+            RenderSystem.enableCull();
             RenderSystem.disableBlend();
             pose.popPose();
         }
     }
 
-    private static void outline(PoseStack pose, VertexConsumer lines, BlockPos pos,
-                                float r, float g, float b) {
-        double x = pos.getX(), y = pos.getY(), z = pos.getZ();
-        LevelRenderer.renderLineBox(pose, lines,
-                x + 0.015D, y + 0.015D, z + 0.015D,
-                x + 0.985D, y + 0.985D, z + 0.985D,
-                r, g, b, 0.95F);
+    private static void outline(PoseStack pose, BufferBuilder buffer, BlockPos pos,
+                                Vec3 camera, float r, float g, float b) {
+        double x0 = pos.getX() + 0.01D;
+        double y0 = pos.getY() + 0.01D;
+        double z0 = pos.getZ() + 0.01D;
+        double x1 = pos.getX() + 0.99D;
+        double y1 = pos.getY() + 0.99D;
+        double z1 = pos.getZ() + 0.99D;
+
+        Vec3[] vertices = {
+            new Vec3(x0,y0,z0), new Vec3(x1,y0,z0),
+            new Vec3(x1,y0,z1), new Vec3(x0,y0,z1),
+            new Vec3(x0,y1,z0), new Vec3(x1,y1,z0),
+            new Vec3(x1,y1,z1), new Vec3(x0,y1,z1)
+        };
+
+        Matrix4f transform = pose.last().pose();
+        for (int[] edge : BOX_EDGES) {
+            Vec3 a = vertices[edge[0]];
+            Vec3 bPos = vertices[edge[1]];
+            Vec3 along = bPos.subtract(a).normalize();
+            Vec3 toCamera = camera.subtract(a.add(bPos).scale(0.5D));
+            Vec3 side = along.cross(toCamera);
+
+            // Avoid degenerate quads when looking straight along an edge.
+            if (side.lengthSqr() < 1.0E-8D)
+                side = along.cross(new Vec3(0,1,0));
+            if (side.lengthSqr() < 1.0E-8D)
+                side = along.cross(new Vec3(1,0,0));
+            side = side.normalize().scale(EDGE_HALF_WIDTH);
+
+            vertex(buffer, transform, a.add(side), r, g, b);
+            vertex(buffer, transform, bPos.add(side), r, g, b);
+            vertex(buffer, transform, bPos.subtract(side), r, g, b);
+            vertex(buffer, transform, a.subtract(side), r, g, b);
+        }
+    }
+
+    private static void vertex(BufferBuilder buffer, Matrix4f transform,
+                               Vec3 point, float r, float g, float b) {
+        buffer.vertex(transform, (float) point.x, (float) point.y, (float) point.z)
+                .color(r, g, b, 1.0F).endVertex();
     }
 }

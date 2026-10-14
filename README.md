@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.55** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.56** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,24 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Complete through-wall treasure outlines (0.3.2-alpha.56)
+
+Follow-up to the 0.3.2-alpha.55 through-wall fix: the gold/cyan
+highlights showed through blocks but lost several of the twelve edges
+on some graphics setups. This revision draws each edge as a small
+camera-facing quad with Minecraft's ordinary position/color shader,
+rather than feeding immediate line geometry to Minecraft's special
+line-expansion shader. All twelve edges of each scanned block are
+emitted explicitly, with depth testing disabled during draw and all
+render state restored afterward.
+
+The scan, duration, range, max block count, cooldown, coloured
+ore/stocked chest distinctions, and saved player data are unchanged.
+Dogfolk and Tiefling abilities are unaffected. This update only
+requires CyberRaces.jar, on both client and server. Please verify the
+complete cube outline from several viewing angles with solid stone
+between the player and the ore.
 
 ## Treasure Instinct renderer correction (0.3.2-alpha.55)
 
