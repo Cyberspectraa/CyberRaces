@@ -290,7 +290,9 @@ public final class CharacterCreatorScreen extends Screen {
             drawWrapped(
                 graphics,
                 BeastVariantTextures.isBeastfolk(currentRace())
-                    ? "Ears and tail use the selected Minecraft animal coat texture."
+                    ? (currentRace() == Race.CATFOLK
+                        ? "Figura Catfolk ears and tail; four original colours."
+                        : "Ears and tail use the selected Minecraft animal coat texture.")
                     : FeatureColourPalette.hasEars(currentRace())
                         ? "Use Skin for automatic texture matching, or pick any custom colour."
                         : "Pick any custom colour for this racial feature.",
@@ -544,7 +546,7 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DWARF -> new String[] {
                 "Tough and resistant; slightly slower.",
-                "+15% mining underground; crafted gear may become enchanted."
+                "+15% mining underground; innate Fortune II on eligible ore drops."
             };
             case HALFLING -> new String[] {
                 "Small and nimble.",

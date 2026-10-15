@@ -200,7 +200,7 @@ public final class CyberRaceCommands {
         return switch (race) {
             case HUMAN -> "+5% Cyber XP gained";
             case ELF -> "bows reach full draw 15% sooner";
-            case DWARF -> "+15% underground mining speed; chance to enchant crafted equipment";
+            case DWARF -> "+15% underground mining speed; innate Fortune II on mined resources";
             case HALFLING -> "+1 Luck and 35% less fall damage";
             case ORC -> "+20% damage below 35% health; V activates War Cry";
             case GOBLIN -> "+0.5 Luck; V activates Treasure Instinct";

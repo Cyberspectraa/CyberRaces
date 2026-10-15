@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.60** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.61** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,38 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Dwarf mining Fortune and Figura Catfolk models (0.3.2-alpha.61)
+
+**Dwarf:** Removed the unsuccessful crafting enchantment feature.
+Dwarves keep their established underground mining-speed bonus and now
+receive an innate **Fortune II-style bonus on resource drops** via a
+registered Forge 1.20.1 Global Loot Modifier. Applies when a Dwarf
+mines Forge-tagged ores (including supported modded ores), glowstone,
+gravel or Nether wart and the resulting item is a resource rather than
+the original block. Ordinary blocks like cobblestone and dirt are not
+duplicated; Silk Touch and tools already enchanted with Fortune II+
+are excluded from the additional bonus. This is a balanced chance
+of extra resources, not a guarantee on every mined ore.
+
+**Catfolk:** Replaced both ears and tail with an adaptation of the
+*Cat_ears.bbmodel* included in the user's Figura download, made by
+**Ice_Game** (Planet Minecraft, 2024):
+https://www.planetminecraft.com/blog/custom-cat-ears-free-download-figura-log-1/
+The actual model uses two ears built from a base, 3x3x1 ear body and
+1x1x1 tip, and **four 1x1x3 tail segments**. The Forge render layer
+retains ear-adjust controls and animates the four joined tail bones
+with a gentle sway. Texture sheets are directly adapted/repacked from
+the four supplied Figura colour variants: **Black, Blue-ish, Purple,
+and White**. Those replace the previous eleven Minecraft-cat coat
+variants to keep the texture selection consistent with the supplied
+model; old saved feature IDs outside 0-3 fall back to White.
+
+**Fairy** hovering and particles remain untouched after user confirmation.
+The confirmed mechanics for Slime, Arachnid, Goblin, Dogfolk, Tiefling
+and Birdfolk are unchanged. No new network packets or save fields.
+Update only CyberRaces.jar on both client and server. Both changes
+need confirmation in the actual game before CyberRaces is beta-ready.
 
 ## Dwarf, Fairy, Catfolk beta finishing pass (0.3.2-alpha.60)
 

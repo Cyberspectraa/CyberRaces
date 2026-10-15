@@ -37,103 +37,84 @@ public final class BeastfolkModels {
         PartDefinition root = mesh.getRoot();
 
         /*
-         * Low-set, wedge-shaped feline ears. The previous two tall
-         * cuboids looked like antennae/rods on a humanoid head.
-         * A broad shallow base, narrowing inner section and small
-         * pointed tip give a stepped Minecraft cat-ear silhouette.
-         * Both ears are part of the original Cat texture/model root.
+         * Rebuilt from the supplied Ice_Game Figura Cat_ears.bbmodel:
+         * paired 3x3x1 main ear cubes, 3x1x1 bases, 1x1x1 tips,
+         * and a four-segment 1x1x3 articulated tail.
+         *
+         * Original Figura coordinates use positive Y upward. We anchor
+         * the ear group to the vanilla head and tail to the body.
+         * Each 64x64 atlas is repacked from the matching Figura files.
          */
         PartDefinition rightEar = root.addOrReplaceChild(
             "right_ear",
             CubeListBuilder.create()
-                .texOffs(0, 10)
-                .addBox(-1.40F, -0.90F, -0.62F, 2.80F, 0.90F, 1.24F),
-            PartPose.offsetAndRotation(
-                -2.70F, -7.75F, -0.32F, -0.04F, 0.0F, 0.10F)
+                .texOffs(20, 0)
+                .addBox(-1.5F, 0.0F, -0.5F, 3.0F, 1.0F, 1.0F)
+                .texOffs(0, 0)
+                .addBox(-1.5F, -3.0F, -0.5F, 3.0F, 3.0F, 1.0F)
+                .texOffs(40, 0)
+                .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+            PartPose.offset(-2.3F, -7.0F, -2.5F)
         );
-
-        PartDefinition rightMiddle = rightEar.addOrReplaceChild(
-            "middle",
-            CubeListBuilder.create()
-                .texOffs(0, 10)
-                .addBox(-0.94F, -0.85F, -0.52F, 1.88F, 0.95F, 1.04F),
-            PartPose.offset(-0.23F, -0.78F, 0.0F)
-        );
-        rightMiddle.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(2, 10)
-                .addBox(-0.35F, -0.66F, -0.36F, 0.70F, 0.78F, 0.72F),
-            PartPose.offset(-0.17F, -0.74F, 0.02F)
+        // A small thin patch gives depth and soft inner-ear colour.
+        rightEar.addOrReplaceChild(
+            "inner", CubeListBuilder.create()
+                .texOffs(52, 0)
+                .addBox(-0.48F, -2.65F, -0.56F, 0.96F, 1.70F, 0.06F),
+            PartPose.ZERO
         );
 
         PartDefinition leftEar = root.addOrReplaceChild(
             "left_ear",
             CubeListBuilder.create()
-                .texOffs(6, 10)
-                .mirror()
-                .addBox(-1.40F, -0.90F, -0.62F, 2.80F, 0.90F, 1.24F)
-                .mirror(false),
-            PartPose.offsetAndRotation(
-                2.70F, -7.75F, -0.32F, -0.04F, 0.0F, -0.10F)
+                .texOffs(30, 0)
+                .addBox(-1.5F, 0.0F, -0.5F, 3.0F, 1.0F, 1.0F)
+                .texOffs(10, 0)
+                .addBox(-1.5F, -3.0F, -0.5F, 3.0F, 3.0F, 1.0F)
+                .texOffs(46, 0)
+                .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+            PartPose.offset(2.3F, -7.0F, -2.5F)
+        );
+        leftEar.addOrReplaceChild(
+            "inner", CubeListBuilder.create()
+                .texOffs(58, 0)
+                .addBox(-0.48F, -2.65F, -0.56F, 0.96F, 1.70F, 0.06F),
+            PartPose.ZERO
         );
 
-        PartDefinition leftMiddle = leftEar.addOrReplaceChild(
-            "middle",
-            CubeListBuilder.create()
-                .texOffs(6, 10)
-                .mirror()
-                .addBox(-0.94F, -0.85F, -0.52F, 1.88F, 0.95F, 1.04F)
-                .mirror(false),
-            PartPose.offset(0.23F, -0.78F, 0.0F)
-        );
-        leftMiddle.addOrReplaceChild(
-            "tip",
-            CubeListBuilder.create()
-                .texOffs(8, 10)
-                .mirror()
-                .addBox(-0.35F, -0.66F, -0.36F, 0.70F, 0.78F, 0.72F)
-                .mirror(false),
-            PartPose.offset(0.17F, -0.74F, 0.02F)
-        );
-
-        /*
-         * Use the exact two vanilla Cat/Ocelot tail boxes and UVs.
-         * Vanilla renders the pieces separately; we parent tail2 to tail1
-         * using the equivalent local transform so it cannot disconnect.
-         */
-        PartDefinition tail = root.addOrReplaceChild(
+        // The four original straight Figura tail sections are nested
+        // rather than independent, so slight motion never opens a gap.
+        PartDefinition tail1 = root.addOrReplaceChild(
             "tail",
             CubeListBuilder.create()
-                .texOffs(0, 15)
-                .addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F),
-            PartPose.offsetAndRotation(0.0F, 8.0F, 2.0F, 0.90F, 0.0F, 0.0F)
+                .texOffs(0, 10)
+                .addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F),
+            PartPose.offsetAndRotation(0.0F, -3.0F, 2.0F,
+                    0.0F, 0.0F, 0.0F)
         );
-
-        tail.addOrReplaceChild(
+        PartDefinition tail2 = tail1.addOrReplaceChild(
             "tail2",
             CubeListBuilder.create()
-                .texOffs(4, 15)
-                .addBox(
-                    -0.5F,
-                    0.0F,
-                    0.0F,
-                    1.0F,
-                    8.0F,
-                    1.0F,
-                    new CubeDeformation(-0.02F)
-                ),
-            PartPose.offsetAndRotation(
-                0.0F,
-                7.965F,
-                -0.062F,
-                0.8278761F,
-                0.0F,
-                0.0F
-            )
+                .texOffs(12, 10)
+                .addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F),
+            PartPose.offset(0.0F, 0.0F, 2.85F)
+        );
+        PartDefinition tail3 = tail2.addOrReplaceChild(
+            "tail3",
+            CubeListBuilder.create()
+                .texOffs(24, 10)
+                .addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F),
+            PartPose.offset(0.0F, 0.0F, 2.85F)
+        );
+        tail3.addOrReplaceChild(
+            "tail4",
+            CubeListBuilder.create()
+                .texOffs(36, 10)
+                .addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F),
+            PartPose.offset(0.0F, 0.0F, 2.85F)
         );
 
-        return LayerDefinition.create(mesh, 64, 32);
+        return LayerDefinition.create(mesh, 64, 64);
     }
 
     public static LayerDefinition createWolfLayer() {

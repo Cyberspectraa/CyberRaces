@@ -433,40 +433,30 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         getParentModel().body.translateAndRotate(poseStack);
 
         if (race == Race.CATFOLK) {
-            ModelPart tail2 = tail.getChild("tail2");
-
-            float oldTailY = tail.yRot;
-            float oldTailX = tail.xRot;
-            float oldTipY = tail2.yRot;
-            float oldTipX = tail2.xRot;
-
-            float idle =
-                (float) Math.sin(ageInTicks * 0.080F) * 0.035F;
-            float walk =
-                (float) Math.sin(limbSwing * 0.6662F)
-                    * movement
-                    * 0.050F;
-
-            tail.yRot = oldTailY + idle + walk;
-            tail.xRot =
-                oldTailX
-                    + (float) Math.cos(ageInTicks * 0.040F) * 0.010F;
-
-            tail2.yRot =
-                oldTipY
-                    + (float) Math.sin(
-                        ageInTicks * 0.080F - 0.42F
-                    ) * 0.050F
-                    + (float) Math.sin(
-                        limbSwing * 0.6662F - 0.35F
-                    ) * movement * 0.065F;
-
-            tail2.xRot =
-                oldTipX
-                    + (float) Math.cos(
-                        ageInTicks * 0.040F - 0.25F
-                    ) * 0.015F;
-
+            // Figura four-joint cat tail, with subtle travelling sway.
+            ModelPart[] links = {
+                tail, tail.getChild("tail2"),
+                tail.getChild("tail2").getChild("tail3"),
+                tail.getChild("tail2").getChild("tail3").getChild("tail4")
+            };
+            float[] oldY = new float[links.length];
+            float[] oldX = new float[links.length];
+            for (int i = 0; i < links.length; i++) {
+                ModelPart part = links[i];
+                oldY[i] = part.yRot;
+                oldX[i] = part.xRot;
+                float offset = i * 0.42F;
+                float idle = (float) Math.sin(
+                        ageInTicks * 0.065F - offset) * 0.047F;
+                float walk = (float) Math.sin(
+                        limbSwing * 0.6662F - offset)
+                        * movement * 0.058F;
+                part.yRot = oldY[i] + idle + walk;
+                part.xRot = oldX[i]
+                        + (float) Math.cos(
+                                ageInTicks * 0.045F - offset)
+                        * 0.011F;
+            }
             tail.render(
                 poseStack,
                 consumer,
@@ -477,11 +467,10 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 1.0F,
                 1.0F
             );
-
-            tail.yRot = oldTailY;
-            tail.xRot = oldTailX;
-            tail2.yRot = oldTipY;
-            tail2.xRot = oldTipX;
+            for (int i = 0; i < links.length; i++) {
+                links[i].yRot = oldY[i];
+                links[i].xRot = oldX[i];
+            }
         } else {
             float oldY = tail.yRot;
             float oldX = tail.xRot;

@@ -5,32 +5,18 @@ import com.cyberspectraa.cyberraces.race.Race;
 import net.minecraft.resources.ResourceLocation;
 
 public final class BeastVariantTextures {
+    // Texture choices provided in the user's Figura CatEars.zip.
+    // Existing saved race/feature IDs continue to load; old indices
+    // outside this colour range use the nearest valid source variant.
     private static final String[] CAT_NAMES = {
-        "Tabby",
-        "Black",
-        "Red",
-        "Siamese",
-        "British Shorthair",
-        "Calico",
-        "Persian",
-        "Ragdoll",
-        "White",
-        "Jellie",
-        "All Black"
+        "Black", "Blue-ish", "Purple", "White"
     };
 
     private static final ResourceLocation[] CAT_TEXTURES = {
-        minecraft("textures/entity/cat/tabby.png"),
-        minecraft("textures/entity/cat/black.png"),
-        minecraft("textures/entity/cat/red.png"),
-        minecraft("textures/entity/cat/siamese.png"),
-        minecraft("textures/entity/cat/british_shorthair.png"),
-        minecraft("textures/entity/cat/calico.png"),
-        minecraft("textures/entity/cat/persian.png"),
-        minecraft("textures/entity/cat/ragdoll.png"),
-        minecraft("textures/entity/cat/white.png"),
-        minecraft("textures/entity/cat/jellie.png"),
-        minecraft("textures/entity/cat/all_black.png")
+        cyber("textures/entity/beast/figura_cat_black.png"),
+        cyber("textures/entity/beast/figura_cat_blue_ish.png"),
+        cyber("textures/entity/beast/figura_cat_purple.png"),
+        cyber("textures/entity/beast/figura_cat_white.png")
     };
 
     private static final String[] DOG_NAMES = {
