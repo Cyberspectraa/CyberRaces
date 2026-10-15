@@ -89,7 +89,9 @@ public final class BeastfolkModels {
             CubeListBuilder.create()
                 .texOffs(0, 10)
                 .addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F),
-            PartPose.offsetAndRotation(0.0F, -3.0F, 2.0F,
+            // Vanilla body pivot is at model Y=0. Figura tail origin
+            // is 15 pixels above the feet -> model Y=9, at the hips.
+            PartPose.offsetAndRotation(0.0F, 9.0F, 2.0F,
                     0.0F, 0.0F, 0.0F)
         );
         PartDefinition tail2 = tail1.addOrReplaceChild(
