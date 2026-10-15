@@ -189,7 +189,7 @@ public final class CharacterCreatorScreen extends Screen {
         if (!l.small) {
             graphics.drawCenteredString(
                 this.font,
-                "Your normal Minecraft skin stays intact.",
+                "Keep your skin. Choose the traits of your race.",
                 l.centerX,
                 l.top + 24,
                 0xB8B8B8
@@ -291,11 +291,15 @@ public final class CharacterCreatorScreen extends Screen {
                 graphics,
                 BeastVariantTextures.isBeastfolk(currentRace())
                     ? (currentRace() == Race.CATFOLK
-                        ? "Figura Catfolk ears and tail; four original colours."
-                        : "Ears and tail use the selected Minecraft animal coat texture.")
-                    : FeatureColourPalette.hasEars(currentRace())
-                        ? "Use Skin for automatic texture matching, or pick any custom colour."
-                        : "Pick any custom colour for this racial feature.",
+                        ? "Figura-style cat ears and tail. Pick a coat above."
+                        : "Ears and tail follow the selected animal coat.")
+                    : currentRace() == Race.BIRDFOLK
+                        ? "Choose your wing colour above."
+                        : !hasFeatureColour(currentRace())
+                            ? "This feature has no colour setting."
+                            : FeatureColourPalette.hasEars(currentRace())
+                                ? "Use Skin to match your skin, or choose a colour."
+                                : "Choose a colour for this feature.",
                 x,
                 l.top + 202,
                 maxWidth,
@@ -513,100 +517,100 @@ public final class CharacterCreatorScreen extends Screen {
 
     private String featureDescription() {
         return switch (currentRace()) {
-            case HUMAN -> "No forced racial geometry.";
-            case ELF -> "Pointed ears with adjustable placement.";
-            case DWARF -> "Short, sturdy silhouette.";
-            case HALFLING -> "Small adjustable ears.";
-            case ORC -> "Strong pointed ears with adjustable placement.";
-            case GOBLIN -> "Large adjustable outward ears.";
-            case TIEFLING -> "Horns and an animated tail.";
-            case DRAGONBORN -> "Horned crest and scaled tail.";
-            case FAIRY -> "Adjustable fey ears and Zanza's Wings.";
-            case NYMPH -> "Human-like nature spirit with no forced racial geometry.";
-            case CATFOLK -> "Vanilla Cat ears/tail with selectable Cat coat variants.";
-            case DOGFOLK -> "Vanilla Wolf ears/tail with selectable Wolf coat variants.";
-            case FOXFOLK -> "Vanilla Fox ears/tail with Red or Snow coat variants.";
-            case AASIMAR -> "Celestial heritage; evolved paths can awaken visible light or fallen wings.";
-            case BIRDFOLK -> "Permanent Icarus feathered wings with 16 selectable feather colours.";
-            case SLIME -> "Your entire player skin gains a translucent gelatin sheen.";
-            case ARACHNID -> "Humanoid arachnid with wall-scaling instinct and web binding.";
-            case UNDEAD -> "An immortal-looking humanoid sustained by lingering soul energy.";
+            case HUMAN -> "No extra ears, horns or tails.";
+            case ELF -> "Pointed ears with adjustable height and angle.";
+            case DWARF -> "Short build; no added ears or horns.";
+            case HALFLING -> "Small ears and a short build.";
+            case ORC -> "Broad pointed ears with adjustable placement.";
+            case GOBLIN -> "Long, outward-pointing ears.";
+            case TIEFLING -> "Curved horns and a moving tail.";
+            case DRAGONBORN -> "Scaled body, horned crest and tail.";
+            case FAIRY -> "Pointed ears and delicate wings.";
+            case NYMPH -> "Nature-tinted skin without added limbs.";
+            case CATFOLK -> "Cat ears and tail, with selectable coat patterns.";
+            case DOGFOLK -> "Wolf ears and tail, with selectable coat patterns.";
+            case FOXFOLK -> "Fox ears and tail; red and snow coats.";
+            case AASIMAR -> "Celestial features. Not a starting race.";
+            case BIRDFOLK -> "Feathered wings in your chosen colour.";
+            case SLIME -> "Gel-like skin with an automatic slime colour.";
+            case ARACHNID -> "Spider-like movement without extra limbs.";
+            case UNDEAD -> "Undead form gained through infection.";
         };
     }
 
     private String[] raceSummary(Race race) {
         return switch (race) {
             case HUMAN -> new String[] {
-                "Balanced and adaptable.",
-                "+5% experience gained."
+                "No racial bonuses to health, speed or mana.",
+                "Gains 5% more experience."
             };
             case ELF -> new String[] {
-                "Fast and magical; lower health.",
-                "Bows reach full draw 15% sooner."
+                "18 health; quicker, with better mana.",
+                "Bows charge 15% faster."
             };
             case DWARF -> new String[] {
-                "Tough and resistant; slightly slower.",
-                "+15% mining underground; innate Fortune II on eligible ore drops."
+                "22 health. Sturdy, but slower on foot.",
+                "Mines faster underground; extra resource drops."
             };
             case HALFLING -> new String[] {
-                "Small and nimble.",
-                "+1 Luck; 35% less fall damage."
+                "18 health; small, quick and lucky.",
+                "+1 Luck; takes 35% less fall damage."
             };
             case ORC -> new String[] {
-                "High health; lower natural mana.",
-                "+20% damage below 35% health. V: War Cry."
+                "24 health; hits harder when badly hurt.",
+                "V: War Cry grants Strength and knockback resistance."
             };
             case GOBLIN -> new String[] {
-                "Small and quick; more fragile.",
-                "+0.5 Luck. V: Treasure Instinct reveals nearby ores and caches."
+                "18 health, high speed and +0.5 Luck.",
+                "V: Treasure Instinct marks ores and stocked containers."
             };
             case TIEFLING -> new String[] {
-                "Strong magic.",
-                "50% fire resistance. V: Infernal Surge empowers melee."
+                "Takes half damage from fire.",
+                "V: Infernal Surge boosts melee and sets foes alight."
             };
             case DRAGONBORN -> new String[] {
-                "Armoured and resilient.",
-                "V: Level 10 Fire Breath, no mana, 18s cooldown."
+                "22 health, tough scales and natural armour.",
+                "V: Fire Breath with Iron's Spells; no mana cost."
             };
             case FAIRY -> new String[] {
-                "Tiny and magical; fragile.",
-                "V: Toggle 3-4 block Hover. Icarus wings remain full flight."
+                "14 health; tiny, quick and good with mana.",
+                "V: Toggle Hover. Natural wings with Icarus."
             };
             case NYMPH -> new String[] {
-                "Nature spirit: green-toned and magical, slightly fragile.",
-                "Heals slowly in rain/water. V: Nature's Grace."
+                "18 health; good mana, but less sturdy.",
+                "Heals in rain or water. V: Nature's Grace."
             };
             case CATFOLK -> new String[] {
-                "Fast and agile.",
-                "12% higher jump; 60% less fall damage."
+                "Quicker movement and higher jumps.",
+                "Takes 60% less fall damage."
             };
             case DOGFOLK -> new String[] {
-                "Sturdy and loyal; slightly lower mana.",
-                "35% less sprint exhaustion. V: Hunter's Nose reveals creatures."
+                "22 health; uses less hunger while sprinting.",
+                "V: Hunter's Nose outlines nearby creatures."
             };
             case FOXFOLK -> new String[] {
-                "Quick and magical; lower health.",
-                "+20% crouch speed. V: Quickstep dash."
+                "18 health, quick and light on their feet.",
+                "Sneaks faster. V: Quickstep dashes forward."
             };
             case AASIMAR -> new String[] {
-                "Celestial and naturally resistant to magic.",
-                "Legacy race, unavailable to new characters."
+                "Resists spells and takes less fall damage.",
+                "Legacy race; cannot be chosen at creation."
             };
             case BIRDFOLK -> new String[] {
-                "Winged aerial species with lower health and high mobility.",
-                "Icarus feathered wings; V: Wing Burst. 65% less fall damage."
+                "18 health, with feathered wings.",
+                "V: Wing Burst. Takes 65% less fall damage."
             };
             case SLIME -> new String[] {
-                "Gelatinous humanoid with an all-over slime skin.",
-                "No fall damage, bouncy landings and slime running droplets."
+                "Bounces after falls and takes no fall damage.",
+                "Higher jumps; sneak to land without bouncing."
             };
             case ARACHNID -> new String[] {
-                "Swift silk-blooded hunter with a wall-climbing instinct.",
-                "Climb walls like a spider. V: shoot a cobweb projectile."
+                "Climbs walls; sneak to hold your place.",
+                "V: Web Shot leaves a temporary cobweb."
             };
             case UNDEAD -> new String[] {
-                "Tough revenant with lower hunger and a weakness to fire.",
-                "Poison-resistant. Cure with Weakness and a golden apple."
+                "Acquired through Zombification, not at birth.",
+                "Undead won't attack; beware daylight and fire."
             };
         };
     }
