@@ -40,13 +40,13 @@ public final class DwarfFortuneModifier extends LootModifier {
     @Override
     protected @NotNull ObjectArrayList<ItemStack> doApply(
             ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-        Entity source = context.getOptionalParam(LootContextParams.THIS_ENTITY);
+        Entity source = context.getParamOrNull(LootContextParams.THIS_ENTITY);
         if (!(source instanceof ServerPlayer player)
                 || RaceManager.getRace(player).orElse(null) != Race.DWARF) {
             return generatedLoot;
         }
-        BlockState state = context.getOptionalParam(LootContextParams.BLOCK_STATE);
-        ItemStack tool = context.getOptionalParam(LootContextParams.TOOL);
+        BlockState state = context.getParamOrNull(LootContextParams.BLOCK_STATE);
+        ItemStack tool = context.getParamOrNull(LootContextParams.TOOL);
         if (state == null || tool == null || generatedLoot.isEmpty()
                 || !(state.is(Tags.Blocks.ORES)
                     || state.is(Blocks.GLOWSTONE)
