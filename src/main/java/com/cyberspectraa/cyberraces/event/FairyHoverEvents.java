@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -28,5 +29,16 @@ public final class FairyHoverEvents {
         }
 
         FairyHoverPhysics.apply(player);
+
+        // Subtle visible sparkle trail for the local Fairy and other
+        // nearby players. Only spawn particles while actively hovering.
+        if (!player.onGround() && FairyHoverPhysics.canHover(player)
+                && player.tickCount % 7 == 0) {
+            player.serverLevel().sendParticles(ParticleTypes.END_ROD,
+                    player.getX(),
+                    player.getY() + 0.12D,
+                    player.getZ(),
+                    2, 0.27D, 0.12D, 0.27D, 0.006D);
+        }
     }
 }

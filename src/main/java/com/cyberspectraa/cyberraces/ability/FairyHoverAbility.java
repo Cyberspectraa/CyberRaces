@@ -1,5 +1,7 @@
 package com.cyberspectraa.cyberraces.ability;
 
+import com.cyberspectraa.cyberraces.event.FairyHoverPhysics;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -19,6 +21,7 @@ public final class FairyHoverAbility {
     ) {
         if (enabled) {
             ENABLED.add(player.getUUID());
+            FairyHoverPhysics.takeoff(player);
         } else {
             ENABLED.remove(player.getUUID());
         }

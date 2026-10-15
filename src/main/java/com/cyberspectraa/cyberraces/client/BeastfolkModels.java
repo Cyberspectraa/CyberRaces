@@ -36,32 +36,65 @@ public final class BeastfolkModels {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
+        /*
+         * Low-set, wedge-shaped feline ears. The previous two tall
+         * cuboids looked like antennae/rods on a humanoid head.
+         * A broad shallow base, narrowing inner section and small
+         * pointed tip give a stepped Minecraft cat-ear silhouette.
+         * Both ears are part of the original Cat texture/model root.
+         */
         PartDefinition rightEar = root.addOrReplaceChild(
             "right_ear",
             CubeListBuilder.create()
                 .texOffs(0, 10)
-                .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
-            PartPose.offset(-2.4F, -8.0F, -0.25F)
+                .addBox(-1.40F, -0.90F, -0.62F, 2.80F, 0.90F, 1.24F),
+            PartPose.offsetAndRotation(
+                -2.70F, -7.75F, -0.32F, -0.04F, 0.0F, 0.10F)
+        );
+
+        PartDefinition rightMiddle = rightEar.addOrReplaceChild(
+            "middle",
+            CubeListBuilder.create()
+                .texOffs(0, 10)
+                .addBox(-0.94F, -0.85F, -0.52F, 1.88F, 0.95F, 1.04F),
+            PartPose.offset(-0.23F, -0.78F, 0.0F)
+        );
+        rightMiddle.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(2, 10)
+                .addBox(-0.35F, -0.66F, -0.36F, 0.70F, 0.78F, 0.72F),
+            PartPose.offset(-0.17F, -0.74F, 0.02F)
         );
 
         PartDefinition leftEar = root.addOrReplaceChild(
             "left_ear",
             CubeListBuilder.create()
                 .texOffs(6, 10)
-                .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
-            PartPose.offset(2.4F, -8.0F, -0.25F)
+                .mirror()
+                .addBox(-1.40F, -0.90F, -0.62F, 2.80F, 0.90F, 1.24F)
+                .mirror(false),
+            PartPose.offsetAndRotation(
+                2.70F, -7.75F, -0.32F, -0.04F, 0.0F, -0.10F)
         );
 
-        // Two-pixel wide ear bases with narrow pointed tips, not rods.
-        rightEar.addOrReplaceChild(
-            "tip", CubeListBuilder.create().texOffs(2, 10)
-                    .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
-            PartPose.offset(-0.3F, -2.0F, 0.0F)
+        PartDefinition leftMiddle = leftEar.addOrReplaceChild(
+            "middle",
+            CubeListBuilder.create()
+                .texOffs(6, 10)
+                .mirror()
+                .addBox(-0.94F, -0.85F, -0.52F, 1.88F, 0.95F, 1.04F)
+                .mirror(false),
+            PartPose.offset(0.23F, -0.78F, 0.0F)
         );
-        leftEar.addOrReplaceChild(
-            "tip", CubeListBuilder.create().texOffs(8, 10)
-                    .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
-            PartPose.offset(0.3F, -2.0F, 0.0F)
+        leftMiddle.addOrReplaceChild(
+            "tip",
+            CubeListBuilder.create()
+                .texOffs(8, 10)
+                .mirror()
+                .addBox(-0.35F, -0.66F, -0.36F, 0.70F, 0.78F, 0.72F)
+                .mirror(false),
+            PartPose.offset(0.17F, -0.74F, 0.02F)
         );
 
         /*

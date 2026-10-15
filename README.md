@@ -1,6 +1,6 @@
 # CyberRaces
 
-**Current version: 0.3.2-alpha.59** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
+**Current version: 0.3.2-alpha.60** · Minecraft **1.20.1** · Forge **47.4.10** · Java **17**
 
 CyberRaces supplies character creation, race-specific attributes/cosmetics, racial abilities, race evolution and the shared **Cyber Level** progression system for the CyberSpectra Season 2 ecosystem. **Race and class are independent:** CyberClasses owns the class selection and equipment/magic rules.
 
@@ -17,6 +17,40 @@ abilities, network packet and save data remain unchanged.
 Only **CyberRaces** changes; replace CyberRaces.jar on client and server with
 0.3.2-alpha.48. This fixes the identified unsafe startup path but still
 requires an in-game launch test with the full modpack.
+
+## Dwarf, Fairy, Catfolk beta finishing pass (0.3.2-alpha.60)
+
+- **Dwarf crafting:** Actually registered an `ItemCraftedEvent`
+  handler; earlier builds only had the mining-speed passive.
+  Every successfully crafted **single new, enchantable unenchanted
+  equipment item** has a 15% chance of gaining a random modest
+  vanilla-valid enchantment (approximately enchanting-table levels
+  7-14). Compatible modded gear is eligible if it supports normal
+  enchantment. This runs on the server and modifies the *crafted*
+  stack, not the ingredients. A success message, gentle sound and
+  enchant particles make it clear when it triggered.
+  Bulk-stack recipes and already enchanted items are excluded.
+- **Fairy hovering:** Reduced unwanted vertical oscillation by
+  holding a stable vertical velocity inside a 3.2-3.8 block
+  hovering range. Gently approaches this range from above/below,
+  preserves horizontal movement and normal upward jump momentum,
+  and adds a small server-synced END_ROD sparkle trail while hovering.
+  Toggling hover on while grounded now automatically starts a
+  gentle takeoff, with matching client and server prediction.
+  Shift still provides controlled descent, and Icarus flight
+  remains separate.
+- **Catfolk ears:** Changed the Catfolk ear model to lower,
+  outward-angled stepped triangular wedges instead of tall chunky
+  rectangular ears. Their coat textures, ear adjustment settings,
+  tail animations and racial stats remain unchanged.
+- **Birdfolk:** Confirmed working in-game by the player, unchanged.
+- Existing tested Slime, Arachnid, Goblin, Dogfolk, Tiefling
+  and other races are unchanged. Existing saves and network
+  protocol remain compatible. Replace only CyberRaces.jar on
+  client and server.
+
+In-game tests are still needed for Dwarf crafting, Fairy hovering
+and the new Catfolk ear silhouette.
 
 ## Arachnid ladder-like wall hold (0.3.2-alpha.59)
 

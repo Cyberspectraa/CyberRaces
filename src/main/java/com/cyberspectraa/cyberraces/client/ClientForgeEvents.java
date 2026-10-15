@@ -126,6 +126,11 @@ public final class ClientForgeEvents {
             if (race == Race.FAIRY) {
                 toggleState =
                     ClientAbilityState.toggleFairyHover();
+                if (toggleState) {
+                    // Mirror the server's takeoff locally so activating
+                    // from the ground feels responsive, not rubber-banded.
+                    FairyHoverPhysics.takeoff(minecraft.player);
+                }
             }
 
             CyberRacesNetwork.sendToServer(

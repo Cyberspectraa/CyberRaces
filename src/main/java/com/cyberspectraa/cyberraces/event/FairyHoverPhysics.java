@@ -13,13 +13,14 @@ import net.minecraft.world.phys.Vec3;
  * position lock. Horizontal movement is never modified.
  */
 public final class FairyHoverPhysics {
-    private static final double LOWER_HOVER_HEIGHT = 2.90D;
-    private static final double UPPER_HOVER_HEIGHT = 4.20D;
+    // A small dead zone keeps hover stable instead of alternating
+    // between a lift tick and a fall tick at the exact same elevation.
+    private static final double LOWER_HOVER_HEIGHT = 3.20D;
+    private static final double UPPER_HOVER_HEIGHT = 3.80D;
     private static final double GROUND_SCAN = 6.00D;
 
-    private static final double LIFT_SPEED = 0.065D;
-    private static final double FLOAT_DESCENT = -0.015D;
-    private static final double SAFE_DESCENT = -0.12D;
+    private static final double LIFT_SPEED = 0.080D;
+    private static final double SAFE_DESCENT = -0.065D;
     private static final double CROUCH_MIN_DESCENT = -0.08D;
     private static final double CROUCH_MAX_DESCENT = -0.17D;
 
@@ -37,6 +38,21 @@ public final class FairyHoverPhysics {
             && !player.isInWaterOrBubble()
             && !player.isInLava()
             && !player.getAbilities().flying;
+    }
+
+    /** Allow enabling hover from the ground without needing a jump first. */
+    public static void takeoff(Player player) {
+        if (player == null || player.isPassenger() || player.isInWaterOrBubble()
+                || player.isFallFlying() || player.getAbilities().flying) return;
+        if (player.onGround()) {
+            Vec3 movement = player.getDeltaMovement();
+            player.setDeltaMovement(
+                    movement.x, Math.max(0.28D, movement.y), movement.z);
+            player.fallDistance = 0.0F;
+            // ServerPlayer has to send the initial lift to the client.
+            if (player instanceof net.minecraft.server.level.ServerPlayer server)
+                server.hurtMarked = true;
+        }
     }
 
     /**
@@ -71,21 +87,20 @@ public final class FairyHoverPhysics {
             // Never squash the player's normal jump/upward momentum.
             return false;
         } else if (height < LOWER_HOVER_HEIGHT) {
-            // Once a jump starts to lose momentum, gently carry the Fairy up
-            // into the hover zone rather than snapping to a fixed Y level.
-            nextY = Math.max(movement.y, LIFT_SPEED);
+            // Gradually rise toward the 3-4 block band; avoid a large
+            // instantaneous shove when stepping across uneven terrain.
+            double need = LOWER_HOVER_HEIGHT - height;
+            nextY = Math.min(0.095D, Math.max(0.025D,
+                    LIFT_SPEED * Math.min(1.0D, need + 0.25D)));
         } else if (height <= UPPER_HOVER_HEIGHT) {
-            // Inside the hover band, allow a tiny downward drift. This feels
-            // much less rigid than forcing zero velocity every tick.
-            if (movement.y < FLOAT_DESCENT) {
-                nextY = FLOAT_DESCENT;
-            }
+            // Within the band cancel gravity instead of oscillating
+            // between upward boost and downward drift every few ticks.
+            nextY = 0.0D;
         } else {
-            // Above the normal hover zone, simply soften the descent. Do not
-            // pull the player downward toward an exact target.
-            if (movement.y < SAFE_DESCENT) {
-                nextY = SAFE_DESCENT;
-            }
+            // Above the band, descend gently while still allowing the
+            // player to steer horizontally without any movement changes.
+            nextY = Math.max(SAFE_DESCENT,
+                    -0.018D - (height - UPPER_HOVER_HEIGHT) * 0.025D);
         }
 
         if (Math.abs(nextY - movement.y) < 0.0005D) {
