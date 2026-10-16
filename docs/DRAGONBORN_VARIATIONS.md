@@ -6,11 +6,11 @@ The character creator offers five elements:
 |---|---|
 | Fire | Fire Breath |
 | Frost | Cone of Cold |
-| Lightning | Lightning Lance (a directed lightning attack, not a continuous cone) |
+| Lightning | A 16-tick electrical breath stream; Ice and Fire CE dragon-lightning sound and damage when installed (vanilla fallback) |
 | Poison | Poison Breath |
 | Ender | Dragon's Breath |
 
-All five spells are cast through Iron's Spells 'n Spellbooks when installed.
+Fire, Frost, Poison and Ender use Iron's Spells 'n Spellbooks. Lightning instead fires a custom short sustained breath stream with Ice and Fire CE damage and sound when installed; it never destroys blocks. Without CE, Lightning uses vanilla damage and particles.
 The standard independent CyberRaces breath cooldown still applies.
 The breath element belongs to the **base Dragonborn**, and stays unchanged
 after evolving into Winged Dragonborn. Evolution adds wings and stat bonuses,

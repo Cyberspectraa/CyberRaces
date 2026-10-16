@@ -613,7 +613,7 @@ public final class CharacterCreatorScreen extends Screen {
                 || currentRace() == Race.DRAGONBORN
                 || currentRace() == Race.SLIME
             ? labels[0]
-            : labels[Math.min(featureStyle, labels.length - 1)];
+            : labels[Math.min(Math.floorMod(featureStyle, 3), labels.length - 1)];
     }
 
     private String featureDescription() {
