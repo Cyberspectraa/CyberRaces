@@ -56,13 +56,13 @@ public final class RaceEvolutionScreen extends Screen {
         // Do not call renderBackground: that creates the full-screen overlay.
         int left = width / 2 - 128;
         int top = height / 2 - 34;
-        graphics.fill(left - 2, top - 2, left + 258, top + 69, 0xFF171513);
-        graphics.fill(left, top, left + 256, top + 65, 0xFF6B6253);
-        graphics.fill(left + 2, top + 2, left + 254, top + 63, 0xE72D2A24);
+        graphics.fill(left - 2, top - 2, left + 258, top + 76, 0xFF171513);
+        graphics.fill(left, top, left + 256, top + 72, 0xFF6B6253);
+        graphics.fill(left + 2, top + 2, left + 254, top + 70, 0xE72D2A24);
         graphics.drawCenteredString(font, "Choose your bloodline",
                 width / 2, top + 9, 0xFFE3D4AD);
         graphics.drawCenteredString(font, "Esc to decide later",
-                width / 2, top + 54, 0xFFAFA58E);
+                width / 2, top + 60, 0xFFAFA58E);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
