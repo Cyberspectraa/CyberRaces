@@ -182,12 +182,13 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         String evolutionId
     ) {
         switch (race) {
+            // AUTO_COLOR ("Skin") samples the player's actual rendered
+            // skin, which already carries the evolved Dark Elf recolour
+            // through the player skin mixin. Fixed gold/violet tints made
+            // the ears visibly differ from the face after evolution.
+            // Explicitly selected mirror colours still take precedence.
             case ELF -> renderEars(
-                poseStack, buffer, packedLight, entity, race,
-                featureColor != CharacterAppearance.AUTO_COLOR ? featureColor
-                    : "high_elf".equals(evolutionId) ? 0xE5CDA1
-                    : "dark_elf".equals(evolutionId) ? 0x75609E
-                    : featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "elf_" + ("high_elf".equals(evolutionId) ? "high"
                     : "dark_elf".equals(evolutionId) ? "long"
                     : switch (feature) {
@@ -218,10 +219,10 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 earHeight, earSpread, earTilt
             );
 
+            // Same behaviour for Hobgoblins: natural ears follow the skin,
+            // whereas a custom mirror colour remains a deliberate override.
             case GOBLIN -> renderEars(
-                poseStack, buffer, packedLight, entity, race,
-                featureColor != CharacterAppearance.AUTO_COLOR ? featureColor
-                    : "hobgoblin".equals(evolutionId) ? 0x739348 : featureColor,
+                poseStack, buffer, packedLight, entity, race, featureColor,
                 "goblin_" + switch (Math.floorMod(feature, 3)) {
                     case 1 -> "long";
                     case 2 -> "swept";
