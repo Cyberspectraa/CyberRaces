@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces.client;
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
+import com.cyberspectraa.cyberraces.network.packet.SaveAppearanceMirrorPacket;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.DragonVariant;
 import net.minecraft.client.gui.GuiGraphics;
@@ -44,9 +45,35 @@ public final class CharacterCreatorScreen extends Screen {
     private Button colourButton;
     private Button earFitButton;
     private Button bodyColourButton;
+    private Button tuskButton;
+    private final boolean mirrorMode;
+    private final String mirrorEvolutionId;
 
     public CharacterCreatorScreen() {
         super(Component.literal("Create Your Character"));
+        mirrorMode = false;
+        mirrorEvolutionId = "";
+    }
+
+    public CharacterCreatorScreen(Race race, String evolutionId,
+            CharacterAppearance saved) {
+        super(Component.literal("Appearance Mirror"));
+        mirrorMode = true;
+        mirrorEvolutionId = evolutionId == null ? "" : evolutionId;
+        for (int i = 0; i < STARTING_RACES.length; i++) {
+            if (STARTING_RACES[i] == race) {
+                raceIndex = i;
+                break;
+            }
+        }
+        featureStyle = saved.featureStyle();
+        featureColor = saved.featureColor();
+        earHeight = saved.earHeight();
+        earSpread = saved.earSpread();
+        earTilt = saved.earTilt();
+        bodySourceColor = saved.bodySourceColor();
+        bodyTargetColor = saved.bodyTargetColor();
+        bodyTolerance = saved.bodyTolerance();
     }
 
     @Override
@@ -58,11 +85,12 @@ public final class CharacterCreatorScreen extends Screen {
 
         int selectorY = l.top + (l.small ? 38 : 54);
 
-        this.addRenderableWidget(
+        Button previousRace = this.addRenderableWidget(
             Button.builder(Component.literal("<"), button -> changeRace(-1))
                 .bounds(l.left + pad, selectorY, arrowWidth, buttonHeight)
                 .build()
         );
+        previousRace.active = !mirrorMode;
 
         int raceX = l.left + pad + arrowWidth + 3;
         int raceWidth = Math.max(
@@ -76,11 +104,13 @@ public final class CharacterCreatorScreen extends Screen {
                 .build()
         );
 
-        this.addRenderableWidget(
+        Button nextRace = this.addRenderableWidget(
             Button.builder(Component.literal(">"), button -> changeRace(1))
                 .bounds(raceX + raceWidth + 3, selectorY, arrowWidth, buttonHeight)
                 .build()
         );
+        nextRace.active = !mirrorMode;
+        raceButton.active = !mirrorMode;
 
         int featureY = l.top + (l.small ? 42 : 78);
         this.featureButton = this.addRenderableWidget(
@@ -94,6 +124,9 @@ public final class CharacterCreatorScreen extends Screen {
                     featureStyle = DragonVariant.style(
                             DragonVariant.type(featureStyle),
                             DragonVariant.horns(featureStyle) + 1);
+                } else if (currentRace() == Race.GOBLIN) {
+                    featureStyle = (featureStyle / 3) * 3
+                            + Math.floorMod(featureStyle + 1, 3);
                 } else {
                     featureStyle = (featureStyle + 1)
                             % featureVariantCount(currentRace());
@@ -169,6 +202,15 @@ public final class CharacterCreatorScreen extends Screen {
                 .build()
         );
 
+        this.tuskButton = this.addRenderableWidget(
+            Button.builder(Component.empty(), button -> {
+                featureStyle = Math.floorMod(featureStyle + 3, 6);
+                refreshLabels();
+            })
+            .bounds(l.right + pad, featureY + (l.small ? 88 : 96),
+                    Math.max(60, l.rightWidth - pad * 2), buttonHeight)
+            .build());
+
         int confirmWidth = l.small
             ? Math.min(126, l.middleWidth - 12)
             : Math.min(160, l.middleWidth - 20);
@@ -176,7 +218,8 @@ public final class CharacterCreatorScreen extends Screen {
         confirmWidth = Math.max(92, confirmWidth);
 
         this.addRenderableWidget(
-            Button.builder(Component.literal("Confirm"), button -> submit())
+            Button.builder(Component.literal(mirrorMode ? "Save Look" : "Confirm"),
+                    button -> submit())
                 .bounds(
                     l.centerX - confirmWidth / 2,
                     l.bottom - (l.small ? 22 : 30),
@@ -405,11 +448,12 @@ public final class CharacterCreatorScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        return false;
+        return mirrorMode;
     }
 
     @Override
     public void onClose() {
+        if (mirrorMode) super.onClose();
     }
 
     @Override
@@ -430,6 +474,7 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     private void changeRace(int direction) {
+        if (mirrorMode) return;
         raceIndex = Math.floorMod(raceIndex + direction, STARTING_RACES.length);
         featureStyle = 0;
         featureColor = currentRace() == Race.DRAGONBORN
@@ -478,6 +523,15 @@ public final class CharacterCreatorScreen extends Screen {
                     race == Race.DRAGONBORN
                         ? "Breath: " + DragonVariant.name(featureStyle)
                         : "Ear Fit..."));
+        }
+
+        if (tuskButton != null) {
+            boolean tusks = mirrorMode && race == Race.GOBLIN
+                    && "hobgoblin".equals(mirrorEvolutionId);
+            tuskButton.visible = tusks;
+            tuskButton.active = tusks;
+            tuskButton.setMessage(Component.literal(
+                    "Tusks: " + (featureStyle < 3 ? "Show" : "Hide")));
         }
 
         if (bodyColourButton != null) {
@@ -617,8 +671,10 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DRAGONBORN -> new String[] {
                 "22 health, tough scales and natural armour.",
-                "V: " + DragonVariant.name(featureStyle)
-                    + " breath using Iron's Spells; keeps its type after evolution."
+                "V: " + (DragonVariant.type(featureStyle) == 2
+                    ? "Lightning breath stream; no mana cost."
+                    : DragonVariant.name(featureStyle)
+                        + " breath through Iron's Spells.")
             };
             case FAIRY -> new String[] {
                 "14 health; tiny, quick and good with mana.",
@@ -712,11 +768,16 @@ public final class CharacterCreatorScreen extends Screen {
     }
 
     void pushPreviewState() {
-        ClientCharacterState.setPreview(currentRace(), currentAppearance());
+        ClientCharacterState.setPreview(currentRace(), currentAppearance(),
+                mirrorMode ? mirrorEvolutionId : "");
     }
 
     private void submit() {
         CharacterAppearance appearance = currentAppearance();
+        if (mirrorMode) {
+            CyberRacesNetwork.sendToServer(new SaveAppearanceMirrorPacket(appearance));
+            return;
+        }
         CyberRacesNetwork.sendToServer(
             new SubmitCharacterPacket(
                 currentRace().id(),

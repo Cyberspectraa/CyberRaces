@@ -14,6 +14,7 @@ public final class ClientCharacterState {
     private static final Map<UUID, VisualCharacter> CHARACTERS = new HashMap<>();
 
     private static Race previewRace;
+    private static String previewEvolutionId = "";
     private static CharacterAppearance previewAppearance = CharacterAppearance.defaults();
 
     private ClientCharacterState() {
@@ -80,7 +81,7 @@ public final class ClientCharacterState {
             && minecraft.player != null
             && player.getUUID().equals(minecraft.player.getUUID())) {
             return Optional.of(
-                new VisualCharacter(previewRace, false, "", previewAppearance)
+                new VisualCharacter(previewRace, false, previewEvolutionId, previewAppearance)
             );
         }
 
@@ -96,8 +97,16 @@ public final class ClientCharacterState {
     }
 
     public static void setPreview(Race race, CharacterAppearance appearance) {
-        if (previewRace != race || !previewAppearance.equals(appearance)) {
+        setPreview(race, appearance, "");
+    }
+
+    public static void setPreview(Race race, CharacterAppearance appearance,
+            String evolutionId) {
+        String selectedEvolution = evolutionId == null ? "" : evolutionId;
+        if (previewRace != race || !previewAppearance.equals(appearance)
+                || !previewEvolutionId.equals(selectedEvolution)) {
             previewRace = race;
+            previewEvolutionId = selectedEvolution;
             previewAppearance = appearance;
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.player != null) {
@@ -112,6 +121,7 @@ public final class ClientCharacterState {
             RaceSkinOverlayManager.invalidate(minecraft.player.getUUID());
         }
         previewRace = null;
+        previewEvolutionId = "";
         previewAppearance = CharacterAppearance.defaults();
     }
 
