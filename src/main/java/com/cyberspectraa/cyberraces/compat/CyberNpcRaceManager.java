@@ -516,9 +516,9 @@ public final class CyberNpcRaceManager {
             default -> 3;
         };
 
-        int featureStyle = variants <= 1
-            ? 0
-            : entity.getRandom().nextInt(variants);
+        int featureStyle = race == Race.DRAGONBORN
+            ? DragonVariant.randomStyle(entity.getRandom())
+            : variants <= 1 ? 0 : entity.getRandom().nextInt(variants);
 
         int earHeight = randomEarSetting(entity);
         int earSpread = randomEarSetting(entity);

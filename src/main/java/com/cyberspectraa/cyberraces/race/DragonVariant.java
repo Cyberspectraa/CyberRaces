@@ -6,7 +6,7 @@ package com.cyberspectraa.cyberraces.race;
  * Every colour is an actual Icarus dragon-wing dye colour.
  */
 public final class DragonVariant {
-    private static final String[] TYPES = {"Fire", "Frost", "Lightning", "Poison", "Ender"};
+    private static final String[] TYPES = {"Fire", "Frost", "Fire", "Poison", "Ender"};
     private static final String[] WING_NAMES = {
         "White", "Orange", "Magenta", "Light Blue", "Yellow", "Lime",
         "Pink", "Gray", "Light Gray", "Cyan", "Purple", "Blue",
@@ -26,7 +26,25 @@ public final class DragonVariant {
     private DragonVariant() {}
 
     public static int type(int savedStyle) {
-        return Math.min(TYPE_COUNT - 1, Math.max(0, savedStyle) / HORN_COUNT);
+        int raw = Math.min(TYPE_COUNT - 1, Math.max(0, savedStyle) / HORN_COUNT);
+        // Old lightning characters use Fire until they choose an element
+        // with the appearance creator. No empty or broken breath slot.
+        return raw == 2 ? 0 : raw;
+    }
+
+    public static int nextType(int type) {
+        return switch (type) {
+            case 0 -> 1;
+            case 1 -> 3;
+            case 3 -> 4;
+            default -> 0;
+        };
+    }
+
+    public static int randomStyle(net.minecraft.util.RandomSource random) {
+        int[] available = {0, 1, 3, 4};
+        return style(available[random.nextInt(available.length)],
+                random.nextInt(HORN_COUNT));
     }
 
     public static int horns(int savedStyle) {
@@ -34,7 +52,7 @@ public final class DragonVariant {
     }
 
     public static int style(int type, int horns) {
-        return Math.floorMod(type, TYPE_COUNT) * HORN_COUNT
+        return (type == 2 ? 0 : Math.floorMod(type, TYPE_COUNT)) * HORN_COUNT
                 + Math.floorMod(horns, HORN_COUNT);
     }
 

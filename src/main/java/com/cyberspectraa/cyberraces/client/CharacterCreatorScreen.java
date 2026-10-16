@@ -162,7 +162,7 @@ public final class CharacterCreatorScreen extends Screen {
                 if (currentRace() == Race.DRAGONBORN) {
                     if (!mirrorMode) {
                         featureStyle = DragonVariant.style(
-                                DragonVariant.type(featureStyle) + 1,
+                                DragonVariant.nextType(DragonVariant.type(featureStyle)),
                                 DragonVariant.horns(featureStyle));
                     }
                     refreshLabels();
@@ -674,10 +674,8 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DRAGONBORN -> new String[] {
                 "22 health, tough scales and natural armour.",
-                "V: " + (DragonVariant.type(featureStyle) == 2
-                    ? "Lightning breath stream; no mana cost."
-                    : DragonVariant.name(featureStyle)
-                        + " breath through Iron's Spells.")
+                "V: " + DragonVariant.name(featureStyle)
+                        + " breath through Iron's Spells."
             };
             case FAIRY -> new String[] {
                 "14 health; tiny, quick and good with mana.",

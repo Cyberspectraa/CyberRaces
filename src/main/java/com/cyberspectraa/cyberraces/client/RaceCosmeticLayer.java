@@ -315,18 +315,13 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             }
         }
 
-        // Evolved forms have distinct permanent head details; original
-        // player skin, hair and regular race parts remain underneath.
-        switch (evolutionId) {
-            case "high_elf" -> renderEvolutionHead(
-                poseStack, buffer, packedLight, "high_elf_circlet", 0xECD081);
-            case "dark_elf" -> renderEvolutionHead(
-                poseStack, buffer, packedLight, "dark_elf_circlet", 0xA58AD2);
-            case "elder_dwarf" -> renderEvolutionHead(
-                poseStack, buffer, packedLight, "elder_dwarf_beard", 0xB9B0A0);
-            case "hobgoblin" -> renderEvolutionHead(
-                poseStack, buffer, packedLight, "hobgoblin_tusks", 0xE4D3AB);
-            default -> { }
+        // The removed elf headpieces and Elder Dwarf beard MUST NOT be
+        // looked up. Their old lookups crashed in third-person / F5.
+        // Hobgoblin tusks are part of the current baked model and may be
+        // toggled off through the cosmetic mirror.
+        if ("hobgoblin".equals(evolutionId) && Math.floorDiv(feature, 3) == 0) {
+            renderEvolutionHead(poseStack, buffer, packedLight,
+                    "hobgoblin_tusks", 0xE4D3AB);
         }
     }
 
@@ -336,7 +331,14 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         getParentModel().head.translateAndRotate(stack);
         VertexConsumer consumer = buffer.getBuffer(
                 RenderType.entityCutoutNoCull(FEATURE_TEXTURE));
-        hardRoot.getChild(part).render(stack, consumer, light,
+        ModelPart actual;
+        try {
+            actual = hardRoot.getChild(part);
+        } catch (java.util.NoSuchElementException missingOptionalPart) {
+            stack.popPose();
+            return; // Stale/optional model components must not crash rendering.
+        }
+        actual.render(stack, consumer, light,
                 OverlayTexture.NO_OVERLAY,
                 ((rgb >> 16) & 255) / 255.0F,
                 ((rgb >> 8) & 255) / 255.0F,

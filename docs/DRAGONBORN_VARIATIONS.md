@@ -1,46 +1,49 @@
-# Dragonborn appearance and breath choices
+# Dragonborn elements and visual variations
 
-The character creator offers five elements:
+Dragonborn now have four functional V-key breath selections with Iron's
+Spells 'n Spellbooks:
 
-| Type | V-key spell from Iron's Spells 'n Spellbooks |
+| Variant | Breath |
 |---|---|
 | Fire | Fire Breath |
 | Frost | Cone of Cold |
-| Lightning | A 16-tick electrical breath stream; Ice and Fire CE dragon-lightning sound and damage when installed (vanilla fallback) |
 | Poison | Poison Breath |
 | Ender | Dragon's Breath |
 
-Fire, Frost, Poison and Ender use Iron's Spells 'n Spellbooks. Lightning instead fires a custom short sustained breath stream with Ice and Fire CE damage and sound when installed; it never destroys blocks. Without CE, Lightning uses vanilla damage and particles.
-The standard independent CyberRaces breath cooldown still applies.
-The breath element belongs to the **base Dragonborn**, and stays unchanged
-after evolving into Winged Dragonborn. Evolution adds wings and stat bonuses,
-rather than replacing the chosen breath.
+**Lightning has been removed as a selectable variant.** The custom
+lightning stream and old Lightning Lance mapping are gone. Old
+Dragonborn characters saved with the discontinued Lightning slot
+automatically use Fire Breath without losing their crest, colours or
+Winged Dragonborn evolution.
 
-The creator stores the dragon element and horn shape together in the
-existing CharacterAppearance.FeatureStyle field: `element * 3 + hornShape`.
-Existing Dragonborn characters with styles 0–2 remain Fire Dragonborn.
-Elements: 0 Fire, 1 Frost, 2 Lightning, 3 Poison, 4 Ender.
-Horn shapes: 0 Horned, 1 Crowned, 2 Swept.
+For save compatibility the style numbers remain grouped in sets of
+three horn shapes, with element slots 0 (Fire), 1 (Frost), 3
+(Poison) and 4 (Ender). Slot 2 is reserved and treated as Fire.
+Newly created Dragonborn and wild NPC Dragonborn never select slot 2.
+All of the retained breath options persist after evolving into
+Winged Dragonborn.
 
-The horn/tail colour control cycles the 16 real dye colours of Icarus
-dragon wings. Winged Dragonborn automatically equip matching Icarus
-dragon wings, when Icarus and Curios are installed and a Curios back
-slot is available. Existing non-palette colours are snapped to the
-closest matching wing colour.
+The appearance mirror allows cosmetic edits, including horns, tail and
+wing-matched dye colours. It cannot change Dragonborn breath type.
+Icarus dragon wings match the horn/tail colour when the optional
+wing compatibility is available.
 
-New Wild NPC Dragonborn can spawn with any of these element/crest and
-wing-dye colour combinations. Their Wild-NPC AI uses matching particle
-and damage effects for its short-range racial attack. Wild NPCs do not
-evolve into Winged Dragonborn.
+## Evolution appearance and ritual
 
-Evolved appearance:
-- High Elf: higher ears, pale-gold circlet and light-coloured ear accents.
-- Dark Elf: darker skin tint, long violet ears and dark/violet circlet.
-- Elder Dwarf: thick grey beard with braided side pieces.
-- Hobgoblin: long green ears and prominent tusks.
-- Winged Dragonborn: matching Icarus dragon wings; chosen horns, tail,
-  colour and breath stay the same.
+High Elf, Dark Elf and Elder Dwarf do not receive forced cosmetic
+headpieces or beards. The Hobgoblin's tusks can be toggled with the
+Appearance Mirror.
 
-The awakening screen is a Minecraft-styled rune ritual with a wake-up
-particle and sound cue. This is a cosmetic scene, not an activity
-point system; evolution still only needs Cyber Level 30 and sleeping.
+The bed awakening flow still unlocks at Cyber Level 30. Its screen
+has been completely rewritten as a two-column Minecraft-styled
+awakening scene: live player portrait, rune orbit, selectable ancestry
+tablets, evolution-specific traits and a short commitment animation.
+The player may still postpone and sleep again.
+
+## Skin recolouring rollback
+
+The changed skin-region segmentation introduced in alpha.66 has been
+removed. The exact global RGB-distance and shading recolouring algorithm
+from alpha.65 has been restored because it performed better on the
+user's skins, though it still has known limitations with similar
+skin and clothing colours.

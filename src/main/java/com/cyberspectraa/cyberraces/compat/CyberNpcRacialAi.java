@@ -208,7 +208,6 @@ public final class CyberNpcRacialAi {
                 CyberNpcRaceManager.getAppearance(mob).featureStyle());
         var particle = switch (element) {
             case 1 -> ParticleTypes.SNOWFLAKE;
-            case 2 -> ParticleTypes.ELECTRIC_SPARK;
             case 3 -> ParticleTypes.WITCH;
             case 4 -> ParticleTypes.DRAGON_BREATH;
             default -> ParticleTypes.FLAME;
@@ -222,12 +221,11 @@ public final class CyberNpcRacialAi {
                     0.08D, 0.08D, 0.08D, 0.01D);
         }
         level.playSound(null, mob.blockPosition(),
-                element == 2 ? SoundEvents.LIGHTNING_BOLT_THUNDER
-                        : element == 1 ? SoundEvents.POWDER_SNOW_BREAK
+                element == 1 ? SoundEvents.POWDER_SNOW_BREAK
                         : SoundEvents.BLAZE_SHOOT,
-                SoundSource.NEUTRAL, element == 2 ? 0.4F : 0.85F, 0.85F);
+                SoundSource.NEUTRAL, 0.85F, 0.85F);
         target.hurt(level.damageSources().mobAttack(mob),
-                element == 2 ? 6.0F : 5.0F);
+                5.0F);
         switch (element) {
             case 1 -> target.addEffect(new MobEffectInstance(
                     MobEffects.MOVEMENT_SLOWDOWN, 80, 1));
