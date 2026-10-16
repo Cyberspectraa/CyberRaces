@@ -18,7 +18,7 @@ public final class RaceEvolutionScreen extends Screen {
     private boolean answered;
 
     public RaceEvolutionScreen(String proposedId) {
-        super(Component.literal("A New Lineage Stirs"));
+        super(Component.literal("Racial Evolution"));
         this.proposed = RaceEvolution.byId(proposedId).orElse(null);
     }
 
@@ -47,7 +47,7 @@ public final class RaceEvolutionScreen extends Screen {
         int y = Math.max(16, height / 2 - 122);
         graphics.drawCenteredString(font, title, x, y, 0xF7DBA1);
         graphics.drawCenteredString(font,
-                Component.literal("Your journey points toward " + proposed.displayName()),
+                Component.literal("Evolution: " + proposed.displayName()),
                 x, y + 24, 0xA7E3D3);
 
         List<FormattedCharSequence> description =
@@ -69,7 +69,7 @@ public final class RaceEvolutionScreen extends Screen {
                 Component.literal("Ability affinity: " + prettyProfile(proposed.abilityProfile())),
                 x, y + 158, 0xE6C66B);
         graphics.drawCenteredString(font,
-                Component.literal("Decline to keep growing, then sleep again for another offer."),
+                Component.literal("Keep growing or rest again to reconsider."),
                 x, y + 183, 0xBDBDBD);
         super.render(graphics, mouseX, mouseY, partialTick);
     }

@@ -84,7 +84,9 @@ public final class CharacterCreatorScreen extends Screen {
         int featureY = l.top + (l.small ? 42 : 78);
         this.featureButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
-                featureStyle = (featureStyle + 1) % featureVariantCount(currentRace());
+                featureStyle = currentRace() == Race.SLIME
+                    ? SlimeVariantPalette.nextAvailable(featureStyle)
+                    : (featureStyle + 1) % featureVariantCount(currentRace());
                 refreshLabels();
             })
                 .bounds(l.right + pad, featureY, Math.max(60, l.rightWidth - pad * 2), buttonHeight)
@@ -293,6 +295,8 @@ public final class CharacterCreatorScreen extends Screen {
                     ? (currentRace() == Race.CATFOLK
                         ? "Figura-style cat ears and tail. Pick a coat above."
                         : "Ears and tail follow the selected animal coat.")
+                    : currentRace() == Race.SLIME
+                        ? "Appearance only: slime abilities do not change."
                     : currentRace() == Race.BIRDFOLK
                         ? "Choose your wing colour above."
                         : !hasFeatureColour(currentRace())
@@ -463,7 +467,6 @@ public final class CharacterCreatorScreen extends Screen {
             && race != Race.DWARF
             && race != Race.NYMPH
             && race != Race.AASIMAR
-            && race != Race.SLIME
             && race != Race.ARACHNID
             && race != Race.UNDEAD;
     }
@@ -474,6 +477,7 @@ public final class CharacterCreatorScreen extends Screen {
             && race != Race.NYMPH
             && race != Race.AASIMAR
             && race != Race.BIRDFOLK
+            && race != Race.SLIME
             && !BeastVariantTextures.isBeastfolk(race);
     }
 
@@ -506,7 +510,9 @@ public final class CharacterCreatorScreen extends Screen {
             case AASIMAR -> new String[] {"Celestial", "Celestial", "Celestial"};
             case HUMAN -> new String[] {"No feature", "No feature", "No feature"};
             case DWARF -> new String[] {"Stout build", "Stout build", "Stout build"};
-            case SLIME -> new String[] {"Gel body", "Gel body", "Gel body"};
+            case SLIME -> new String[] {
+                "Variant: " + SlimeVariantPalette.name(featureStyle)
+            };
             case ARACHNID -> new String[] {"Silk-blooded", "Silk-blooded", "Silk-blooded"};
             case UNDEAD -> new String[] {"Undying form", "Undying form", "Undying form"};
         };
@@ -532,7 +538,7 @@ public final class CharacterCreatorScreen extends Screen {
             case FOXFOLK -> "Fox ears and tail; red and snow coats.";
             case AASIMAR -> "Celestial features. Not a starting race.";
             case BIRDFOLK -> "Feathered wings in your chosen colour.";
-            case SLIME -> "Gel-like skin with an automatic slime colour.";
+            case SLIME -> "Choose your gel colour and type. Abilities stay the same.";
             case ARACHNID -> "Spider-like movement without extra limbs.";
             case UNDEAD -> "Undead form gained through infection.";
         };

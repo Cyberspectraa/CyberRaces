@@ -99,10 +99,9 @@ public final class CyberRaceCommands {
                     }))
                 .then(Commands.literal("evolution")
                     .executes(context -> {
+                        ServerPlayer player=context.getSource().getPlayerOrException();
                         context.getSource().sendSuccess(
-                            () -> Component.literal(
-                                "Race evolutions are paused. Existing saved evolutions are preserved."
-                            ), false);
+                            () -> RaceEvolutionJourney.status(player), false);
                         return 1;
                     })
                 )

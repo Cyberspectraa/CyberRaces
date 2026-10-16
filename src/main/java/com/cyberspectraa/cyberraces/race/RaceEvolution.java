@@ -62,7 +62,7 @@ public enum RaceEvolution {
         s(3,0.99,1.04,1.02,1.10,0.06,1.5,0,1.02,1), "dragon_breath_frost"),
     STORMBLOOD("stormblood", "Stormblood", "A dragonborn lineage charged with speed and storm-like energy.", Race.DRAGONBORN,
         s(2,1.05,1.06,1.05,1.06,0.04,0.5,0,1.01,1), "dragon_breath_lightning"),
-    SKYBORN("skyborn", "Skyborn", "A winged dragonborn lineage that awakens true draconic flight through Icarus dragon wings.", Race.DRAGONBORN,
+    SKYBORN("skyborn", "Winged Dragonborn", "Dragon wings grant flight when Icarus and Curios are installed.", Race.DRAGONBORN,
         s(2,1.04,1.03,1.03,1.05,0.03,0.5,0,1.01,1), "dragon_breath_skyborn"),
 
     SYLPH("sylph", "Sylph", "A fairy evolution focused on air control, hover mobility and evasive movement.", Race.FAIRY,
@@ -183,7 +183,12 @@ public enum RaceEvolution {
     DAWNBRINGER("dawnbringer", "Sunward Archon", "An aasimar whose celestial spirit blossoms beneath the sun.", Race.AASIMAR,
         s(2,1.01,1.10,1.10,1.12,0,1.0,0,1,1), "aasimar_dawnbringer"),
     TIDEWING("tidewing", "Tidecrest", "An aarakocra adapted to restless shores and salt-laden winds.", Race.BIRDFOLK,
-        s(1,1.06,1.02,1.02,1.05,0,0,0,1,1), "wing_burst_tide");
+        s(1,1.06,1.02,1.02,1.05,0,0,0,1,1), "wing_burst_tide"),
+    // Appended after the legacy paths to preserve saved enum ordering.
+    DARK_ELF("dark_elf", "Dark Elf", "A night-adapted elf with strong magic and quick footwork.", Race.ELF,
+        s(1,1.05,1.10,1.06,1.08,0,0,0,1,1), "dark_elf"),
+    ELDER_DWARF("elder_dwarf", "Elder Dwarf", "A veteran of the mines, tougher and harder to knock aside.", Race.DWARF,
+        s(4,0.97,1.02,1.02,1.08,0.10,2.0,0,1,1), "elder_dwarf");
 
 
     public static final int REQUIRED_LEVEL = 30;
@@ -230,13 +235,23 @@ public enum RaceEvolution {
             .findFirst();
     }
 
+    /**
+     * These five paths are the only new evolution choices. Legacy entries
+     * stay in this enum so old character saves can still be read safely.
+     */
+    public boolean availableToEvolve() {
+        return this == HIGH_ELF || this == DARK_ELF
+            || this == ELDER_DWARF || this == HOBGOBLIN
+            || this == SKYBORN;
+    }
+
     public static RaceEvolution[] choicesFor(Race race) {
         if (race == null) {
             return new RaceEvolution[0];
         }
 
         return Arrays.stream(values())
-            .filter(value -> value.baseRace == race)
+            .filter(value -> value.baseRace == race && value.availableToEvolve())
             .toArray(RaceEvolution[]::new);
     }
 

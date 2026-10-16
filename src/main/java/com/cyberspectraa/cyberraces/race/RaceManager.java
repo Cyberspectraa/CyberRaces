@@ -17,7 +17,7 @@ public final class RaceManager {
     public static final String UNDEAD_CURE_REMAINING_KEY = "UndeadCureRemaining";
 
     // Temporarily suspend evolution mechanics; never erase previously saved IDs.
-    public static final boolean EVOLUTIONS_ENABLED = false;
+    public static final boolean EVOLUTIONS_ENABLED = true;
 
     private RaceManager() {
     }
@@ -164,6 +164,7 @@ public final class RaceManager {
 
         if (race == null
                 || evolution.baseRace() != race
+                || !evolution.availableToEvolve()
                 || com.cyberspectraa.cyberraces.progression.ProgressionManager
                     .getLevel(player) < RaceEvolution.REQUIRED_LEVEL) {
             return false;
@@ -192,7 +193,8 @@ public final class RaceManager {
 
         Race race = getRace(player).orElse(null);
 
-        if (race == null || evolution.baseRace() != race) {
+        if (race == null || evolution.baseRace() != race
+                || !evolution.availableToEvolve()) {
             return;
         }
 

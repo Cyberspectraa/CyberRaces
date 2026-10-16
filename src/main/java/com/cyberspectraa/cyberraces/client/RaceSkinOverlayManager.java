@@ -49,7 +49,7 @@ public final class RaceSkinOverlayManager {
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
             undead ? "acquired_undead"
-                : (race == Race.SLIME ? evolutionId : "")
+                : (race == Race.SLIME ? evolutionId + "#slime:" + appearance.featureStyle() : "")
         );
 
         CacheEntry existing = CACHE.get(player.getUUID());
@@ -63,7 +63,7 @@ public final class RaceSkinOverlayManager {
             ? generateBodyTone(player.getUUID(), originalSkin, appearance,
                     0x668B52, "undead")
             : race == Race.SLIME
-                ? generateSlime(player.getUUID(), originalSkin, evolutionId, false)
+                ? generateSlime(player.getUUID(), originalSkin, evolutionId, appearance.featureStyle(), false)
                 : generate(player, originalSkin, appearance);
 
         if (generated != null) {
@@ -102,7 +102,9 @@ public final class RaceSkinOverlayManager {
         }
 
         String lineage = visual.evolutionId();
-        CacheKey key = new CacheKey(sourceTexture, 0, 0, 0, lineage);
+        int variation = visual.appearance().featureStyle();
+        CacheKey key = new CacheKey(sourceTexture, 0, 0, 0,
+                lineage + "#slime:" + variation);
         CacheEntry cached = NPC_SLIME_BASE_CACHE.get(entity.getUUID());
         if (cached != null && cached.key().equals(key)) {
             return cached.texture();
@@ -111,7 +113,7 @@ public final class RaceSkinOverlayManager {
         invalidateNpcSlimeBase(entity.getUUID());
 
         ResourceLocation composed = generateSlime(
-            entity.getUUID(), sourceTexture, lineage, false
+            entity.getUUID(), sourceTexture, lineage, variation, false
         );
         if (composed == null) {
             return sourceTexture;
@@ -157,7 +159,7 @@ public final class RaceSkinOverlayManager {
             appearance.bodySourceColor(),
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
-            race == Race.SLIME ? evolutionId : ""
+            race == Race.SLIME ? evolutionId + "#slime:" + appearance.featureStyle() : ""
         );
 
         CacheEntry existing = NPC_OVERLAY_CACHE.get(entity.getUUID());
@@ -168,7 +170,7 @@ public final class RaceSkinOverlayManager {
         invalidateNpc(entity.getUUID());
 
         ResourceLocation generated = race == Race.SLIME
-            ? generateSlime(entity.getUUID(), sourceTexture, evolutionId, true)
+            ? generateSlime(entity.getUUID(), sourceTexture, evolutionId, appearance.featureStyle(), true)
             : generateNpcOverlay(entity, sourceTexture, appearance);
 
         if (generated != null) {
@@ -277,7 +279,8 @@ public final class RaceSkinOverlayManager {
      * receive only the translucent overlay to draw over their own skin.
      */
     private static ResourceLocation generateSlime(
-        UUID entityId, ResourceLocation base, String evolutionId, boolean npcOverlay
+        UUID entityId, ResourceLocation base, String evolutionId,
+        int variantStyle, boolean npcOverlay
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -286,7 +289,7 @@ public final class RaceSkinOverlayManager {
             try (NativeImage source = new NativeImage(64, 64, false)) {
                 source.downloadTexture(0, false);
                 NativeImage result = new NativeImage(64, 64, true);
-                int target = slimeTint(evolutionId);
+                int target = slimeTint(evolutionId, variantStyle);
                 int tr = (target >> 16) & 255;
                 int tg = (target >> 8) & 255;
                 int tb = target & 255;
@@ -431,18 +434,22 @@ public final class RaceSkinOverlayManager {
         return bestKey < 0 ? 0xAD9478 : samples.get(bestKey);
     }
 
-    private static int slimeTint(String id) {
-        if (id == null) return 0x73D36A;
-        return switch (id) {
-            case "magma_slime" -> 0xF47C37;
-            case "metal_slime" -> 0xA8C5CF;
-            case "acid_slime" -> 0xBAED37;
-            case "crystal_slime" -> 0x94E9F9;
-            case "frost_slime" -> 0x79C9F2;
-            case "void_slime" -> 0x8360B1;
-            case "royal_slime" -> 0xF4D16B;
-            default -> 0x73D36A;
-        };
+    private static int slimeTint(String evolutionId, int variantStyle) {
+        // Old evolved Slime saves keep their colours when using default style.
+        if (variantStyle == 0 && evolutionId != null) {
+            int legacy = switch (evolutionId) {
+                case "magma_slime" -> 1;
+                case "metal_slime" -> 2;
+                case "acid_slime" -> 3;
+                case "crystal_slime" -> 4;
+                case "frost_slime" -> 5;
+                case "void_slime" -> 6;
+                case "royal_slime" -> 7;
+                default -> 0;
+            };
+            return SlimeVariantPalette.color(legacy);
+        }
+        return SlimeVariantPalette.color(variantStyle);
     }
 
     private static ResourceLocation generate(
