@@ -614,7 +614,8 @@ public final class CharacterCreatorScreen extends Screen {
             };
             case DRAGONBORN -> new String[] {
                 "22 health, tough scales and natural armour.",
-                "V: Fire Breath with Iron's Spells; no mana cost."
+                "V: " + DragonVariant.name(featureStyle)
+                    + " breath using Iron's Spells; keeps its type after evolution."
             };
             case FAIRY -> new String[] {
                 "14 health; tiny, quick and good with mana.",
