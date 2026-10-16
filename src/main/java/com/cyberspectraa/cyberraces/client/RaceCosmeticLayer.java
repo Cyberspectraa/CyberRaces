@@ -184,7 +184,8 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         switch (race) {
             case ELF -> renderEars(
                 poseStack, buffer, packedLight, entity, race,
-                "high_elf".equals(evolutionId) ? 0xE5CDA1
+                featureColor != CharacterAppearance.AUTO_COLOR ? featureColor
+                    : "high_elf".equals(evolutionId) ? 0xE5CDA1
                     : "dark_elf".equals(evolutionId) ? 0x75609E
                     : featureColor,
                 "elf_" + ("high_elf".equals(evolutionId) ? "high"
@@ -219,7 +220,8 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
 
             case GOBLIN -> renderEars(
                 poseStack, buffer, packedLight, entity, race,
-                "hobgoblin".equals(evolutionId) ? 0x739348 : featureColor,
+                featureColor != CharacterAppearance.AUTO_COLOR ? featureColor
+                    : "hobgoblin".equals(evolutionId) ? 0x739348 : featureColor,
                 "goblin_" + switch (Math.floorMod(feature, 3)) {
                     case 1 -> "long";
                     case 2 -> "swept";
