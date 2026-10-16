@@ -1,7 +1,6 @@
 package com.cyberspectraa.cyberraces.ability;
 
 import com.cyberspectraa.cyberraces.race.Race;
-import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -33,7 +32,6 @@ public final class NewRaceAbilities {
                     .withStyle(ChatFormatting.GRAY),true);
             return;
         }
-        RaceEvolution path=RaceManager.getEvolution(player).orElse(null);
         if (race == Race.ARACHNID) {
             // A physical flying cobweb, not an invisible AOE debuff.
             net.minecraft.world.entity.projectile.Snowball web =
@@ -49,12 +47,9 @@ public final class NewRaceAbilities {
             READY_AT.put(player.getUUID(), now + 240L);
         } else {
             // Undead use a defensive, life-force ability rather than a normal potion.
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE,
-                    path==RaceEvolution.REVENANT || path==RaceEvolution.DREAD_KNIGHT?160:110,0));
-            if(path==RaceEvolution.LICHBOUND)player.addEffect(new MobEffectInstance(MobEffects.REGENERATION,100,0));
-            else player.heal(path==RaceEvolution.REVENANT?6F:3F);
-            if(path==RaceEvolution.WRAITH)player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,120,0));
-            if(path==RaceEvolution.PLAGUEBORN)player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,100,0));
+            player.addEffect(new MobEffectInstance(
+                    MobEffects.DAMAGE_RESISTANCE, 110, 0));
+            player.heal(3F);
             player.serverLevel().sendParticles(ParticleTypes.SOUL,
                     player.getX(),player.getY()+1,player.getZ(),24,0.6,0.7,0.6,0.025);
             player.serverLevel().playSound(null,player.blockPosition(),SoundEvents.SOUL_ESCAPE,SoundSource.PLAYERS,0.8F,0.75F);

@@ -1,7 +1,6 @@
 package com.cyberspectraa.cyberraces.ability;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
-import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
@@ -145,33 +144,9 @@ public final class AasimarRadianceAbility {
     }
 
     private static AbilityProfile profile(ServerPlayer player) {
-        RaceEvolution evolution =
-            RaceManager.getEvolution(player).orElse(null);
-
-        if (evolution == RaceEvolution.FALLEN) {
-            return new AbilityProfile(
-                "Grave Bolt",
-                SpellRegistry.WITHER_SKULL_SPELL.get(),
-                5,
-                18 * 20
-            );
-        }
-
-        if (evolution == RaceEvolution.SERAPHIC) {
-            return new AbilityProfile(
-                "Radiant Bolt",
-                SpellRegistry.GUIDING_BOLT_SPELL.get(),
-                6,
-                16 * 20
-            );
-        }
-
-        return new AbilityProfile(
-            "Radiant Bolt",
-            SpellRegistry.GUIDING_BOLT_SPELL.get(),
-            evolution == RaceEvolution.CELESTIAL_GUARDIAN ? 4 : 3,
-            20 * 20
-        );
+        // Aasimar is not one of the races with an evolution path.
+        return new AbilityProfile("Radiant Bolt",
+                SpellRegistry.GUIDING_BOLT_SPELL.get(), 3, 20 * 20);
     }
 
     private static void restoreIronCooldown(

@@ -153,15 +153,6 @@ public final class NaturalWingCompat {
             return icarus(DYE_NAMES[nearestDye(rgb)] + "_dragon_wings");
         }
 
-        if (race == Race.AASIMAR && evolution != null) {
-            return switch (evolution) {
-                case SERAPHIC -> icarus("white_light_wings");
-                case FALLEN -> icarus("black_light_wings");
-                case CELESTIAL_GUARDIAN -> icarus("yellow_light_wings");
-                default -> null;
-            };
-        }
-
         return null;
     }
 
