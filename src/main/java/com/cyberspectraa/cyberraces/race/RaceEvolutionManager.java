@@ -22,7 +22,8 @@ import java.util.UUID;
  * the server validates the exact choice against the pending race.
  */
 public final class RaceEvolutionManager {
-    private static final int MIN_SLEEP_TICKS = 40;
+    // One server tick in bed is enough; accelerated sleep shouldn't skip offers.
+    private static final int MIN_SLEEP_TICKS = 1;
     private static final int OFFER_DELAY_TICKS = 8;
     private static final Map<UUID, Long> SLEEP_STARTED = new HashMap<>();
     private static final Map<UUID, Long> WAKE_OFFER_DUE = new HashMap<>();
@@ -77,6 +78,8 @@ public final class RaceEvolutionManager {
         if (choices.length == 0) return;
 
         PENDING.put(player.getUUID(), race);
+        player.sendSystemMessage(Component.literal("Your bloodline is ready to awaken.")
+                .withStyle(ChatFormatting.GOLD));
         player.serverLevel().sendParticles(ParticleTypes.ENCHANT,
                 player.getX(), player.getY() + 1, player.getZ(),
                 42, 0.8, 0.6, 0.8, 0.2);

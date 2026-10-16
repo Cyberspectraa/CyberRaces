@@ -10,6 +10,7 @@ import com.cyberspectraa.cyberraces.compat.CyberNpcRaceManager;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
+import com.cyberspectraa.cyberraces.race.RaceEvolutionManager;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -53,6 +54,9 @@ public final class RacialPassiveEvents {
         }
 
         Race race = RaceManager.getRace(player).orElse(null);
+        // The sleep/awakening manager must tick every server-side player tick.
+        // Without this, no wake-up offer is ever sent to the client.
+        RaceEvolutionManager.tick(player);
 
         updateFoxSneakSpeed(player);
         BiomeAttunementService.tickPlayer(player);
@@ -154,6 +158,7 @@ public final class RacialPassiveEvents {
         FairyHoverAbility.disable(player);
         com.cyberspectraa.cyberraces.ability.NewRaceAbilities.cleanup(player);
         BiomeAttunementService.clear(player);
+        RaceEvolutionManager.onLogout(player);
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);
