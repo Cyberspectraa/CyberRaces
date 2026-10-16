@@ -16,7 +16,6 @@ public final class RaceManager {
     public static final String UNDEAD_AFFLICTION_KEY = "AcquiredUndead";
     public static final String UNDEAD_CURE_REMAINING_KEY = "UndeadCureRemaining";
 
-    // Temporarily suspend evolution mechanics; never erase previously saved IDs.
     public static final boolean EVOLUTIONS_ENABLED = true;
 
     private RaceManager() {
@@ -78,30 +77,31 @@ public final class RaceManager {
     public static Optional<RaceEvolution> getEvolution(
         ServerPlayer player
     ) {
-        if (!EVOLUTIONS_ENABLED || player == null) {
-            return Optional.empty();
-        }
+        if (player == null) return Optional.empty();
+        CompoundTag root = player.getPersistentData().getCompound(ROOT_KEY);
 
-        CompoundTag root =
-            player.getPersistentData().getCompound(ROOT_KEY);
+        // Drop the old activity tracker and any discontinued evolution ID
+        // when loading a pre-cleanup world. Keep the base race and other
+        // character appearance data untouched.
+        boolean changed = root.contains("EvolutionJourney");
+        root.remove("EvolutionJourney");
 
-        if (!root.getBoolean(EVOLUTION_CHOSEN_KEY)
-                || !root.contains(EVOLUTION_KEY)) {
-            return Optional.empty();
-        }
-
-        Race race = getRace(player).orElse(null);
         RaceEvolution evolution = RaceEvolution.byId(
-            root.getString(EVOLUTION_KEY)
-        ).orElse(null);
-
-        if (race == null
-                || evolution == null
-                || evolution.baseRace() != race) {
+                root.getString(EVOLUTION_KEY)).orElse(null);
+        Race base = getBaseRace(player).orElse(null);
+        if (evolution == null || evolution.baseRace() != base
+                || !root.getBoolean(EVOLUTION_CHOSEN_KEY)) {
+            changed |= root.contains(EVOLUTION_KEY)
+                    || root.contains(EVOLUTION_CHOSEN_KEY);
+            root.remove(EVOLUTION_KEY);
+            root.remove(EVOLUTION_CHOSEN_KEY);
+            if (changed) player.getPersistentData().put(ROOT_KEY, root);
             return Optional.empty();
         }
 
-        return Optional.of(evolution);
+        if (changed) player.getPersistentData().put(ROOT_KEY, root);
+        // Acquired Undead temporarily suppresses base-race evolution perks.
+        return isAcquiredUndead(player) ? Optional.empty() : Optional.of(evolution);
     }
 
     public static String getEffectiveDisplayName(
@@ -135,8 +135,8 @@ public final class RaceManager {
         root.putString(RACE_KEY, race.id());
         root.remove(UNDEAD_AFFLICTION_KEY);
         root.remove(UNDEAD_CURE_REMAINING_KEY);
-        // A new race starts a new personal evolution journey.
-        root.remove(RaceEvolutionJourney.KEY);
+        // Remove any saved progress from the retired activity tracker.
+        root.remove("EvolutionJourney");
         root.remove(EVOLUTION_KEY);
         root.putBoolean(EVOLUTION_CHOSEN_KEY, false);
         persistent.put(ROOT_KEY, root);
@@ -256,7 +256,7 @@ public final class RaceManager {
             root.remove(RACE_KEY);
             root.remove(UNDEAD_AFFLICTION_KEY);
             root.remove(UNDEAD_CURE_REMAINING_KEY);
-            root.remove(RaceEvolutionJourney.KEY);
+            root.remove("EvolutionJourney");
             root.remove(EVOLUTION_KEY);
             root.remove(EVOLUTION_CHOSEN_KEY);
 

@@ -208,56 +208,22 @@ public final class BiomeAttunementService {
         };
     }
 
-    /**
-     * Every evolution has its own plausible favored habitat. For unlisted
-     * martial/non-biome subclasses, the base race's homeland remains sensible.
-     * The identifiers are NOT changed by new display names.
-     */
+    /** Only the five remaining evolutions have homeland preferences. */
     private static BiomeHome evolutionBiome(RaceEvolution evo) {
         return switch (evo) {
-            case HIGH_ELF, WOOD_ELF, DRYAD, THORNFAE, SCROUNGER,
-                    TRICKSTER, WEBWEAVER, BROODMOTHER, HOUNDKIN,
-                    GLIMMERFAE, SPIRIT_FOX -> BiomeHome.FOREST;
-            case MOON_ELF, UMBRAL, NIGHTWING, PANTHERKIN,
-                    GLOOMRUNNER, WHISPERFOOT, VOID_SLIME -> BiomeHome.DARK_FOREST;
-            case DEEPFORGED, RUNEBORN, CAVEWRIGHT, METAL_SLIME,
-                    CAVE_STALKER, EARTHSCALE, OREAD, DREAD_KNIGHT,
-                    HOBGOBLIN, IRONHIDE -> BiomeHome.CAVE;
-            case MOUNTAINBORN, SKYBORN, RAPTOR, SYLPH,
-                    CLOUDLEAPER, STARSEEKER -> BiomeHome.MOUNTAIN;
-            case FROSTBLOOD, FROST_SLIME, FROSTHOUND,
-                    WOLFKIN -> BiomeHome.COLD;
-            case ASHBORN, EMBERBLOOD, MAGMA_SLIME, EMBERFORGED,
-                    RIFTWALKER, EMBERFOX, BLOODHORN -> BiomeHome.NETHER;
-            case STORMBLOOD, STORMWING, STORMCHASER,
-                    TEMPEST_NYMPH -> BiomeHome.MOUNTAIN;
-            case NAIAD, DEWDROP, TIDEWING -> BiomeHome.RIVER;
-            case ACID_SLIME, PLAGUEBORN, REVENANT -> BiomeHome.SWAMP;
-            case VENOMFANG, LYNXKIN, HUNTSMAN -> BiomeHome.JUNGLE;
-            case ROYAL_SLIME, ANTHOUSA, LIGHTFOOT, FORTUNE_TOUCHED,
-                    HEARTHWARDEN, WAYFARER, DAWNBRINGER -> BiomeHome.FLOWER;
-            case LICHBOUND, WRAITH, FALLEN -> BiomeHome.SOUL;
-            case CRYSTAL_SLIME, SPIRITBLOOD -> BiomeHome.END;
-            case LIONKIN, WARBORN -> BiomeHome.SAVANNA;
-            default -> home(evo.baseRace(), null).biome;
+            case HIGH_ELF -> BiomeHome.FOREST;
+            case DARK_ELF -> BiomeHome.DARK_FOREST;
+            case ELDER_DWARF, HOBGOBLIN -> BiomeHome.CAVE;
+            case SKYBORN -> BiomeHome.MOUNTAIN;
         };
     }
 
     private static Gift evolutionGift(RaceEvolution evolution) {
         return switch (evolution) {
-            case WARBORN, HOBGOBLIN, EMBERBLOOD, LYNXKIN,
-                    LIONKIN, VENOMFANG, HUNTSMAN, DREAD_KNIGHT,
-                    MAGMA_SLIME, ACID_SLIME, STORMCHASER, EMBERFORGED,
-                    TEMPEST_NYMPH -> Gift.MIGHT;
-            case SURVIVOR, DEEPFORGED, MOUNTAINBORN, IRONHIDE, BLOODHORN,
-                    CELESTIAL_GUARDIAN, OREAD, WOLFKIN, MASTIFFKIN,
-                    METAL_SLIME, ROYAL_SLIME, BROODMOTHER, REVENANT,
-                    EARTHSCALE, CAVE_STALKER -> Gift.BULWARK;
-            case AWAKENED, HIGH_ELF, RUNEBORN, SPIRITBLOOD,
-                    GLIMMERFAE, ANTHOUSA, SPIRIT_FOX, SERAPHIC, FALLEN,
-                    STORMBLOOD, CRYSTAL_SLIME, VOID_SLIME, LICHBOUND,
-                    PLAGUEBORN, STARSEEKER, DAWNBRINGER -> Gift.SPIRIT;
-            default -> Gift.SWIFT;
+            case HIGH_ELF -> Gift.SPIRIT;
+            case DARK_ELF, SKYBORN -> Gift.SWIFT;
+            case ELDER_DWARF -> Gift.BULWARK;
+            case HOBGOBLIN -> Gift.MIGHT;
         };
     }
 
@@ -314,7 +280,6 @@ public final class BiomeAttunementService {
         removeModifiers(entity);
         if (entity instanceof ServerPlayer player
                 && previous != null && previous.active) {
-            EvolutionTalentEvents.clearOwned(player);
         }
     }
 

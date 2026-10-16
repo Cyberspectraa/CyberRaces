@@ -50,8 +50,14 @@ kept, so the chosen colour returns when that pack is restored.
 
 ## Evolution choices
 
-Evolution currently requires Cyber Level 30, sufficient activity, and
-resting in a bed to receive an offer. Only Elf (High Elf/Dark Elf),
-Dwarf (Elder Dwarf), Goblin (Hobgoblin), and Dragonborn (Winged
-Dragonborn) receive new evolution offers. Other races have no evolution.
-Existing characters using older saved evolution IDs remain supported.
+Evolution requires only **Cyber Level 30** and **sleeping in a bed**.
+There are no activity points, affinity scores, environment requirements,
+or random recommendations. Elves choose **High Elf** or **Dark Elf**.
+Dwarves become **Elder Dwarf**, Goblins become **Hobgoblin**, and
+Dragonborn can become **Winged Dragonborn**. Other races do not evolve.
+
+The old evolution paths have been removed. On loading existing worlds,
+unsupported saved evolution IDs and the retired activity tracker are
+discarded, while base races and character appearances remain intact.
+An Elf, Dwarf, Goblin or Dragonborn with a discontinued evolution can
+select one of the currently supported choices once eligible.

@@ -1,7 +1,6 @@
 package com.cyberspectraa.cyberraces.compat;
 
 import com.cyberspectraa.cyberraces.race.Race;
-import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -177,9 +176,6 @@ public final class CyberNpcRacialAi {
             LivingEntity target, double distanceSqr, boolean sight) {
         if (!sight || distanceSqr > 64D || !isReady(mob, ARACHNID_READY)) return;
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 72, 1));
-        RaceEvolution path=CyberNpcRaceManager.getEvolution(mob).orElse(null);
-        if(path==RaceEvolution.VENOMFANG)
-            target.addEffect(new MobEffectInstance(MobEffects.POISON, 65, 0));
         level.sendParticles(ParticleTypes.CLOUD, target.getX(),
                 target.getY()+0.8D, target.getZ(), 12, 0.4D, 0.6D, 0.4D, 0.03D);
         setCooldown(mob, ARACHNID_READY, 17 * 20);
@@ -204,73 +200,21 @@ public final class CyberNpcRacialAi {
             double distanceSqr,
             boolean lineOfSight
     ) {
-        if (!lineOfSight
-                || distanceSqr > 8.0D * 8.0D
-                || !isReady(mob, DRAGON_READY)) {
-            return;
-        }
-
-        RaceEvolution evolution =
-            CyberNpcRaceManager.getEvolution(mob).orElse(null);
+        if (!lineOfSight || distanceSqr > 8.0D * 8.0D
+                || !isReady(mob, DRAGON_READY)) return;
 
         Vec3 from = mob.getEyePosition();
-        Vec3 to = target.getEyePosition();
-        Vec3 ray = to.subtract(from);
-
-        var particle = evolution == RaceEvolution.FROSTBLOOD
-            ? ParticleTypes.SNOWFLAKE
-            : evolution == RaceEvolution.STORMBLOOD
-                ? ParticleTypes.ELECTRIC_SPARK
-                : ParticleTypes.FLAME;
-
+        Vec3 ray = target.getEyePosition().subtract(from);
         for (int i = 1; i <= 8; i++) {
             Vec3 point = from.add(ray.scale(i / 8.0D));
-            level.sendParticles(
-                    particle,
-                    point.x,
-                    point.y,
-                    point.z,
-                    2,
-                    0.08D,
-                    0.08D,
-                    0.08D,
-                    0.01D
-            );
+            level.sendParticles(ParticleTypes.FLAME,
+                    point.x, point.y, point.z, 2,
+                    0.08D, 0.08D, 0.08D, 0.01D);
         }
-
-        level.playSound(
-                null,
-                mob.blockPosition(),
-                evolution == RaceEvolution.STORMBLOOD
-                    ? SoundEvents.LIGHTNING_BOLT_THUNDER
-                    : evolution == RaceEvolution.FROSTBLOOD
-                        ? SoundEvents.POWDER_SNOW_BREAK
-                        : SoundEvents.BLAZE_SHOOT,
-                SoundSource.NEUTRAL,
-                evolution == RaceEvolution.STORMBLOOD ? 0.35F : 0.85F,
-                evolution == RaceEvolution.FROSTBLOOD ? 1.15F : 0.78F
-        );
-
-        target.hurt(
-                level.damageSources().mobAttack(mob),
-                evolution == RaceEvolution.STORMBLOOD ? 6.0F : 5.0F
-        );
-
-        if (evolution == RaceEvolution.FROSTBLOOD) {
-            target.addEffect(
-                new MobEffectInstance(
-                    MobEffects.MOVEMENT_SLOWDOWN,
-                    4 * 20,
-                    1,
-                    false,
-                    true,
-                    true
-                )
-            );
-        } else if (evolution != RaceEvolution.STORMBLOOD) {
-            target.setSecondsOnFire(4);
-        }
-
+        level.playSound(null, mob.blockPosition(),
+                SoundEvents.BLAZE_SHOOT, SoundSource.NEUTRAL, 0.85F, 0.78F);
+        target.hurt(level.damageSources().mobAttack(mob), 5.0F);
+        target.setSecondsOnFire(4);
         setCooldown(mob, DRAGON_READY, 18 * 20);
     }
 
@@ -549,82 +493,24 @@ public final class CyberNpcRacialAi {
             double distanceSqr,
             boolean lineOfSight
     ) {
-        if (!lineOfSight
-                || distanceSqr > 14.0D * 14.0D
-                || !isReady(mob, AASIMAR_READY)) {
-            return;
-        }
-
-        RaceEvolution evolution =
-            CyberNpcRaceManager.getEvolution(mob).orElse(null);
-        boolean fallen = evolution == RaceEvolution.FALLEN;
+        if (!lineOfSight || distanceSqr > 14.0D * 14.0D
+                || !isReady(mob, AASIMAR_READY)) return;
 
         Vec3 from = mob.getEyePosition();
-        Vec3 to = target.getEyePosition();
-        Vec3 ray = to.subtract(from);
-
+        Vec3 ray = target.getEyePosition().subtract(from);
         for (int i = 1; i <= 10; i++) {
             Vec3 point = from.add(ray.scale(i / 10.0D));
-            level.sendParticles(
-                fallen ? ParticleTypes.SOUL : ParticleTypes.END_ROD,
-                point.x,
-                point.y,
-                point.z,
-                1,
-                0.04D,
-                0.04D,
-                0.04D,
-                0.0D
-            );
+            level.sendParticles(ParticleTypes.END_ROD,
+                    point.x, point.y, point.z, 1,
+                    0.04D, 0.04D, 0.04D, 0.0D);
         }
-
-        target.hurt(
-            level.damageSources().mobAttack(mob),
-            fallen ? 6.0F : 5.0F
-        );
-
-        if (fallen) {
-            target.addEffect(
-                new MobEffectInstance(
-                    MobEffects.WITHER,
-                    4 * 20,
-                    0,
-                    false,
-                    true,
-                    true
-                )
-            );
-        } else {
-            target.addEffect(
-                new MobEffectInstance(
-                    MobEffects.GLOWING,
-                    5 * 20,
-                    0,
-                    false,
-                    true,
-                    true
-                )
-            );
-        }
-
-        level.playSound(
-            null,
-            mob.blockPosition(),
-            fallen
-                ? SoundEvents.SOUL_ESCAPE
-                : SoundEvents.AMETHYST_BLOCK_CHIME,
-            SoundSource.NEUTRAL,
-            0.65F,
-            fallen ? 0.75F : 1.35F
-        );
-
-        setCooldown(
-            mob,
-            AASIMAR_READY,
-            evolution == RaceEvolution.SERAPHIC
-                ? 16 * 20
-                : 20 * 20
-        );
+        target.hurt(level.damageSources().mobAttack(mob), 5.0F);
+        target.addEffect(new MobEffectInstance(
+                MobEffects.GLOWING, 5 * 20, 0, false, true, true));
+        level.playSound(null, mob.blockPosition(),
+                SoundEvents.AMETHYST_BLOCK_CHIME,
+                SoundSource.NEUTRAL, 0.65F, 1.35F);
+        setCooldown(mob, AASIMAR_READY, 20 * 20);
     }
 
     private static void tryBirdfolkWingBurst(

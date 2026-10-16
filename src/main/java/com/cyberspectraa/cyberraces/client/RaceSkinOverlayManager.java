@@ -435,20 +435,7 @@ public final class RaceSkinOverlayManager {
     }
 
     private static int slimeTint(String evolutionId, int variantStyle) {
-        // Old evolved Slime saves keep their colours when using default style.
-        if (variantStyle == 0 && evolutionId != null) {
-            int legacy = switch (evolutionId) {
-                case "magma_slime" -> 1;
-                case "metal_slime" -> 2;
-                case "acid_slime" -> 3;
-                case "crystal_slime" -> 4;
-                case "frost_slime" -> 5;
-                case "void_slime" -> 6;
-                case "royal_slime" -> 7;
-                default -> 0;
-            };
-            return SlimeVariantPalette.color(legacy);
-        }
+        // Slime variations are cosmetic, never evolutions.
         return SlimeVariantPalette.color(variantStyle);
     }
 

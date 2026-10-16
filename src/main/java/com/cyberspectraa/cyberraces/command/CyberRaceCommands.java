@@ -7,7 +7,6 @@ import com.cyberspectraa.cyberraces.compat.IcarusCompat;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceEvolution;
-import com.cyberspectraa.cyberraces.race.RaceEvolutionJourney;
 import com.cyberspectraa.cyberraces.race.RaceEvolutionManager;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import com.mojang.brigadier.CommandDispatcher;
@@ -100,9 +99,7 @@ public final class CyberRaceCommands {
                 .then(Commands.literal("evolution")
                     .executes(context -> {
                         ServerPlayer player=context.getSource().getPlayerOrException();
-                        context.getSource().sendSuccess(
-                            () -> RaceEvolutionJourney.status(player), false);
-                        return 1;
+                        return evolutionStatus(context.getSource(), player);
                     })
                 )
                 .then(Commands.literal("character")
@@ -276,20 +273,17 @@ public final class CyberRaceCommands {
             return 0;
         }
 
-        String value = RaceManager.getEvolution(player)
-            .map(evolution ->
-                evolution.displayName()
-                    + " (" + evolution.id() + ")"
-            )
-            .orElse("None");
-
-        source.sendSuccess(
-            () -> Component.literal(
-                player.getGameProfile().getName()
-                    + " evolution: " + value
-            ),
-            false
-        );
+        String status = RaceManager.getEvolution(player)
+                .map(e -> "Evolution: " + e.displayName())
+                .orElseGet(() -> {
+                    RaceEvolution[] available = RaceEvolution.choicesFor(race);
+                    if (available.length == 0) return "This race has no evolution.";
+                    return "Cyber Level 30 required. Sleep to choose: "
+                            + Arrays.stream(available)
+                                    .map(RaceEvolution::displayName)
+                                    .collect(Collectors.joining(" or "));
+                });
+        source.sendSuccess(() -> Component.literal(status), false);
 
         return 1;
     }

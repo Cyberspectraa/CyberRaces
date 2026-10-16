@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.character.CharacterSyncService;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.CloseRaceEvolutionPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenRaceEvolutionPacket;
+import com.cyberspectraa.cyberraces.progression.ProgressionManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -16,29 +17,31 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Level 30 and affinity thresholds make a player eligible, but a race never
- * evolves until the player sleeps and accepts the personal recommendation.
- * Waiting/declining is fully safe for an existing character and their world.
+ * Simple evolution: reach Cyber Level 30 and sleep in a bed.
+ * The client can choose any allowed evolution for its existing base race;
+ * the server validates the exact choice against the pending race.
  */
 public final class RaceEvolutionManager {
     private static final int MIN_SLEEP_TICKS = 40;
     private static final int OFFER_DELAY_TICKS = 8;
     private static final Map<UUID, Long> SLEEP_STARTED = new HashMap<>();
     private static final Map<UUID, Long> WAKE_OFFER_DUE = new HashMap<>();
-    private static final Map<UUID, RaceEvolution> PENDING = new HashMap<>();
+    private static final Map<UUID, Race> PENDING = new HashMap<>();
 
     private RaceEvolutionManager() {}
 
     public static void handleLogin(ServerPlayer player) {
-        if (player != null) clearSession(player.getUUID());
+        if (player != null) {
+            clearSession(player.getUUID());
+            RaceManager.getEvolution(player); // Discard old, unsupported saved paths.
+        }
     }
 
     public static void tick(ServerPlayer player) {
-        if (!RaceManager.EVOLUTIONS_ENABLED || player == null) return;
-        if (player.tickCount % 100 == 0) RaceEvolutionJourney.tick(player);
-
+        if (player == null) return;
         UUID id = player.getUUID();
         long now = player.serverLevel().getGameTime();
+
         if (player.isSleeping()) {
             SLEEP_STARTED.putIfAbsent(id, now);
             WAKE_OFFER_DUE.remove(id);
@@ -58,37 +61,47 @@ public final class RaceEvolutionManager {
     }
 
     public static boolean eligible(ServerPlayer player) {
-        return RaceManager.EVOLUTIONS_ENABLED && RaceEvolutionJourney.ready(player);
+        if (player == null || RaceManager.isAcquiredUndead(player)
+                || ProgressionManager.getLevel(player) < RaceEvolution.REQUIRED_LEVEL
+                || RaceManager.getEvolution(player).isPresent()) return false;
+        Race race = RaceManager.getBaseRace(player).orElse(null);
+        return race != null && RaceEvolution.choicesFor(race).length > 0;
     }
 
     private static void offerAfterRest(ServerPlayer player) {
-        if (player.isSleeping() || PENDING.containsKey(player.getUUID())) return;
-        RaceEvolution recommended = RaceEvolutionJourney.recommendation(player);
-        if (recommended == null) return;
-        PENDING.put(player.getUUID(), recommended);
+        if (player.isSleeping() || PENDING.containsKey(player.getUUID())
+                || !eligible(player)) return;
+
+        Race race = RaceManager.getBaseRace(player).orElse(null);
+        RaceEvolution[] choices = RaceEvolution.choicesFor(race);
+        if (choices.length == 0) return;
+
+        PENDING.put(player.getUUID(), race);
+        // The first valid ID establishes the race; the screen shows every
+        // option for that race (both High and Dark Elf, for instance).
         CyberRacesNetwork.sendToPlayer(player,
-                new OpenRaceEvolutionPacket(recommended.id()));
+                new OpenRaceEvolutionPacket(choices[0].id()));
     }
 
-    /** Useful for debugging; does not grant a free evolution choice. */
     public static void openSelection(ServerPlayer player) {
         if (player == null) return;
-        if (!RaceManager.EVOLUTIONS_ENABLED) {
+        if (RaceManager.getEvolution(player).isPresent()) {
+            player.sendSystemMessage(Component.literal("You've already evolved."));
+        } else if (RaceEvolution.choicesFor(
+                RaceManager.getBaseRace(player).orElse(null)).length == 0) {
+            player.sendSystemMessage(Component.literal("Your race has no evolution."));
+        } else {
             player.sendSystemMessage(Component.literal(
-                "Racial evolutions are paused while base races are redesigned."));
-            return;
+                "Reach Cyber Level 30, then sleep in a bed to choose your evolution.")
+                    .withStyle(ChatFormatting.AQUA));
         }
-        player.sendSystemMessage(Component.literal(
-                "Once your racial affinities are ready, sleep in a bed to discover "
-                + "your recommended evolution. You may accept or wait.")
-                .withStyle(ChatFormatting.AQUA));
     }
 
-    /** Called by the player's acceptance response, with strict server checks. */
     public static boolean complete(ServerPlayer player, RaceEvolution evolution) {
-        if (!RaceManager.EVOLUTIONS_ENABLED || player == null || evolution == null) return false;
-        RaceEvolution pending = PENDING.get(player.getUUID());
-        if (pending != evolution || !eligible(player)
+        if (player == null || evolution == null || !eligible(player)) return false;
+        Race pendingRace = PENDING.get(player.getUUID());
+        if (pendingRace == null || evolution.baseRace() != pendingRace
+                || RaceManager.getBaseRace(player).orElse(null) != pendingRace
                 || !RaceManager.setEvolution(player, evolution)) return false;
 
         PENDING.remove(player.getUUID());
@@ -99,27 +112,25 @@ public final class RaceEvolutionManager {
                 70, 0.65D, 0.85D, 0.65D, 0.035D);
         player.serverLevel().playSound(null, player.blockPosition(),
                 SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.9F, 1.15F);
-        player.sendSystemMessage(Component.literal("Your lineage has evolved: ")
+        player.sendSystemMessage(Component.literal("Evolved into ")
                 .withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(evolution.displayName())
                         .withStyle(ChatFormatting.YELLOW)));
         return true;
     }
 
-    /** A decline expires this proposal, without resetting earned affinities. */
     public static void decline(ServerPlayer player) {
         if (player == null) return;
         if (PENDING.remove(player.getUUID()) != null) {
             player.sendSystemMessage(Component.literal(
-                    "You chose not to evolve. Your affinity progress is safe. "
-                    + "Play differently to influence your next offer, then sleep again.")
+                    "Evolution postponed. Sleep again whenever you're ready.")
                     .withStyle(ChatFormatting.AQUA));
         }
         CyberRacesNetwork.sendToPlayer(player, new CloseRaceEvolutionPacket());
     }
 
     public static void forceSet(ServerPlayer player, RaceEvolution evolution) {
-        if (!RaceManager.EVOLUTIONS_ENABLED || player == null || evolution == null) return;
+        if (player == null || evolution == null) return;
         RaceManager.forceSetEvolution(player, evolution);
         clearSession(player.getUUID());
         CharacterSyncService.broadcast(player);
@@ -127,10 +138,9 @@ public final class RaceEvolutionManager {
     }
 
     public static void reset(ServerPlayer player) {
-        if (!RaceManager.EVOLUTIONS_ENABLED || player == null) return;
+        if (player == null) return;
         clearSession(player.getUUID());
         RaceManager.clearEvolution(player);
-        RaceEvolutionJourney.reset(player);
         CharacterSyncService.broadcast(player);
         CyberRacesNetwork.sendToPlayer(player, new CloseRaceEvolutionPacket());
     }

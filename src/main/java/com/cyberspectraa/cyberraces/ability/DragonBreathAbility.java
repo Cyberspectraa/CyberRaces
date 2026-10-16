@@ -168,29 +168,9 @@ public final class DragonBreathAbility {
     }
 
     private static BreathProfile profile(ServerPlayer player) {
-        RaceEvolution evolution =
-            RaceManager.getEvolution(player).orElse(null);
-
-        if (evolution == RaceEvolution.FROSTBLOOD) {
-            return new BreathProfile(
-                "Frost Breath",
-                SpellRegistry.CONE_OF_COLD_SPELL.get()
-            );
-        }
-
-        if (evolution == RaceEvolution.STORMBLOOD) {
-            return new BreathProfile(
-                "Storm Breath",
-                SpellRegistry.LIGHTNING_LANCE_SPELL.get()
-            );
-        }
-
-        return new BreathProfile(
-            evolution == RaceEvolution.SKYBORN
-                ? "Skyborn Breath"
-                : "Fire Breath",
-            SpellRegistry.FIRE_BREATH_SPELL.get()
-        );
+        // Wings no longer alter Dragonborn breath spells.
+        return new BreathProfile("Fire Breath",
+                SpellRegistry.FIRE_BREATH_SPELL.get());
     }
 
     private static void restoreIronCooldown(

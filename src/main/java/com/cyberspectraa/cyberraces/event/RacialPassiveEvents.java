@@ -56,7 +56,6 @@ public final class RacialPassiveEvents {
 
         updateFoxSneakSpeed(player);
         BiomeAttunementService.tickPlayer(player);
-        EvolutionTalentEvents.tick(player);
 
         // Like a ladder: climb when against a wall and not crouching.
         // When sneaking, remain at the same height, with no gravity.
@@ -155,7 +154,6 @@ public final class RacialPassiveEvents {
         FairyHoverAbility.disable(player);
         com.cyberspectraa.cyberraces.ability.NewRaceAbilities.cleanup(player);
         BiomeAttunementService.clear(player);
-        EvolutionTalentEvents.clearOwned(player);
 
         if (IronSpellsCompat.isLoaded()) {
             DragonBreathAbility.cleanup(player);

@@ -10,81 +10,125 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+
 import java.util.List;
 
-/** A server-chosen offer after sleeping, not a free evolution selector. */
+/** Shows all allowed evolution choices for the player's race. */
 public final class RaceEvolutionScreen extends Screen {
-    private final RaceEvolution proposed;
+    private final RaceEvolution[] choices;
+    private int index;
+    private Button choiceButton;
     private boolean answered;
 
-    public RaceEvolutionScreen(String proposedId) {
-        super(Component.literal("Racial Evolution"));
-        this.proposed = RaceEvolution.byId(proposedId).orElse(null);
+    public RaceEvolutionScreen(String firstEvolutionId) {
+        super(Component.literal("Choose Evolution"));
+        RaceEvolution first = RaceEvolution.byId(firstEvolutionId).orElse(null);
+        this.choices = first == null
+                ? new RaceEvolution[0]
+                : RaceEvolution.choicesFor(first.baseRace());
     }
 
     @Override
     protected void init() {
-        if (proposed == null) {
+        if (choices.length == 0) {
             onClose();
             return;
         }
         int x = width / 2;
         int y = Math.max(16, height / 2 - 122);
-        addRenderableWidget(Button.builder(Component.literal("Evolve"), b -> submit(true))
+
+        if (choices.length > 1) {
+            addRenderableWidget(Button.builder(Component.literal("<"),
+                    button -> change(-1))
+                    .bounds(x - 150, y + 42, 26, 20).build());
+            addRenderableWidget(Button.builder(Component.literal(">"),
+                    button -> change(1))
+                    .bounds(x + 124, y + 42, 26, 20).build());
+        }
+
+        choiceButton = addRenderableWidget(Button.builder(
+                Component.literal(current().displayName()),
+                button -> change(1))
+                .bounds(x - 120, y + 42, 240, 20).build());
+        choiceButton.active = choices.length > 1;
+
+        addRenderableWidget(Button.builder(Component.literal("Evolve"),
+                button -> submit(true))
                 .bounds(x - 149, y + 207, 140, 22).build());
-        addRenderableWidget(Button.builder(Component.literal("Not Yet"), b -> submit(false))
+        addRenderableWidget(Button.builder(Component.literal("Not Yet"),
+                button -> submit(false))
                 .bounds(x + 9, y + 207, 140, 22).build());
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
-        if (proposed == null) {
+        if (choices.length == 0) {
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
         int x = width / 2;
         int y = Math.max(16, height / 2 - 122);
+        RaceEvolution selected = current();
         graphics.drawCenteredString(font, title, x, y, 0xF7DBA1);
         graphics.drawCenteredString(font,
-                Component.literal("Evolution: " + proposed.displayName()),
-                x, y + 24, 0xA7E3D3);
+                Component.literal("Cyber Level 30 — " + selected.baseRace().displayName()),
+                x, y + 23, 0xA7E3D3);
 
         List<FormattedCharSequence> description =
-                font.split(Component.literal(proposed.description()), 302);
-        int textY = y + 61;
+                font.split(Component.literal(selected.description()), 286);
+        int textY = y + 78;
         for (FormattedCharSequence line : description) {
-            graphics.drawCenteredString(font, line, x, textY, 0xE5E5E5);
+            graphics.drawString(font, line,
+                    x - font.width(line) / 2, textY, 0xE5E5E5, false);
             textY += 11;
         }
 
-        RaceEvolutionStats stats = proposed.stats();
-        graphics.drawCenteredString(font,
-                Component.literal("Physical: " + physicalSummary(stats)),
-                x, y + 128, 0xA7C8E3);
-        graphics.drawCenteredString(font,
-                Component.literal("Arcane: " + arcaneSummary(stats)),
-                x, y + 143, 0xC6A7E3);
-        graphics.drawCenteredString(font,
-                Component.literal("Ability affinity: " + prettyProfile(proposed.abilityProfile())),
-                x, y + 158, 0xE6C66B);
-        graphics.drawCenteredString(font,
-                Component.literal("Keep growing or rest again to reconsider."),
-                x, y + 183, 0xBDBDBD);
+        RaceEvolutionStats stats = selected.stats();
+        graphics.drawCenteredString(font, Component.literal(
+                "Health +" + Math.round(stats.healthBonus())
+                        + "  Armour +" + stats.armorBonus()),
+                x, y + 133, 0xA7C8E3);
+        graphics.drawCenteredString(font, Component.literal(
+                "Speed " + percent(stats.movementMultiplier())
+                        + "  Mana " + percent(stats.maxManaMultiplier())),
+                x, y + 151, 0xC6A7E3);
+
+        graphics.drawCenteredString(font, Component.literal(
+                choices.length > 1 ? "Choose your path, or decide later."
+                        : "Evolve now, or decide later."),
+                x, y + 182, 0xBDBDBD);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    private RaceEvolution current() {
+        return choices[index];
+    }
+
+    private void change(int direction) {
+        if (choices.length < 2) return;
+        index = Math.floorMod(index + direction, choices.length);
+        if (choiceButton != null) {
+            choiceButton.setMessage(Component.literal(current().displayName()));
+        }
+    }
+
+    private static String percent(double multiplier) {
+        long value = Math.round((multiplier - 1.0D) * 100.0D);
+        return (value >= 0L ? "+" : "") + value + "%";
+    }
+
     private void submit(boolean accept) {
-        if (answered) return;
+        if (answered || choices.length == 0) return;
         answered = true;
         CyberRacesNetwork.sendToServer(
-                new SubmitRaceEvolutionPacket(accept ? proposed.id() : ""));
+                new SubmitRaceEvolutionPacket(accept ? current().id() : ""));
         if (!accept) Minecraft.getInstance().setScreen(null);
     }
 
     @Override
     public void onClose() {
-        if (!answered) submit(false);
+        if (!answered && choices.length > 0) submit(false);
         super.onClose();
     }
 
@@ -93,88 +137,4 @@ public final class RaceEvolutionScreen extends Screen {
 
     @Override
     public boolean isPauseScreen() { return false; }
-
-    private static String physicalSummary(RaceEvolutionStats stats) {
-        StringBuilder builder = new StringBuilder();
-
-        if (Math.abs(stats.healthBonus()) > 0.001D) {
-            append(builder, signed(stats.healthBonus()) + " health");
-        }
-        if (Math.abs(stats.movementMultiplier() - 1.0D) > 0.001D) {
-            append(builder, percent(stats.movementMultiplier()) + " speed");
-        }
-        if (Math.abs(stats.armorBonus()) > 0.001D) {
-            append(builder, signed(stats.armorBonus()) + " armour");
-        }
-        if (Math.abs(stats.knockbackResistanceBonus()) > 0.001D) {
-            append(builder, signedPercent(stats.knockbackResistanceBonus()) + " knockback resist");
-        }
-        if (Math.abs(stats.luckBonus()) > 0.001D) {
-            append(builder, signed(stats.luckBonus()) + " luck");
-        }
-        if (Math.abs(stats.scaleMultiplier() - 1.0D) > 0.001D) {
-            append(builder, percent(stats.scaleMultiplier()) + " size");
-        }
-
-        return builder.isEmpty() ? "specialised racial traits" : builder.toString();
-    }
-
-    private static String arcaneSummary(RaceEvolutionStats stats) {
-        StringBuilder builder = new StringBuilder();
-
-        if (Math.abs(stats.maxManaMultiplier() - 1.0D) > 0.001D) {
-            append(builder, percent(stats.maxManaMultiplier()) + " mana affinity");
-        }
-        if (Math.abs(stats.manaRegenMultiplier() - 1.0D) > 0.001D) {
-            append(builder, percent(stats.manaRegenMultiplier()) + " mana regen");
-        }
-        if (Math.abs(stats.spellResistanceMultiplier() - 1.0D) > 0.001D) {
-            append(builder, percent(stats.spellResistanceMultiplier()) + " spell resist");
-        }
-
-        return builder.isEmpty() ? "no additional magic affinity" : builder.toString();
-    }
-
-    private static String signed(double value) {
-        return (value >= 0 ? "+" : "") + String.format("%.1f", value);
-    }
-
-    private static String percent(double multiplier) {
-        double value = (multiplier - 1.0D) * 100.0D;
-        return (value >= 0 ? "+" : "") + Math.round(value) + "%";
-    }
-
-    private static String signedPercent(double value) {
-        double percent = value * 100.0D;
-        return (percent >= 0 ? "+" : "") + Math.round(percent) + "%";
-    }
-
-    private static String prettyProfile(String value) {
-        if (value == null || value.isBlank()) {
-            return "Standard";
-        }
-
-        String[] parts = value.split("_");
-        StringBuilder builder = new StringBuilder();
-
-        for (String part : parts) {
-            if (part.isBlank()) {
-                continue;
-            }
-            if (!builder.isEmpty()) {
-                builder.append(' ');
-            }
-            builder.append(Character.toUpperCase(part.charAt(0)))
-                .append(part.substring(1));
-        }
-
-        return builder.toString();
-    }
-
-    private static void append(StringBuilder builder, String value) {
-        if (!builder.isEmpty()) {
-            builder.append(", ");
-        }
-        builder.append(value);
-    }
 }
