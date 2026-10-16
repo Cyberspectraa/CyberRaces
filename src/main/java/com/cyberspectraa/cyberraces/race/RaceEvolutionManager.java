@@ -77,6 +77,11 @@ public final class RaceEvolutionManager {
         if (choices.length == 0) return;
 
         PENDING.put(player.getUUID(), race);
+        player.serverLevel().sendParticles(ParticleTypes.ENCHANT,
+                player.getX(), player.getY() + 1, player.getZ(),
+                42, 0.8, 0.6, 0.8, 0.2);
+        player.serverLevel().playSound(null, player.blockPosition(),
+                SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.9F, 0.8F);
         // The first valid ID establishes the race; the screen shows every
         // option for that race (both High and Dark Elf, for instance).
         CyberRacesNetwork.sendToPlayer(player,

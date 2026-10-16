@@ -37,7 +37,9 @@ public final class RaceSkinOverlayManager {
 
         // No automatic tint for Orc, Dragonborn, or Nymph. Players must
         // select a source pixel and target colour as with Goblin.
-        if (!undead && (!supports(race)
+        boolean darkElf = race == Race.ELF
+                && "dark_elf".equals(evolutionId);
+        if (!undead && !darkElf && (!supports(race)
                 || (race != Race.SLIME && !appearance.hasBodyRecolour()))) {
             invalidate(player.getUUID());
             return originalSkin;
@@ -49,6 +51,7 @@ public final class RaceSkinOverlayManager {
             appearance.bodyTargetColor(),
             appearance.bodyTolerance(),
             undead ? "acquired_undead"
+                : darkElf ? "dark_elf"
                 : (race == Race.SLIME ? evolutionId + "#slime:" + appearance.featureStyle() : "")
         );
 
@@ -62,6 +65,9 @@ public final class RaceSkinOverlayManager {
         ResourceLocation generated = undead
             ? generateBodyTone(player.getUUID(), originalSkin, appearance,
                     0x668B52, "undead")
+            : darkElf
+                ? generateBodyTone(player.getUUID(), originalSkin, appearance,
+                    0x6A588A, "dark_elf")
             : race == Race.SLIME
                 ? generateSlime(player.getUUID(), originalSkin, evolutionId, appearance.featureStyle(), false)
                 : generate(player, originalSkin, appearance);

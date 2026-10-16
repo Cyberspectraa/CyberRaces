@@ -2,6 +2,7 @@ package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 
 public final class FeatureColourPalette {
     private FeatureColourPalette() {
@@ -10,7 +11,7 @@ public final class FeatureColourPalette {
     public static int defaultRgb(Race race) {
         return switch (race) {
             case TIEFLING -> 0xC24F5B;
-            case DRAGONBORN -> 0x76AFA1;
+            case DRAGONBORN -> DragonVariant.DEFAULT_COLOR;
             case CATFOLK -> 0xC49A6C;
             case DOGFOLK -> 0xA97852;
             case FOXFOLK -> 0xC96B35;
@@ -22,6 +23,9 @@ public final class FeatureColourPalette {
         int rgb = packedRgb == CharacterAppearance.AUTO_COLOR
             ? defaultRgb(race)
             : packedRgb & 0xFFFFFF;
+        if (race == Race.DRAGONBORN) {
+            rgb = DragonVariant.normalizedColor(rgb);
+        }
 
         return new float[] {
             ((rgb >> 16) & 0xFF) / 255.0F,

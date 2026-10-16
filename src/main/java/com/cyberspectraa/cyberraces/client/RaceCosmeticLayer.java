@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces.client;
 import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HumanoidModel;
@@ -91,7 +92,8 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
                 visual.appearance().bodyTargetColor(),
                 limbSwing,
                 limbSwingAmount,
-                ageInTicks
+                ageInTicks,
+                visual.evolutionId()
             );
         });
     }
@@ -176,16 +178,22 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
         int bodyTargetColor,
         float limbSwing,
         float limbSwingAmount,
-        float ageInTicks
+        float ageInTicks,
+        String evolutionId
     ) {
         switch (race) {
             case ELF -> renderEars(
-                poseStack, buffer, packedLight, entity, race, featureColor,
-                "elf_" + switch (feature) {
-                    case 1 -> "long";
-                    case 2 -> "high";
-                    default -> "short";
-                },
+                poseStack, buffer, packedLight, entity, race,
+                "high_elf".equals(evolutionId) ? 0xE5CDA1
+                    : "dark_elf".equals(evolutionId) ? 0x75609E
+                    : featureColor,
+                "elf_" + ("high_elf".equals(evolutionId) ? "high"
+                    : "dark_elf".equals(evolutionId) ? "long"
+                    : switch (feature) {
+                        case 1 -> "long";
+                        case 2 -> "high";
+                        default -> "short";
+                    }),
                 earHeight, earSpread, earTilt
             );
 
@@ -210,12 +218,13 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             );
 
             case GOBLIN -> renderEars(
-                poseStack, buffer, packedLight, entity, race, featureColor,
-                "goblin_" + switch (feature) {
+                poseStack, buffer, packedLight, entity, race,
+                "hobgoblin".equals(evolutionId) ? 0x739348 : featureColor,
+                "goblin_" + ("hobgoblin".equals(evolutionId) ? "long" : switch (feature) {
                     case 1 -> "long";
                     case 2 -> "swept";
                     default -> "wide";
-                },
+                }),
                 earHeight, earSpread, earTilt
             );
 
@@ -252,7 +261,7 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
 
                 renderHeadPair(
                     poseStack, buffer, packedLight, DRAGON_TEXTURE,
-                    "dragon_" + switch (feature) {
+                    "dragon_" + switch (DragonVariant.horns(feature)) {
                         case 1 -> "crowned";
                         case 2 -> "swept";
                         default -> "horned";
@@ -303,6 +312,35 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             case HUMAN, DWARF, NYMPH, AASIMAR, BIRDFOLK, SLIME, ARACHNID, UNDEAD -> {
             }
         }
+
+        // Evolved forms have distinct permanent head details; original
+        // player skin, hair and regular race parts remain underneath.
+        switch (evolutionId) {
+            case "high_elf" -> renderEvolutionHead(
+                poseStack, buffer, packedLight, "high_elf_circlet", 0xECD081);
+            case "dark_elf" -> renderEvolutionHead(
+                poseStack, buffer, packedLight, "dark_elf_circlet", 0xA58AD2);
+            case "elder_dwarf" -> renderEvolutionHead(
+                poseStack, buffer, packedLight, "elder_dwarf_beard", 0xB9B0A0);
+            case "hobgoblin" -> renderEvolutionHead(
+                poseStack, buffer, packedLight, "hobgoblin_tusks", 0xE4D3AB);
+            default -> { }
+        }
+    }
+
+    private void renderEvolutionHead(PoseStack stack, MultiBufferSource buffer,
+            int light, String part, int rgb) {
+        stack.pushPose();
+        getParentModel().head.translateAndRotate(stack);
+        VertexConsumer consumer = buffer.getBuffer(
+                RenderType.entityCutoutNoCull(FEATURE_TEXTURE));
+        hardRoot.getChild(part).render(stack, consumer, light,
+                OverlayTexture.NO_OVERLAY,
+                ((rgb >> 16) & 255) / 255.0F,
+                ((rgb >> 8) & 255) / 255.0F,
+                (rgb & 255) / 255.0F,
+                1.0F);
+        stack.popPose();
     }
 
     private void renderBeastfolk(

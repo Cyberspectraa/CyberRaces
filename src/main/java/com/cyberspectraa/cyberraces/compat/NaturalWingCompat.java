@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.CyberRaces;
 import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraft.resources.ResourceLocation;
@@ -147,10 +148,9 @@ public final class NaturalWingCompat {
 
         if (race == Race.DRAGONBORN
                 && evolution == RaceEvolution.SKYBORN) {
-            int rgb = appearance.featureColor() == CharacterAppearance.AUTO_COLOR
-                ? 0x76AFA1
-                : appearance.featureColor();
-            return icarus(DYE_NAMES[nearestDye(rgb)] + "_dragon_wings");
+            // The same exact Icarus-dye colour tints horn, tail and wings.
+            int dye = DragonVariant.nearestDye(appearance.featureColor());
+            return icarus(DYE_NAMES[dye] + "_dragon_wings");
         }
 
         return null;

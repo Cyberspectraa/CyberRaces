@@ -1,7 +1,7 @@
 package com.cyberspectraa.cyberraces.ability;
 
 import com.cyberspectraa.cyberraces.character.CharacterManager;
-import com.cyberspectraa.cyberraces.race.RaceEvolution;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
@@ -168,9 +168,21 @@ public final class DragonBreathAbility {
     }
 
     private static BreathProfile profile(ServerPlayer player) {
-        // Wings no longer alter Dragonborn breath spells.
-        return new BreathProfile("Fire Breath",
-                SpellRegistry.FIRE_BREATH_SPELL.get());
+        // Element is saved on the base Dragonborn appearance, not on the
+        // evolution. Winged Dragonborn keeps exactly the same V-key spell.
+        int style = CharacterManager.getAppearance(player).featureStyle();
+        return switch (DragonVariant.type(style)) {
+            case 1 -> new BreathProfile("Frost Breath",
+                    SpellRegistry.CONE_OF_COLD_SPELL.get());
+            case 2 -> new BreathProfile("Lightning Breath",
+                    SpellRegistry.LIGHTNING_LANCE_SPELL.get());
+            case 3 -> new BreathProfile("Poison Breath",
+                    SpellRegistry.POISON_BREATH_SPELL.get());
+            case 4 -> new BreathProfile("Ender Breath",
+                    SpellRegistry.DRAGON_BREATH_SPELL.get());
+            default -> new BreathProfile("Fire Breath",
+                    SpellRegistry.FIRE_BREATH_SPELL.get());
+        };
     }
 
     private static void restoreIronCooldown(

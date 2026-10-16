@@ -1,8 +1,9 @@
 package com.cyberspectraa.cyberraces.event;
 
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.SlimeParticleColor;
+import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.race.RaceManager;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -54,7 +55,7 @@ public final class SlimeMovementEvents {
         Vec3 velocity = player.getDeltaMovement();
         player.setDeltaMovement(velocity.x, velocity.y * 1.14D, velocity.z);
         player.hurtMarked = true;
-        player.serverLevel().sendParticles(ParticleTypes.ITEM_SLIME,
+        player.serverLevel().sendParticles(SlimeParticleColor.forAppearance(CharacterManager.getAppearance(player)),
                 player.getX(), player.getY() + 0.08D, player.getZ(),
                 12, 0.28D, 0.03D, 0.28D, 0.045D);
     }
@@ -74,7 +75,7 @@ public final class SlimeMovementEvents {
         if (!grounded && player.getDeltaMovement().y < -0.05D) {
             WAS_AIRBORNE.add(id);
         } else if (grounded && WAS_AIRBORNE.remove(id)) {
-            player.serverLevel().sendParticles(ParticleTypes.ITEM_SLIME,
+            player.serverLevel().sendParticles(SlimeParticleColor.forAppearance(CharacterManager.getAppearance(player)),
                     player.getX(), player.getY() + 0.06D, player.getZ(),
                     16, 0.36D, 0.045D, 0.36D, 0.055D);
         }
@@ -89,7 +90,7 @@ public final class SlimeMovementEvents {
                 Vec3 motion = player.getDeltaMovement();
                 player.setDeltaMovement(motion.x, 0.50D, motion.z);
                 player.hurtMarked = true;
-                player.serverLevel().sendParticles(ParticleTypes.ITEM_SLIME,
+                player.serverLevel().sendParticles(SlimeParticleColor.forAppearance(CharacterManager.getAppearance(player)),
                         player.getX(), player.getY() + 0.08D, player.getZ(),
                         18, 0.36D, 0.06D, 0.36D, 0.065D);
             }
@@ -101,7 +102,7 @@ public final class SlimeMovementEvents {
         if (grounded && player.tickCount % 4 == 0
                 && velocity.horizontalDistanceSqr() > 0.004D
                 && !player.isPassenger()) {
-            player.serverLevel().sendParticles(ParticleTypes.ITEM_SLIME,
+            player.serverLevel().sendParticles(SlimeParticleColor.forAppearance(CharacterManager.getAppearance(player)),
                     player.getX(), player.getY() + 0.05D, player.getZ(),
                     3, 0.22D, 0.025D, 0.22D, 0.025D);
         }

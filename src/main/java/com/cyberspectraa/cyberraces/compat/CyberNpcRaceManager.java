@@ -5,6 +5,7 @@ import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.EntityRaceSyncPacket;
 import com.cyberspectraa.cyberraces.progression.ProgressionManager;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.cyberspectraa.cyberraces.race.RaceAttributeApplier;
 import com.cyberspectraa.cyberraces.race.RaceEvolution;
 import net.minecraft.nbt.CompoundTag;
@@ -509,7 +510,9 @@ public final class CyberNpcRaceManager {
             case DOGFOLK -> 9;
             case FOXFOLK -> 2;
             case BIRDFOLK -> 16;
-            case HUMAN, DWARF, NYMPH, AASIMAR, SLIME, ARACHNID, UNDEAD -> 1;
+            case DRAGONBORN -> DragonVariant.TYPE_COUNT * DragonVariant.HORN_COUNT;
+            case SLIME -> net.minecraftforge.fml.ModList.get().isLoaded("tconstruct") ? 12 : 8;
+            case HUMAN, DWARF, NYMPH, AASIMAR, ARACHNID, UNDEAD -> 1;
             default -> 3;
         };
 
@@ -549,6 +552,10 @@ public final class CyberNpcRaceManager {
                 GOBLIN_SKIN;
             case TIEFLING ->
                 TIEFLING_SKIN;
+            case DRAGONBORN -> DragonVariant.dyeRgb(
+                entity.getRandom().nextInt(16));
+            case SLIME -> com.cyberspectraa.cyberraces.race.SlimeParticleColor
+                .colorForStyle(appearance.featureStyle());
             default ->
                 appearance.featureColor();
         };

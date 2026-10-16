@@ -1,6 +1,7 @@
 package com.cyberspectraa.cyberraces.compat;
 
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -203,18 +204,38 @@ public final class CyberNpcRacialAi {
         if (!lineOfSight || distanceSqr > 8.0D * 8.0D
                 || !isReady(mob, DRAGON_READY)) return;
 
+        int element = DragonVariant.type(
+                CyberNpcRaceManager.getAppearance(mob).featureStyle());
+        var particle = switch (element) {
+            case 1 -> ParticleTypes.SNOWFLAKE;
+            case 2 -> ParticleTypes.ELECTRIC_SPARK;
+            case 3 -> ParticleTypes.WITCH;
+            case 4 -> ParticleTypes.DRAGON_BREATH;
+            default -> ParticleTypes.FLAME;
+        };
         Vec3 from = mob.getEyePosition();
         Vec3 ray = target.getEyePosition().subtract(from);
         for (int i = 1; i <= 8; i++) {
             Vec3 point = from.add(ray.scale(i / 8.0D));
-            level.sendParticles(ParticleTypes.FLAME,
+            level.sendParticles(particle,
                     point.x, point.y, point.z, 2,
                     0.08D, 0.08D, 0.08D, 0.01D);
         }
         level.playSound(null, mob.blockPosition(),
-                SoundEvents.BLAZE_SHOOT, SoundSource.NEUTRAL, 0.85F, 0.78F);
-        target.hurt(level.damageSources().mobAttack(mob), 5.0F);
-        target.setSecondsOnFire(4);
+                element == 2 ? SoundEvents.LIGHTNING_BOLT_THUNDER
+                        : element == 1 ? SoundEvents.POWDER_SNOW_BREAK
+                        : SoundEvents.BLAZE_SHOOT,
+                SoundSource.NEUTRAL, element == 2 ? 0.4F : 0.85F, 0.85F);
+        target.hurt(level.damageSources().mobAttack(mob),
+                element == 2 ? 6.0F : 5.0F);
+        switch (element) {
+            case 1 -> target.addEffect(new MobEffectInstance(
+                    MobEffects.MOVEMENT_SLOWDOWN, 80, 1));
+            case 3 -> target.addEffect(new MobEffectInstance(
+                    MobEffects.POISON, 80, 0));
+            case 0 -> target.setSecondsOnFire(4);
+            default -> { }
+        }
         setCooldown(mob, DRAGON_READY, 18 * 20);
     }
 

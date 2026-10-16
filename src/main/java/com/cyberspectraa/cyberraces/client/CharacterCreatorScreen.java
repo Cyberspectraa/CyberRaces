@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.character.CharacterAppearance;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -84,9 +85,19 @@ public final class CharacterCreatorScreen extends Screen {
         int featureY = l.top + (l.small ? 42 : 78);
         this.featureButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
-                featureStyle = currentRace() == Race.SLIME
-                    ? SlimeVariantPalette.nextAvailable(featureStyle)
-                    : (featureStyle + 1) % featureVariantCount(currentRace());
+                if (currentRace() == Race.SLIME) {
+                    featureStyle = SlimeVariantPalette.nextAvailable(featureStyle);
+                    // Store the selected RGB as well: the server uses it for
+                    // coloured jump/land particles, including resource-pack slimes.
+                    featureColor = SlimeVariantPalette.color(featureStyle);
+                } else if (currentRace() == Race.DRAGONBORN) {
+                    featureStyle = DragonVariant.style(
+                            DragonVariant.type(featureStyle),
+                            DragonVariant.horns(featureStyle) + 1);
+                } else {
+                    featureStyle = (featureStyle + 1)
+                            % featureVariantCount(currentRace());
+                }
                 refreshLabels();
             })
                 .bounds(l.right + pad, featureY, Math.max(60, l.rightWidth - pad * 2), buttonHeight)
@@ -95,7 +106,10 @@ public final class CharacterCreatorScreen extends Screen {
 
         this.colourButton = this.addRenderableWidget(
             Button.builder(Component.empty(), button -> {
-                if (this.minecraft != null) {
+                if (currentRace() == Race.DRAGONBORN) {
+                    featureColor = DragonVariant.nextColor(featureColor);
+                    refreshLabels();
+                } else if (this.minecraft != null) {
                     this.minecraft.setScreen(
                         new FeatureColorPickerScreen(this, currentRace(), featureColor)
                     );
@@ -112,7 +126,12 @@ public final class CharacterCreatorScreen extends Screen {
 
         this.earFitButton = this.addRenderableWidget(
             Button.builder(Component.literal("Ear Fit..."), button -> {
-                if (this.minecraft != null) {
+                if (currentRace() == Race.DRAGONBORN) {
+                    featureStyle = DragonVariant.style(
+                            DragonVariant.type(featureStyle) + 1,
+                            DragonVariant.horns(featureStyle));
+                    refreshLabels();
+                } else if (this.minecraft != null) {
                     this.minecraft.setScreen(
                         new EarAdjustScreen(this, earHeight, earSpread, earTilt)
                     );
@@ -410,7 +429,11 @@ public final class CharacterCreatorScreen extends Screen {
     private void changeRace(int direction) {
         raceIndex = Math.floorMod(raceIndex + direction, STARTING_RACES.length);
         featureStyle = 0;
-        featureColor = CharacterAppearance.AUTO_COLOR;
+        featureColor = currentRace() == Race.DRAGONBORN
+                ? DragonVariant.DEFAULT_COLOR
+                : currentRace() == Race.SLIME
+                    ? SlimeVariantPalette.color(0)
+                    : CharacterAppearance.AUTO_COLOR;
         earHeight = 0;
         earSpread = 0;
         earTilt = 0;
@@ -436,15 +459,22 @@ public final class CharacterCreatorScreen extends Screen {
         if (colourButton != null) {
             boolean featureColour = hasFeatureColour(race);
             colourButton.setMessage(Component.literal(
-                "Colour: " + FeatureColourPalette.label(race, featureColor)
+                race == Race.DRAGONBORN
+                    ? "Horns/Tail/Wings: " + DragonVariant.dyeName(featureColor)
+                    : "Colour: " + FeatureColourPalette.label(race, featureColor)
             ));
             colourButton.active = featureColour;
             colourButton.visible = featureColour;
         }
 
         if (earFitButton != null) {
-            earFitButton.active = FeatureColourPalette.hasEars(race);
-            earFitButton.visible = FeatureColourPalette.hasEars(race);
+            earFitButton.active = race == Race.DRAGONBORN
+                    || FeatureColourPalette.hasEars(race);
+            earFitButton.visible = earFitButton.active;
+            earFitButton.setMessage(Component.literal(
+                    race == Race.DRAGONBORN
+                        ? "Breath: " + DragonVariant.name(featureStyle)
+                        : "Ear Fit..."));
         }
 
         if (bodyColourButton != null) {
@@ -498,7 +528,13 @@ public final class CharacterCreatorScreen extends Screen {
             case ORC -> new String[] {"Ears: Short", "Ears: Broad", "Ears: Swept"};
             case GOBLIN -> new String[] {"Ears: Wide", "Ears: Long", "Ears: Swept"};
             case TIEFLING -> new String[] {"Horns: Curved", "Horns: Swept", "Horns: Tall"};
-            case DRAGONBORN -> new String[] {"Crest: Horned", "Crest: Crowned", "Crest: Swept"};
+            case DRAGONBORN -> new String[] {
+                "Horns: " + switch (DragonVariant.horns(featureStyle)) {
+                    case 1 -> "Crowned";
+                    case 2 -> "Swept";
+                    default -> "Horned";
+                }
+            };
             case FAIRY -> new String[] {"Ears: Classic", "Ears: Sharp", "Ears: Soft"};
             case NYMPH -> new String[] {"Nature spirit", "Nature spirit", "Nature spirit"};
             case CATFOLK, DOGFOLK, FOXFOLK -> new String[] {
@@ -517,6 +553,8 @@ public final class CharacterCreatorScreen extends Screen {
             case UNDEAD -> new String[] {"Undying form", "Undying form", "Undying form"};
         };
         return BeastVariantTextures.isBeastfolk(currentRace())
+                || currentRace() == Race.DRAGONBORN
+                || currentRace() == Race.SLIME
             ? labels[0]
             : labels[Math.min(featureStyle, labels.length - 1)];
     }
@@ -530,7 +568,7 @@ public final class CharacterCreatorScreen extends Screen {
             case ORC -> "Broad pointed ears with adjustable placement.";
             case GOBLIN -> "Long, outward-pointing ears.";
             case TIEFLING -> "Curved horns and a moving tail.";
-            case DRAGONBORN -> "Scaled body, horned crest and tail.";
+            case DRAGONBORN -> "Choose your breath, horn shape and wing-matched colour.";
             case FAIRY -> "Pointed ears and delicate wings.";
             case NYMPH -> "Nature-tinted skin without added limbs.";
             case CATFOLK -> "Cat ears and tail, with selectable coat patterns.";

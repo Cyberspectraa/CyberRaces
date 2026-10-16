@@ -74,6 +74,34 @@ public final class RaceCosmeticModels {
 
         addDragonTail(root);
 
+        // Distinct head details for the four evolved, wingless lineages.
+        // Attached to the actual player head so crouching and looking
+        // around works just like ears and horns.
+        root.addOrReplaceChild("high_elf_circlet",
+            CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-4.05F, -7.9F, -4.55F, 8.1F, 0.8F, 0.75F)
+                .texOffs(0, 8).addBox(-0.85F, -9.1F, -4.80F, 1.7F, 1.7F, 0.8F),
+            PartPose.ZERO);
+        root.addOrReplaceChild("dark_elf_circlet",
+            CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-4.10F, -7.7F, -4.60F, 8.2F, 0.65F, 0.8F)
+                .texOffs(0, 8).addBox(-1.55F, -8.8F, -4.9F, 3.1F, 1.45F, 0.9F),
+            PartPose.ZERO);
+        root.addOrReplaceChild("elder_dwarf_beard",
+            CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-3.1F, -1.55F, -4.9F, 6.2F, 4.1F, 1.3F)
+                .texOffs(0, 8).addBox(-2.15F, 2.2F, -5.2F, 4.3F, 2.2F, 1.4F)
+                .texOffs(0, 14).addBox(-3.2F, -2.5F, -5.1F, 1.0F, 3.5F, 1.0F)
+                .texOffs(0, 14).addBox(2.2F, -2.5F, -5.1F, 1.0F, 3.5F, 1.0F),
+            PartPose.ZERO);
+        root.addOrReplaceChild("hobgoblin_tusks",
+            CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-3.6F, -2.4F, -4.95F, 1.25F, 2.4F, 1.0F)
+                .texOffs(0, 0).addBox(2.35F, -2.4F, -4.95F, 1.25F, 2.4F, 1.0F)
+                .texOffs(0, 8).addBox(-3.1F, -3.05F, -4.8F, 0.7F, 1.0F, 0.7F)
+                .texOffs(0, 8).addBox(2.4F, -3.05F, -4.8F, 0.7F, 1.0F, 0.7F),
+            PartPose.ZERO);
+
         addCatTail(root);
         addDogTail(root);
         addFoxTail(root);
