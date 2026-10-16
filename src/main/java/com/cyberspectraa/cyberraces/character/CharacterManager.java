@@ -4,6 +4,7 @@ import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.CloseCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.network.packet.OpenCharacterCreatorPacket;
 import com.cyberspectraa.cyberraces.race.Race;
+import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.cyberspectraa.cyberraces.race.RaceManager;
 import net.minecraftforge.fml.ModList;
 import java.lang.reflect.Method;
@@ -80,7 +81,21 @@ public final class CharacterManager {
             CharacterAppearance appearance) {
         if (player == null || appearance == null || !isCharacterCreated(player)
                 || RaceManager.getBaseRace(player).isEmpty()) return;
-        saveAppearance(player, appearance);
+        // The mirror changes looks only. It must not change a Dragonborn's
+        // elemental breath, even if a client sends a forged style value.
+        Race base = RaceManager.getBaseRace(player).orElse(null);
+        CharacterAppearance chosen = appearance;
+        if (base == Race.DRAGONBORN) {
+            int savedStyle = getAppearance(player).featureStyle();
+            chosen = new CharacterAppearance(
+                    DragonVariant.style(DragonVariant.type(savedStyle),
+                            DragonVariant.horns(appearance.featureStyle())),
+                    appearance.featureColor(),
+                    appearance.earHeight(), appearance.earSpread(),
+                    appearance.earTilt(), appearance.bodySourceColor(),
+                    appearance.bodyTargetColor(), appearance.bodyTolerance());
+        }
+        saveAppearance(player, chosen);
         RaceManager.reapply(player);
         CharacterSyncService.broadcast(player);
     }

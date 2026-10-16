@@ -160,9 +160,11 @@ public final class CharacterCreatorScreen extends Screen {
         this.earFitButton = this.addRenderableWidget(
             Button.builder(Component.literal("Ear Fit..."), button -> {
                 if (currentRace() == Race.DRAGONBORN) {
-                    featureStyle = DragonVariant.style(
-                            DragonVariant.type(featureStyle) + 1,
-                            DragonVariant.horns(featureStyle));
+                    if (!mirrorMode) {
+                        featureStyle = DragonVariant.style(
+                                DragonVariant.type(featureStyle) + 1,
+                                DragonVariant.horns(featureStyle));
+                    }
                     refreshLabels();
                 } else if (this.minecraft != null) {
                     this.minecraft.setScreen(
@@ -516,12 +518,13 @@ public final class CharacterCreatorScreen extends Screen {
         }
 
         if (earFitButton != null) {
-            earFitButton.active = race == Race.DRAGONBORN
+            earFitButton.active = (race == Race.DRAGONBORN && !mirrorMode)
                     || FeatureColourPalette.hasEars(race);
             earFitButton.visible = earFitButton.active;
             earFitButton.setMessage(Component.literal(
                     race == Race.DRAGONBORN
                         ? "Breath: " + DragonVariant.name(featureStyle)
+                            + (mirrorMode ? " (fixed)" : "")
                         : "Ear Fit..."));
         }
 
