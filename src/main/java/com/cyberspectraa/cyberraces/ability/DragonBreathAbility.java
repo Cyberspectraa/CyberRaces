@@ -3,6 +3,7 @@ package com.cyberspectraa.cyberraces.ability;
 import com.cyberspectraa.cyberraces.character.CharacterManager;
 import com.cyberspectraa.cyberraces.race.DragonVariant;
 import com.cyberspectraa.cyberraces.race.RaceManager;
+import com.cyberspectraa.cyberraces.compat.LightningBreathCompat;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
@@ -64,6 +65,15 @@ public final class DragonBreathAbility {
             return;
         }
 
+        // A genuine short electrical breath stream, never a Lightning Lance.
+        // It uses Ice and Fire CE damage/sound if the optional mod is loaded.
+        if (DragonVariant.type(CharacterManager.getAppearance(player).featureStyle()) == 2) {
+            if (LightningBreathCompat.start(player)) {
+                setReadyTick(player, now + 16 + COOLDOWN_TICKS);
+            }
+            return;
+        }
+
         AbstractSpell spell = profile.spell();
 
         int level = Math.min(
@@ -122,6 +132,7 @@ public final class DragonBreathAbility {
     }
 
     public static void tick(ServerPlayer player) {
+        LightningBreathCompat.tick(player);
         ActiveCast active = ACTIVE.get(player.getUUID());
         if (active == null) {
             return;
@@ -149,6 +160,7 @@ public final class DragonBreathAbility {
     }
 
     public static void cleanup(ServerPlayer player) {
+        LightningBreathCompat.cleanup(player);
         ActiveCast active = ACTIVE.remove(player.getUUID());
         if (active == null) {
             return;
@@ -175,7 +187,7 @@ public final class DragonBreathAbility {
             case 1 -> new BreathProfile("Frost Breath",
                     SpellRegistry.CONE_OF_COLD_SPELL.get());
             case 2 -> new BreathProfile("Lightning Breath",
-                    SpellRegistry.LIGHTNING_LANCE_SPELL.get());
+                    SpellRegistry.FIRE_BREATH_SPELL.get());
             case 3 -> new BreathProfile("Poison Breath",
                     SpellRegistry.POISON_BREATH_SPELL.get());
             case 4 -> new BreathProfile("Ender Breath",

@@ -16,6 +16,7 @@ import com.cyberspectraa.cyberraces.event.SlimeMovementEvents;
 import com.cyberspectraa.cyberraces.event.UndeadMobBehaviorEvents;
 import com.cyberspectraa.cyberraces.event.UndeadInfectionEvents;
 import com.cyberspectraa.cyberraces.loot.CyberRacesLootModifiers;
+import com.cyberspectraa.cyberraces.item.AppearanceMirrorItem;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -31,6 +32,8 @@ public final class CyberRaces {
 
     public CyberRaces() {
         CyberRacesNetwork.init();
+        AppearanceMirrorItem.ITEMS.register(
+                FMLJavaModLoadingContext.get().getModEventBus());
         CyberRacesLootModifiers.register(
                 FMLJavaModLoadingContext.get().getModEventBus());
 

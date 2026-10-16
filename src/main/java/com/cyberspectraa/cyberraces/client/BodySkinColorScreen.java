@@ -146,7 +146,7 @@ public final class BodySkinColorScreen extends Screen {
 
         graphics.drawString(
             this.font,
-            "1. Click your original skin tone",
+            "1. Click bare skin (cheek is best)",
             l.controlsX,
             l.top + 26,
             0xE6D39A,

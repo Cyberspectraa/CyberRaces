@@ -11,6 +11,8 @@ import com.cyberspectraa.cyberraces.network.packet.OpenRaceEvolutionPacket;
 import com.cyberspectraa.cyberraces.network.packet.SubmitCharacterPacket;
 import com.cyberspectraa.cyberraces.network.packet.SubmitRaceEvolutionPacket;
 import com.cyberspectraa.cyberraces.network.packet.CloseRaceEvolutionPacket;
+import com.cyberspectraa.cyberraces.network.packet.OpenAppearanceMirrorPacket;
+import com.cyberspectraa.cyberraces.network.packet.SaveAppearanceMirrorPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
@@ -19,7 +21,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class CyberRacesNetwork {
-    private static final String PROTOCOL = "13";
+    private static final String PROTOCOL = "14";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
         new ResourceLocation(CyberRaces.MOD_ID, "main"),
@@ -86,6 +88,18 @@ public final class CyberRacesNetwork {
             .encoder(CloseRaceEvolutionPacket::encode)
             .decoder(CloseRaceEvolutionPacket::decode)
             .consumerMainThread(CloseRaceEvolutionPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(OpenAppearanceMirrorPacket.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
+            .encoder(OpenAppearanceMirrorPacket::encode)
+            .decoder(OpenAppearanceMirrorPacket::decode)
+            .consumerMainThread(OpenAppearanceMirrorPacket::handle)
+            .add();
+
+        CHANNEL.messageBuilder(SaveAppearanceMirrorPacket.class, messageId++, NetworkDirection.PLAY_TO_SERVER)
+            .encoder(SaveAppearanceMirrorPacket::encode)
+            .decoder(SaveAppearanceMirrorPacket::decode)
+            .consumerMainThread(SaveAppearanceMirrorPacket::handle)
             .add();
 
         CHANNEL.messageBuilder(RaceSensePacket.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)

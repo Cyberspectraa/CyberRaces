@@ -72,6 +72,19 @@ public final class CharacterManager {
         return true;
     }
 
+    /**
+     * Cosmetic-only change made with the mirror. Keep ancestry, level,
+     * class, evolution and ability cooldowns unchanged.
+     */
+    public static void changeAppearance(ServerPlayer player,
+            CharacterAppearance appearance) {
+        if (player == null || appearance == null || !isCharacterCreated(player)
+                || RaceManager.getBaseRace(player).isEmpty()) return;
+        saveAppearance(player, appearance);
+        RaceManager.reapply(player);
+        CharacterSyncService.broadcast(player);
+    }
+
     public static void forceComplete(
         ServerPlayer player,
         Race race,

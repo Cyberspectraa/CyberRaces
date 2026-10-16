@@ -1,6 +1,8 @@
 package com.cyberspectraa.cyberraces.client;
 
 import net.minecraft.client.Minecraft;
+import com.cyberspectraa.cyberraces.character.CharacterAppearance;
+import com.cyberspectraa.cyberraces.race.Race;
 
 public final class ClientPacketHandlers {
     private ClientPacketHandlers() {
@@ -9,6 +11,13 @@ public final class ClientPacketHandlers {
     public static void openCharacterCreator() {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.setScreen(new CharacterCreatorScreen());
+    }
+
+    public static void openAppearanceMirror(String raceId, String evolutionId,
+            CharacterAppearance appearance) {
+        Race.byId(raceId).ifPresent(race ->
+            Minecraft.getInstance().setScreen(
+                new CharacterCreatorScreen(race, evolutionId, appearance)));
     }
 
     public static void closeCharacterCreator() {

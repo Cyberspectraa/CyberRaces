@@ -295,7 +295,10 @@ public final class CharacterCreatorScreen extends Screen {
     private void renderFeatureInfo(GuiGraphics graphics, Layout l) {
         int x = l.right + (l.small ? 6 : 12);
         int maxWidth = Math.max(48, l.rightWidth - (l.small ? 12 : 24));
-        int y = l.top + (l.small ? 136 : 184);
+        boolean mirrorTusks = mirrorMode && currentRace() == Race.GOBLIN
+                && "hobgoblin".equals(mirrorEvolutionId);
+        int y = l.top + (mirrorTusks ? (l.small ? 157 : 224)
+                : (l.small ? 136 : 184));
 
         drawWrapped(
             graphics,
@@ -307,7 +310,7 @@ public final class CharacterCreatorScreen extends Screen {
             l.small ? 4 : 5
         );
 
-        if (!l.small) {
+        if (!l.small && !mirrorTusks) {
             drawWrapped(
                 graphics,
                 BeastVariantTextures.isBeastfolk(currentRace())

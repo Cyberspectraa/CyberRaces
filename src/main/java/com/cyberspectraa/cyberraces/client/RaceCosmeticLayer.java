@@ -220,11 +220,11 @@ public final class RaceCosmeticLayer<T extends LivingEntity, M extends HumanoidM
             case GOBLIN -> renderEars(
                 poseStack, buffer, packedLight, entity, race,
                 "hobgoblin".equals(evolutionId) ? 0x739348 : featureColor,
-                "goblin_" + ("hobgoblin".equals(evolutionId) ? "long" : switch (feature) {
+                "goblin_" + switch (Math.floorMod(feature, 3)) {
                     case 1 -> "long";
                     case 2 -> "swept";
                     default -> "wide";
-                }),
+                },
                 earHeight, earSpread, earTilt
             );
 
