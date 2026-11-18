@@ -49,7 +49,11 @@ public enum RaceEvolution {
     public Race baseRace() { return baseRace; }
     public RaceEvolutionStats stats() { return stats; }
 
-    public boolean availableToEvolve() { return true; }
+    public boolean availableToEvolve() {
+        // Keep old identifiers loadable, but do not allow retired races
+        // to acquire level-30 evolutions or Skyborn flight.
+        return !baseRace.retiredForPlayers();
+    }
 
     public static Optional<RaceEvolution> byId(String id) {
         if (id == null || id.isBlank()) return Optional.empty();
@@ -59,7 +63,7 @@ public enum RaceEvolution {
 
     public static RaceEvolution[] choicesFor(Race race) {
         return Arrays.stream(values())
-                .filter(e -> e.baseRace == race)
+                .filter(e -> e.baseRace == race && e.availableToEvolve())
                 .toArray(RaceEvolution[]::new);
     }
 

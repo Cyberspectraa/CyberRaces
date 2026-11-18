@@ -253,6 +253,11 @@ public final class CyberRaceCommands {
             source.sendFailure(Component.literal("Unknown race: " + raceId));
             return 0;
         }
+        if (race.retiredForPlayers()) {
+            source.sendFailure(Component.literal(
+                "This race has been retired for players: " + race.displayName()));
+            return 0;
+        }
 
         CharacterManager.forceComplete(player, race, CharacterManager.getAppearance(player));
         source.sendSuccess(

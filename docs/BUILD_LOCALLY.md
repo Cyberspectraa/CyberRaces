@@ -56,3 +56,9 @@ modify files in your Minecraft `mods` folder.
 ## Current version
 
 Development version **0.3.2-alpha.74**: new player choices exclude Dragonborn, Fairy, Birdfolk, Goblin and Dwarf; wild NPC choices retain Goblin and Dwarf. Existing players' removed-race abilities and safe migration are still pending. This is not yet validated by a local build.
+
+## 0.3.2-alpha.75 race retirement
+
+See [RACE_RETIREMENT.md](RACE_RETIREMENT.md). The final five retired
+player races and automatic innate flight are now disabled in source.
+Run a fresh local build and Minecraft test; this commit did NOT invoke Actions.

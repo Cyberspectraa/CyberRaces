@@ -112,11 +112,8 @@ public final class RacialPassiveEvents {
             DogfolkScentAbility.cleanup(player);
         }
 
-        if (race == Race.GOBLIN) {
-            GoblinScavengerSenseAbility.tick(player);
-        } else {
-            GoblinScavengerSenseAbility.cleanup(player);
-        }
+        // Goblin is NPC-only. Do not tick its old player ability.
+        GoblinScavengerSenseAbility.cleanup(player);
 
         if (race == Race.ORC) {
             OrcWarCryAbility.tick(player);
@@ -124,12 +121,10 @@ public final class RacialPassiveEvents {
             OrcWarCryAbility.cleanup(player);
         }
 
-        if (race != Race.FAIRY) {
-            FairyHoverAbility.disable(player);
-        }
-
+        // Retired Fairy hover and Dragonborn breath must not persist.
+        FairyHoverAbility.disable(player);
         if (IronSpellsCompat.isLoaded()) {
-            DragonBreathAbility.tick(player);
+            DragonBreathAbility.cleanup(player);
 
             if (race == Race.AASIMAR) {
                 AasimarRadianceAbility.tick(player);

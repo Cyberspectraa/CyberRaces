@@ -1,7 +1,6 @@
 package com.cyberspectraa.cyberraces.client;
 
 import com.cyberspectraa.cyberraces.CyberRaces;
-import com.cyberspectraa.cyberraces.event.FairyHoverPhysics;
 import com.cyberspectraa.cyberraces.network.CyberRacesNetwork;
 import com.cyberspectraa.cyberraces.network.packet.RacialAbilityPacket;
 import com.cyberspectraa.cyberraces.race.Race;
@@ -92,11 +91,8 @@ public final class ClientForgeEvents {
             }
         }
 
-        if (race != Race.FAIRY) {
-            ClientAbilityState.disableFairyHover();
-        } else if (ClientAbilityState.isFairyHoverEnabled()) {
-            FairyHoverPhysics.apply(minecraft.player);
-        }
+        // Fairy is retired: no automatic hovering or local lift physics.
+        ClientAbilityState.disableFairyHover();
 
         if (minecraft.screen != null) {
             return;
@@ -121,21 +117,15 @@ public final class ClientForgeEvents {
             // Slimes now bounce naturally; V is no longer an ability.
             if (race == Race.SLIME) continue;
 
-            boolean toggleState = false;
-
-            if (race == Race.FAIRY) {
-                toggleState =
-                    ClientAbilityState.toggleFairyHover();
-                if (toggleState) {
-                    // Mirror the server's takeoff locally so activating
-                    // from the ground feels responsive, not rubber-banded.
-                    FairyHoverPhysics.takeoff(minecraft.player);
-                }
+            if (race.retiredForPlayers()) {
+                minecraft.player.displayClientMessage(
+                    Component.literal("This race has been retired for players."),
+                    true
+                );
+                continue;
             }
 
-            CyberRacesNetwork.sendToServer(
-                new RacialAbilityPacket(toggleState)
-            );
+            CyberRacesNetwork.sendToServer(new RacialAbilityPacket(false));
         }
     }
 }

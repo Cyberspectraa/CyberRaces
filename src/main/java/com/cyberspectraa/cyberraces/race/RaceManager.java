@@ -90,6 +90,7 @@ public final class RaceManager {
                 root.getString(EVOLUTION_KEY)).orElse(null);
         Race base = getBaseRace(player).orElse(null);
         if (evolution == null || evolution.baseRace() != base
+                || !evolution.availableToEvolve()
                 || !root.getBoolean(EVOLUTION_CHOSEN_KEY)) {
             changed |= root.contains(EVOLUTION_KEY)
                     || root.contains(EVOLUTION_CHOSEN_KEY);
@@ -143,13 +144,10 @@ public final class RaceManager {
 
         RaceAttributeApplier.apply(player, race, null);
 
-        if (race == Race.FAIRY) {
-            FairyWingCompat.ensureEquipped(player);
-        } else {
-            FairyWingCompat.removeRacialWings(player);
-        }
-
-        NaturalWingCompat.ensureCorrectWing(player);
+        // Never grant innate flight equipment. Normal earned Icarus wings
+        // are not tagged and are left untouched.
+        FairyWingCompat.removeRacialWings(player);
+        NaturalWingCompat.removeNaturalWings(player);
     }
 
     public static boolean setEvolution(
@@ -278,13 +276,9 @@ public final class RaceManager {
                     race,
                     getEvolution(player).orElse(null)
                 );
-                if (race == Race.FAIRY) {
-                    FairyWingCompat.ensureEquipped(player);
-                } else {
-                    FairyWingCompat.removeRacialWings(player);
-                }
-
-                NaturalWingCompat.ensureCorrectWing(player);
+                // Clean up only legacy CyberRaces-tagged innate wings.
+                FairyWingCompat.removeRacialWings(player);
+                NaturalWingCompat.removeNaturalWings(player);
             },
             () -> {
                 FairyWingCompat.removeRacialWings(player);

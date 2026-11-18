@@ -7,7 +7,6 @@ import com.cyberspectraa.cyberraces.command.CyberResetAllCommands;
 import com.cyberspectraa.cyberraces.event.CharacterCreationEvents;
 import com.cyberspectraa.cyberraces.event.ArachnidWebEvents;
 import com.cyberspectraa.cyberraces.event.CyberNpcRaceEvents;
-import com.cyberspectraa.cyberraces.event.FairyHoverEvents;
 import com.cyberspectraa.cyberraces.event.FairyWingEvents;
 import com.cyberspectraa.cyberraces.event.ProgressionEvents;
 import com.cyberspectraa.cyberraces.event.RaceEvents;
@@ -45,7 +44,6 @@ public final class CyberRaces {
         MinecraftForge.EVENT_BUS.register(UndeadInfectionEvents.class);
         MinecraftForge.EVENT_BUS.register(UndeadMobBehaviorEvents.class);
         MinecraftForge.EVENT_BUS.register(FairyWingEvents.class);
-        MinecraftForge.EVENT_BUS.register(FairyHoverEvents.class);
         MinecraftForge.EVENT_BUS.register(CharacterCreationEvents.class);
         MinecraftForge.EVENT_BUS.register(CyberNpcRaceEvents.class);
         MinecraftForge.EVENT_BUS.register(ProgressionEvents.class);

@@ -98,14 +98,18 @@ public enum Race {
     }
 
     /**
-     * Starting race availability for the creator AND server validation.
-     * Previously created characters retain their saved ID pending a separate
-     * migration; this does not silently reset progress or equipped items.
+     * Retired from PLAYER characters. Keep saved enum IDs intact so old test
+     * data can still be read and Goblin/Dwarf remain available to wild NPCs.
      */
+    public boolean retiredForPlayers() {
+        return this == DRAGONBORN || this == FAIRY || this == BIRDFOLK
+                || this == GOBLIN || this == DWARF;
+    }
+
+    /** Ordinary first-character selection, also validated on the server. */
     public boolean selectableAtCreation() {
-        return this != UNDEAD && this != HALFLING && this != AASIMAR
-                && this != DRAGONBORN && this != FAIRY && this != BIRDFOLK
-                && this != GOBLIN && this != DWARF;
+        return !retiredForPlayers()
+                && this != UNDEAD && this != HALFLING && this != AASIMAR;
     }
 
     public static Race[] startingChoices() {

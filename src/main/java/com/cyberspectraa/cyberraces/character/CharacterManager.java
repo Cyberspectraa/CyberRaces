@@ -105,6 +105,9 @@ public final class CharacterManager {
         Race race,
         CharacterAppearance appearance
     ) {
+        // Admin tools may override the creator, but cannot reactivate retired
+        // flying/player races. Wild NPCs use a separate race pool.
+        if (race == null || race.retiredForPlayers()) return;
         saveAppearance(player, appearance);
         setCharacterCreated(player, true);
         RaceManager.setRace(player, race);

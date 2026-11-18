@@ -1,16 +1,12 @@
 package com.cyberspectraa.cyberraces.network.packet;
 
 import com.cyberspectraa.cyberraces.ability.AasimarRadianceAbility;
-import com.cyberspectraa.cyberraces.ability.BirdfolkWingBurstAbility;
 import com.cyberspectraa.cyberraces.ability.DogfolkScentAbility;
 import com.cyberspectraa.cyberraces.ability.FoxfolkQuickstepAbility;
-import com.cyberspectraa.cyberraces.ability.GoblinScavengerSenseAbility;
 import com.cyberspectraa.cyberraces.ability.OrcWarCryAbility;
 import com.cyberspectraa.cyberraces.ability.TieflingInfernalSurgeAbility;
 import com.cyberspectraa.cyberraces.ability.NewRaceAbilities;
 import com.cyberspectraa.cyberraces.ability.NymphNatureGraceAbility;
-import com.cyberspectraa.cyberraces.ability.DragonBreathAbility;
-import com.cyberspectraa.cyberraces.ability.FairyHoverAbility;
 import com.cyberspectraa.cyberraces.compat.IronSpellsCompat;
 import com.cyberspectraa.cyberraces.race.Race;
 import com.cyberspectraa.cyberraces.race.RaceManager;
@@ -58,23 +54,10 @@ public record RacialAbilityPacket(
         }
 
         switch (race) {
-            case DRAGONBORN -> {
-                if (!IronSpellsCompat.isLoaded()) {
-                    player.displayClientMessage(
-                        Component.literal(
-                            "Fire Breath requires Iron's Spells 'n Spellbooks."
-                        ),
-                        true
-                    );
-                } else {
-                    DragonBreathAbility.tryCast(player);
-                }
-            }
-
-            case FAIRY ->
-                FairyHoverAbility.setEnabled(
-                    player,
-                    packet.toggleState()
+            case DRAGONBORN, FAIRY, BIRDFOLK, GOBLIN, DWARF ->
+                player.displayClientMessage(
+                    Component.literal("This race is no longer available to players."),
+                    true
                 );
 
             case DOGFOLK ->
@@ -85,9 +68,6 @@ public record RacialAbilityPacket(
 
             case ORC ->
                 OrcWarCryAbility.tryActivate(player);
-
-            case GOBLIN ->
-                GoblinScavengerSenseAbility.tryActivate(player);
 
             case TIEFLING ->
                 TieflingInfernalSurgeAbility.tryActivate(player);
@@ -107,9 +87,6 @@ public record RacialAbilityPacket(
                     AasimarRadianceAbility.tryCast(player);
                 }
             }
-
-            case BIRDFOLK ->
-                BirdfolkWingBurstAbility.tryActivate(player);
 
             case ARACHNID, UNDEAD ->
                 NewRaceAbilities.activate(player);
