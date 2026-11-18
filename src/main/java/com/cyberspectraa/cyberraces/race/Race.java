@@ -89,16 +89,23 @@ public enum Race {
     public FlightType flightType() { return flightType; }
 
     /**
-     * Every player option remains available, but the Reborn/Undead lineage
-     * belongs only to players. The canonical race IDs are never renamed.
+     * Wild NPCs retain Goblin and Dwarf, but no longer randomly roll the
+     * retired Dragonborn, Fairy or Birdfolk races. Do not delete enum entries:
+     * saved identities, appearance data and older NPC NBT still use their IDs.
      */
     public boolean allowedForWildNpc() {
-        return selectableAtCreation();
+        return selectableAtCreation() || this == GOBLIN || this == DWARF;
     }
 
-    /** Ordinary first-character selection, not acquired conditions. */
+    /**
+     * Starting race availability for the creator AND server validation.
+     * Previously created characters retain their saved ID pending a separate
+     * migration; this does not silently reset progress or equipped items.
+     */
     public boolean selectableAtCreation() {
-        return this != UNDEAD && this != HALFLING && this != AASIMAR;
+        return this != UNDEAD && this != HALFLING && this != AASIMAR
+                && this != DRAGONBORN && this != FAIRY && this != BIRDFOLK
+                && this != GOBLIN && this != DWARF;
     }
 
     public static Race[] startingChoices() {
