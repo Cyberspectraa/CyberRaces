@@ -19,3 +19,6 @@ run-data/
 # OS
 .DS_Store
 Thumbs.db
+# Local verification outputs
+/CyberRaces.jar
+/build-local.log

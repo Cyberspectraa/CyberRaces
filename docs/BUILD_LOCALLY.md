@@ -1,39 +1,58 @@
-# CyberRaces development without GitHub Actions
+# CyberRaces — local build without GitHub Actions
 
-Use branch `development-no-actions`. Do not merge it into `main` or open
-a pull request targeting `main` while Actions minutes are unavailable.
+**Development branch:** `development-no-actions`. Work is NOT being merged into
+`main` while GitHub Actions minutes are unavailable.
 
-**Requirements:** Minecraft Forge 1.20.1 project; JDK 17 and Gradle **8.1.1**
-installed locally, available on `PATH`. First build downloads Forge/Gradle
-dependencies and therefore needs internet access.
+## Windows setup (first time)
 
-On Windows double-click `build-local.bat` from the repository root.
-The launcher runs `gradle clean build --no-daemon --stacktrace` and, **only
-if the build succeeds**, creates a convenient `CyberRaces.jar` at the root.
-The original versioned JAR is also in `build/libs/`.
+1. Install **Git for Windows** and **Eclipse Temurin JDK 17**. In PowerShell:
+   ```powershell
+   winget install --id Git.Git --exact
+   winget install --id EclipseAdoptium.Temurin.17.JDK --exact
+   ```
+2. Close and reopen PowerShell. Check: `git --version`,
+   `java -version`, and `javac -version` (Java compiler must say 17).
+3. Clone from a folder you own, e.g. `Documents\CyberMods`:
+   ```powershell
+   git clone --branch development-no-actions https://github.com/Cyberspectraa/CyberRaces.git
+   ```
+4. Open the cloned `CyberRaces` directory. Double-click `build-local.bat` or
+   run `.\build-local.bat` from PowerShell.
 
-On other systems: `gradle clean build --no-daemon --stacktrace`.
-Use the versioned JAR in `build/libs/`.
+**You do not need to install Gradle yourself.** The launcher automatically
+downloads exactly **Gradle 8.1.1** from the official Gradle distribution
+service, verifies its official SHA-256 checksum, and caches it under
+`%LOCALAPPDATA%\CyberMods\Gradle`. The initial build also downloads Forge
+dependencies and requires an internet connection.
 
-Clone directly to the no-Actions branch:
+The launcher runs `gradle clean build --no-daemon --stacktrace`, keeping the
+compilation log at `build-local.log`. Only after success it copies the
+versioned mod JAR from `build\libs` to `CyberRaces.jar` at the repository root.
 
-```bash
-git clone --branch development-no-actions https://github.com/Cyberspectraa/CyberRaces.git
-cd CyberRaces
+On future changes, open PowerShell in the repository directory:
+```powershell
+git switch development-no-actions
+git pull --ff-only
+.\build-local.bat
 ```
 
-## Current unverified development changes
+Do not upload/make public the `build-local.log` file without checking it for
+personal paths. The script does not push, merge, trigger GitHub Actions, or
+modify files in your Minecraft `mods` folder.
 
-- [x] Character creator and server validation no longer offer Dragonborn,
-  Fairy, Birdfolk, Goblin or Dwarf to new players.
-- [x] Wild NPC race pool keeps Goblin and Dwarf, while dropping Dragonborn,
-  Fairy and Birdfolk.
-- [x] Preserve all enum IDs, existing character NBT, appearance values and
-  admin override behaviour; no forced change to already created characters.
-- [ ] Handle existing players who previously chose retired races and disable
-  removed race abilities; preserve progression through migration.
-- [ ] Audit Ice and Fire references in affected Cyber mods.
-- [ ] Run a successful local Forge build and Minecraft test.
+## Safety and status
 
-Do **not** label the change as tested or deploy to your main pack until the
-local build succeeds. No GitHub Actions were invoked for these branch commits.
+- A commit alone is NOT a build. Keep stable JARs until local compilation
+  succeeds and a backup world test passes.
+- GitHub's existing workflows trigger on pushes/PRs to main. **Do not merge or
+  create PRs targeting main** until Actions are available again.
+- Java 17 is mandatory; later Java releases may not work with this Forge
+  project. Use `javac -version` to check your current JDK.
+- If local compilation fails, send the relevant lines from `build-local.log`
+  and keep using the stable JAR.
+- Linux/macOS: these Windows helpers do not apply. Use JDK 17 and Gradle
+  8.1.1 locally and run `gradle clean build --no-daemon --stacktrace`.
+
+## Current version
+
+Development version **0.3.2-alpha.74**: new player choices exclude Dragonborn, Fairy, Birdfolk, Goblin and Dwarf; wild NPC choices retain Goblin and Dwarf. Existing players' removed-race abilities and safe migration are still pending. This is not yet validated by a local build.
