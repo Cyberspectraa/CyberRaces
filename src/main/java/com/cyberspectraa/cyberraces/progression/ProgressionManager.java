@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public final class ProgressionManager {
@@ -76,7 +77,8 @@ public final class ProgressionManager {
     ) {
         if (entity == null
                 || entity.level().isClientSide
-                || baseAmount <= 0L) {
+                || baseAmount <= 0L
+                || !canGainCyberExperience(entity)) {
             int level = entity == null ? 1 : getLevel(entity);
             long total = entity == null ? 0L : getTotalExperience(entity);
             return new ProgressionChange(level, level, 0L, total, source);
@@ -121,6 +123,25 @@ public final class ProgressionManager {
             newTotal,
             source
         );
+    }
+
+    /**
+     * CyberClasses' Guild Receptionist registers a player's first class.
+     * A created race is not enough to begin RPG levelling. Apply this here,
+     * not in individual kill/advancement/quest events, so every XP source
+     * (including optional integrations) obeys the same rule.
+     *
+     * Wild NPCs still level normally, and CyberRaces on its own retains its
+     * existing progression when CyberClasses is not installed.
+     */
+    private static boolean canGainCyberExperience(LivingEntity entity) {
+        if (!(entity instanceof ServerPlayer player)
+                || !ModList.get().isLoaded("cyberclasses")) {
+            return true;
+        }
+        CompoundTag classes = player.getPersistentData().getCompound("CyberClasses");
+        return classes.getBoolean("ClassChosen")
+                && !classes.getString("Class").isBlank();
     }
 
     public static ProgressionChange awardCombatKill(
